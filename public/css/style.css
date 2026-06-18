@@ -485,3 +485,475 @@ label .req { color: var(--danger); }
   .banner-pill { font-size: var(--fs-body-sm); padding: 10px 16px; }
   #login-card { padding: 28px 22px 22px; }
 }
+
+/* ==========================================================================
+   Dashboard
+   ========================================================================== */
+/* ==========================================================================
+   Aura Pilates Studio — design tokens
+   Palette: warm stone + deep moss, with reformer-spring colours used as
+   a real signal (class intensity), not decoration.
+   Type: Libre Caslon Text (display, used sparingly in italic) + Inter
+   (body/UI) + IBM Plex Mono (times, counts — anything "data-like").
+   ========================================================================== */
+
+:root {
+  --color-bg: #eae6dc;
+  --color-surface: #f8f5ee;
+  --color-ink: #21261f;
+  --color-ink-soft: #56594c;
+  --color-moss: #5b6b4f;
+  --color-moss-dark: #3f4a37;
+  --color-rail: #d6cfba;
+  --color-rail-strong: #b9b09a;
+
+  --spring-light: #c08a2e;
+  --spring-medium: #3e6e63;
+  --spring-heavy: #a8453a;
+  --spring-all: #7c6a9c;
+
+  --font-display: 'Libre Caslon Text', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-card: 0 1px 2px rgba(33, 38, 31, 0.06), 0 8px 24px -12px rgba(33, 38, 31, 0.18);
+}
+
+/* ==========================================================================
+   Reset + base
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+img {
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-moss);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+.container {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+em {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+
+.site-header {
+  border-bottom: 1px solid var(--color-rail);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 22px;
+  padding-bottom: 22px;
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  letter-spacing: 0.01em;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.nav a {
+  color: var(--color-ink-soft);
+  transition: color 0.15s ease;
+}
+
+.nav a:hover {
+  color: var(--color-moss-dark);
+}
+
+.nav-logout {
+  color: var(--color-ink);
+  border: 1px solid var(--color-rail-strong);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+
+/* ==========================================================================
+   Main / page heads
+   ========================================================================== */
+
+.main-content {
+  padding-top: 48px;
+  padding-bottom: 72px;
+  min-height: calc(100vh - 240px);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-moss-dark);
+  margin: 0 0 10px;
+}
+
+.page-head h1 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 2rem;
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+
+.lede {
+  color: var(--color-ink-soft);
+  max-width: 36em;
+  margin: 0 0 36px;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.3rem;
+  margin: 8px 0 16px;
+  color: var(--color-moss-dark);
+}
+
+/* ==========================================================================
+   Auth page (split layout)
+   ========================================================================== */
+
+.auth-shell {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: center;
+  padding: 24px 0 48px;
+}
+
+.auth-side h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 2.6rem;
+  line-height: 1.15;
+  margin: 0 0 16px;
+}
+
+.auth-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-rail);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 36px;
+}
+
+.auth-card h2 {
+  font-size: 1.25rem;
+  margin: 0 0 4px;
+}
+
+.hint {
+  margin-top: 20px;
+  font-size: 0.8rem;
+  color: var(--color-ink-soft);
+}
+
+.hint code {
+  font-family: var(--font-mono);
+  background: var(--color-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ==========================================================================
+   Dashboard — quick links + schedule strip
+   ========================================================================== */
+
+.quick-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 44px;
+}
+
+.quick-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-rail);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.quick-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+}
+
+.quick-card-label {
+  font-weight: 600;
+}
+
+.quick-card-desc {
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+
+.schedule-strip {
+  border-top: 1px solid var(--color-rail);
+}
+
+.strip-row {
+  display: grid;
+  grid-template-columns: 200px 1fr auto;
+  gap: 16px;
+  align-items: baseline;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-rail);
+}
+
+.strip-time {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-moss-dark);
+}
+
+.strip-name {
+  font-weight: 600;
+}
+
+.strip-instructor {
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+
+/* ==========================================================================
+   Class cards (schedule + my-bookings)
+   ========================================================================== */
+
+.class-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.class-card {
+  position: relative;
+  display: flex;
+  background: var(--color-surface);
+  border: 1px solid var(--color-rail);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+/* The "rail" — a nod to the sliding carriage rail on a reformer. */
+.class-card-rail {
+  width: 6px;
+  background: linear-gradient(180deg, var(--color-moss), var(--color-rail-strong));
+  flex-shrink: 0;
+}
+
+.class-card-body {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.class-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.class-time {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-ink-soft);
+}
+
+.class-name {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.class-instructor {
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+  margin: 0 0 6px;
+}
+
+/* Spring-colour tags: a real Pilates vernacular detail (resistance
+   springs are colour-coded by intensity) repurposed to show level. */
+.spring-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  color: #fff;
+}
+
+.spring-tag::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.spring-light {
+  background: var(--spring-light);
+}
+
+.spring-medium {
+  background: var(--spring-medium);
+}
+
+.spring-heavy {
+  background: var(--spring-heavy);
+}
+
+.spring-all {
+  background: var(--spring-all);
+}
+
+.capacity-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 10px 0 16px;
+}
+
+.capacity-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-rail);
+}
+
+.capacity-dot.is-filled {
+  background: var(--color-moss);
+}
+
+.capacity-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-ink-soft);
+  margin-left: 6px;
+}
+
+.class-card-body form {
+  margin-top: auto;
+}
+
+/* ==========================================================================
+   Empty state + footer
+   ========================================================================== */
+
+.empty-state {
+  text-align: center;
+  padding: 64px 24px;
+}
+
+.empty-state h1 {
+  font-size: 1.6rem;
+  margin: 0 0 8px;
+}
+
+.empty-state p {
+  color: var(--color-ink-soft);
+  margin: 0 0 24px;
+}
+
+.site-footer {
+  border-top: 1px solid var(--color-rail);
+  padding: 24px 0;
+}
+
+.site-footer p {
+  font-size: 0.78rem;
+  color: var(--color-ink-soft);
+  margin: 0;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 760px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .quick-links,
+  .class-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .strip-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
