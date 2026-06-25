@@ -1,5 +1,5 @@
 {
-  "name": "pilates-studio-app",
+  "name": "pilates-phenikaa",
   "version": "1.0.0",
   "description": "Pilates class registration website (Node.js + Express). Hardcoded login for now, built so it can be swapped for a real database later.",
   "main": "src/server.js",

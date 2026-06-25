@@ -1,5 +1,5 @@
 /**
- * index.routes.js — the bare "/" path just redirects somewhere useful.
+ * index.routes.js — khởi động ứng dụng, chuyển hướng đến /dashboard nếu đã đăng nhập hoặc /login nếu chưa đăng nhập.
  */
 
 const express = require('express');

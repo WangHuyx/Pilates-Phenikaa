@@ -1,83 +1,69 @@
-# Aura Pilates Studio — booking app starter
+# Pilates Phenikaa — booking app starter
 
-A Node.js + Express framework for a Pilates class registration website. Login currently
-checks a hardcoded account, but the code is layered so swapping that for a real database
-later only touches one folder.
+Đây là khung ứng dụng Node.js + Express dành cho trang web đăng ký lớp học Pilates.
 
-## Demo login
+## Tài khoản đăng nhập demo
 
 ```
 username: admin
 password: Pilates@123
 ```
 
-## Run it
+## hướng dẫn chạy dự án trên máy local
 
 ```bash
 npm install
-cp .env.example .env      # optional — defaults work fine for local dev
-npm run dev                # nodemon, auto-restarts on file changes
-# or: npm start
+npm run dev # or: npm start
 ```
 
-Then open `http://localhost:3000`.
+Mở trình duyệt và gõ `http://localhost:3000`.
 
-## What it does
+## Một số trang:
 
-- `/login` — sign in against the hardcoded account
-- `/dashboard` — landing page after login, quick links + this week's classes
-- `/classes` — full class schedule, reserve a spot (respects capacity, blocks double-booking)
-- `/my-bookings` — classes the logged-in user has reserved
+- `/login` — Đăng nhập
+- `/dashboard` — Trang chính
+- `/classes` — Đăng kí lớp học
+- `/my-bookings` — Quản lí lớp học người dùng đã đăng kí
 - `/logout` — clears the session
 
 ## Project layout
 
 ```
 src/
-  config/        environment/config values (port, session secret)
-  data/           the "fake database" — hardcoded users.data.js & classes.data.js
-  repositories/   data access layer — the ONLY files that touch /data
-  services/       business logic (login rules, booking rules) — calls repositories
-  controllers/    HTTP req/res handling — calls services
-  routes/         maps URLs + HTTP verbs to controller functions
-  middleware/      requireLogin guard, 404 + error handlers
-  views/          EJS templates (server-rendered HTML)
-public/css/        stylesheet
+  config/         Nơi cấu hình môi trường kết nối (port,sessionSecret,database)
+  data/           Dữ liệu giả định, có thể bỏ sau khi có CSDL
+  repositories/   Nơi thực hiện truy vấn dữ liệu từ CSDL
+  services/       Xử lí các logic nghiệp vụ thông qua việc gọi các function trong `repositories/`.
+  controllers/    Xử lý việc điều phối yêu cầu/phản hồi.
+  routes/         ánh xạ các URL và phương thức HTTP tới các hàm của controller
+  middleware/     Xử lí UX (requireLogin guard, 404 + error handlers)
+  views/          Giao diện tương tác
+  public/css/     Thiết kế, định dạng và trang ttự rí giao diện(views/)
 ```
 
-Each layer only talks to the layer directly below it:
+Các tầng phụ thuộc:
 
 ```
 routes -> controllers -> services -> repositories -> data
 ```
 
-## Switching to a real database later
+## Hướng dẫn kết nối datase
 
-The whole point of the `repositories/` folder is that it's the single seam where
-storage is swapped out. Nothing in `controllers/` or `services/` imports `data/`
-directly — they only ever call functions like `userRepository.findByUsername(...)`.
+Mục đích chính của thư mục `repositories/` là đóng vai trò là điểm kết nối duy nhất để thay đổi cơ chế lưu trữ. Không có thành phần nào trong `controllers/` hay `services/` thực hiện import trực tiếp từ `data/` — chúng chỉ gọi các hàm như `userRepository.findByUsername(...)`.
 
-To migrate:
+Hướng dẫn thêm database:
 
-1. Pick a database + driver/ORM (e.g. MongoDB + Mongoose, or PostgreSQL + Prisma/knex).
-2. Add the connection string to `src/config/config.js` (read from `.env`).
-3. Open `src/repositories/user.repository.js` and `src/repositories/class.repository.js`.
-   Rewrite the body of each exported function to run a real query instead of reading
-   the in-memory array — but keep the function name and the shape of what it returns
-   (an object, an array, or `null`). Both files already have commented examples for
-   Mongoose and SQL-style queries to start from.
-4. Delete `src/data/users.data.js` and `src/data/classes.data.js` once nothing requires
-   them anymore.
-5. If you move sessions to run across multiple server instances, swap the default
-   in-memory session store in `src/app.js` for one backed by your database
-   (e.g. `connect-mongo` or `connect-pg-simple`).
+1. Chọn một cơ sở dữ liệu + driver/ORM (ví dụ: MongoDB + Mongoose, hoặc PostgreSQL + Prisma/knex).
+2. Cấu hình kết nối `src/config/config.js`.
+3. Mở `src/repositories/`
+   Viết các function truy vấn; Các truy vấn kiểu SQL và Mongoose để bắt đầu.
+4. Xóa `src/data/users.data.js` and `src/data/classes.data.js` - không còn dùng.
+5. Nếu bạn chuyển các phiên làm việc để chạy trên nhiều phiên bản máy chủ, hãy thay thế kho lưu trữ phiên mặc định trong bộ nhớ ở `src/app.js` bằng kho lưu trữ được hỗ trợ bởi cơ sở dữ liệu của bạn
+(ví dụ: `connect-mongo` hoặc `connect-pg-simple`).
 
 Routes, controllers, services, and views stay untouched.
 
 ## Notes
 
-- Passwords are hashed with `bcryptjs` even for the hardcoded account, so the
-  authentication code is already shaped the way it would look against a real
-  database (never comparing plain text passwords).
-- The default Express session store is in-memory — fine for local development,
-  not for production or multiple server instances (see point 5 above).
+- Mật khẩu được băm bằng `bcryptjs`, nhờ đó mã xác thực được thiết kế theo cách tương tự như khi làm việc với cơ sở dữ liệu thực tế (không bao giờ so sánh mật khẩu dạng văn bản thuần).
+- Cơ chế lưu trữ phiên (session store) mặc định của Express hoạt động trên bộ nhớ (in-memory) — phù hợp cho quá trình phát triển cục bộ, nhưng không thích hợp cho môi trường triển khai thực tế (production) hoặc hệ thống có nhiều instance máy chủ (xem mục 5 ở trên).

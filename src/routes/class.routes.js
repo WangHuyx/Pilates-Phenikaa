@@ -1,7 +1,8 @@
 /**
- * class.routes.js — dashboard, class catalog, booking, my bookings.
- * Every route here is wrapped with `requireLogin`, so an anonymous
- * visitor gets redirected to /login instead of seeing the page.
+
+* class.routes.js — bảng điều khiển, danh mục lớp học, đặt chỗ, các đặt chỗ của tôi.
+ * Mọi tuyến đường (route) đều được gọi qua `requireLogin`,
+ * do đó khách truy cập ẩn danh sẽ bị chuyển hướng đến /login thay vì xem được trang.
  */
 
 const express = require('express');

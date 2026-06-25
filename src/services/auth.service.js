@@ -1,13 +1,13 @@
 /**
  * auth.service.js
  * ------------------------------------------------------------------
- * SERVICE LAYER — business logic for authentication.
+ * TẦNG DỊCH VỤ (SERVICE LAYER) — chứa logic nghiệp vụ cho xác thực người dùng.
  *
- * Controllers call this, this calls the repository. The service
- * layer is where rules live (e.g. "passwords must match the hash",
- * "never leak the password hash back up"). It does NOT know or care
- * whether the data underneath is an in-memory array or a real DB —
- * that's the repository's job.
+ * Các controller gọi đến thành phần này, và nó lại gọi đến repository. Lớp service
+ * là nơi chứa các quy tắc nghiệp vụ (ví dụ: "mật khẩu phải khớp với mã hash",
+ * "không bao giờ để lộ mã hash mật khẩu ra bên ngoài"). Nó hoàn toàn không cần biết hay quan tâm
+ * liệu dữ liệu bên dưới là một mảng trong bộ nhớ (in-memory array) hay là cơ sở dữ liệu thực —
+ * đó là nhiệm vụ của repository.
  * ------------------------------------------------------------------
  */
 
@@ -27,8 +27,6 @@ async function login(username, plainPassword) {
 
   const user = await userRepository.findByUsername(username);
   if (!user) {
-    // Same generic message as a wrong password, on purpose —
-    // this avoids revealing whether the username exists.
     return { success: false, message: 'Invalid username or password.' };
   }
 
@@ -37,8 +35,9 @@ async function login(username, plainPassword) {
     return { success: false, message: 'Invalid username or password.' };
   }
 
-  // Strip the password hash before this user object travels any
-  // further (into the session, into a view, etc).
+
+  // Loại bỏ mã băm mật khẩu trước khi đối tượng người dùng này được chuyển đi xa hơn
+  // (vào session, vào view, v.v.).
   const { passwordHash, ...safeUser } = user;
   return { success: true, user: safeUser };
 }

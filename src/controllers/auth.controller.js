@@ -1,15 +1,15 @@
 /**
  * auth.controller.js
  * ------------------------------------------------------------------
- * CONTROLLER LAYER — translates HTTP requests into service calls and
- * service results into HTTP responses. Controllers stay "thin": no
- * business rules here, just req/res plumbing.
+ * Controller không chứa logic nghiệp vụ, chỉ xử lý việc điều phối yêu cầu/phản hồi.
  * ------------------------------------------------------------------
  */
 
+//Đăng nhập
 const authService = require('../services/auth.service');
 
-/** GET /login — show the login form (or skip it if already logged in) */
+
+/** GET /login — hiển thị biểu mẫu đăng nhập (hoặc bỏ qua nếu đã đăng nhập) */
 function showLoginForm(req, res) {
   if (req.session.user) {
     return res.redirect('/dashboard');
@@ -17,7 +17,7 @@ function showLoginForm(req, res) {
   res.render('login', { title: 'Login', error: null });
 }
 
-/** POST /login — validate credentials and start a session */
+/** POST /login — xác thực thông tin đăng nhập và bắt đầu phiên làm việc */
 async function handleLogin(req, res, next) {
   try {
     const { username, password } = req.body;
@@ -36,7 +36,7 @@ async function handleLogin(req, res, next) {
   }
 }
 
-/** GET /logout — destroy the session and send the visitor back to /login */
+/** GET /logout — hủy phiên làm việc và chuyển hướng người truy cập về /login */
 function handleLogout(req, res, next) {
   req.session.destroy((err) => {
     if (err) return next(err);

@@ -1,5 +1,5 @@
 /**
- * auth.routes.js — everything under /login and /logout
+ * auth.routes.js — các tuyến đường liên quan đến xác thực người dùng (đăng nhập, đăng xuất).
  */
 
 const express = require('express');

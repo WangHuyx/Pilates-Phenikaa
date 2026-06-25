@@ -1,37 +1,10 @@
 /**
  * user.repository.js
  * ------------------------------------------------------------------
- * REPOSITORY LAYER (data access layer) for users.
- *
- * This is the ONLY file in the whole project that is allowed to know
- * WHERE user data physically lives. Right now that's an in-memory
- * array (users.data.js). Later it might be MongoDB, MySQL, etc.
- *
- * 🔁 HOW TO SWITCH TO A REAL DATABASE LATER
- * ------------------------------------------------------------------
- * 1. Keep the exact function names exported below (findByUsername,
- *    findById) and keep them returning a Promise that resolves to
- *    either a user object or null — that "contract" is what the
- *    service layer relies on.
- * 2. Replace the body of each function with a real query. Examples:
- *
- *    // MongoDB / Mongoose
- *    const UserModel = require('../models/user.model');
- *    async function findByUsername(username) {
- *      return UserModel.findOne({ username }).lean();
- *    }
- *
- *    // PostgreSQL / MySQL with knex
- *    async function findByUsername(username) {
- *      return db('users').where({ username }).first();
- *    }
- *
- * 3. Delete the `require('../data/users.data')` line and the
- *    users.data.js file — nothing else in the project imports it
- *    directly, so nothing else needs to change.
+ * Class thực hiện truy vấn dữ liệu
  * ------------------------------------------------------------------
  */
-
+//TODO: Khi thêm một cơ sở dữ liệu thực, hãy thay thế các hàm giả lập này bằng các truy vấn cơ sở dữ liệu thực.
 const users = require('../data/users.data');
 
 /**

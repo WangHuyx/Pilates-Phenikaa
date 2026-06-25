@@ -1,9 +1,9 @@
 /**
  * class.service.js
  * ------------------------------------------------------------------
- * SERVICE LAYER — business logic for Pilates classes & bookings.
- * Rules such as "don't double-book" or "respect class capacity"
- * live here, not in the controller and not in the repository.
+* TẦNG DỊCH VỤ (SERVICE LAYER) — chứa logic nghiệp vụ cho các lớp học và việc đặt chỗ Pilates.
+ * Các quy tắc như "không đặt trùng lịch" hay "tuân thủ giới hạn sĩ số lớp"
+ * được đặt tại đây, chứ không phải ở tầng điều khiển (controller) hay tầng lưu trữ (repository).
  * ------------------------------------------------------------------
  */
 
@@ -15,7 +15,6 @@ async function listClasses() {
 }
 
 /**
- * Register a user for a class, enforcing capacity + no-double-booking.
  * @param {number|string} classId
  * @param {number} userId
  * @returns {Promise<{success: boolean, message: string}>}

@@ -1,8 +1,8 @@
 /**
  * auth.middleware.js
  * ------------------------------------------------------------------
- * Route guard: blocks access to protected pages (dashboard, classes,
- * bookings) unless there's a logged-in user in the session.
+* Route guard: chặn quyền truy cập vào các trang được bảo vệ (bảng điều khiển, lớp học,
+* đặt chỗ) trừ khi có người dùng đã đăng nhập trong phiên làm việc.
  * ------------------------------------------------------------------
  */
 
@@ -10,7 +10,7 @@ function requireLogin(req, res, next) {
   if (req.session && req.session.user) {
     return next();
   }
-  // Not logged in -> bounce to the login page instead of the page they wanted.
+  // Chưa đăng nhập -> chuyển hướng đến trang đăng nhập
   return res.redirect('/login');
 }
 

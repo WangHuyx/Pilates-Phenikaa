@@ -1,24 +1,10 @@
 /**
  * class.repository.js
  * ------------------------------------------------------------------
- * REPOSITORY LAYER (data access layer) for Pilates classes and
- * bookings. Same idea as user.repository.js: this file is the only
- * one allowed to know where class data physically lives.
- *
- * 🔁 WHEN YOU ADD A REAL DATABASE
- * ------------------------------------------------------------------
- * `enrolledUserIds` (an array on each class) is a quick stand-in for
- * what would normally be its own "bookings" table, e.g.:
- *
- *    bookings: { id, class_id, user_id, booked_at }
- *
- * You'd then rewrite addUserToClass()/findClassesByUserId() as
- * INSERT/SELECT queries against that table (or Mongoose calls)
- * instead of mutating the in-memory array, but the function
- * signatures below would stay the same.
+ * Class thực hiện truy vấn dữ liệu
  * ------------------------------------------------------------------
  */
-
+// TODO: Khi thêm một cơ sở dữ liệu thực, hãy thay thế các hàm giả lập này bằng các truy vấn cơ sở dữ liệu thực.
 const classes = require('../data/classes.data');
 
 /** @returns {Promise<object[]>} every class */

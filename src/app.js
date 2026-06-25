@@ -1,9 +1,9 @@
 /**
  * app.js
  * ------------------------------------------------------------------
- * Builds and configures the Express application object. Kept
- * separate from server.js so the app can be imported by tests
- * later without actually starting a network listener.
+ * Tạo và cấu hình đối tượng ứng dụng Express. Việc tách biệt khỏi server.js
+ * giúp ứng dụng có thể được import vào các bài kiểm thử (test) sau này
+ * mà không cần thực sự khởi chạy trình lắng nghe mạng.
  * ------------------------------------------------------------------
  */
 

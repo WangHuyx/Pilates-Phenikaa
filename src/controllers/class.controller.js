@@ -6,6 +6,7 @@
  * ------------------------------------------------------------------
  */
 
+//Dashboard, class, my-bookings pages. Có thể tách riêng ra làm từng phần 1 file .js
 const classService = require('../services/class.service');
 
 /** GET /dashboard */
