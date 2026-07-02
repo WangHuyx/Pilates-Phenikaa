@@ -47,21 +47,31 @@ Các tầng phụ thuộc:
 routes -> controllers -> services -> repositories -> data
 ```
 
-## Hướng dẫn kết nối datase
+## Hướng dẫn kết nối MySQL Database
 
-Mục đích chính của thư mục `repositories/` là đóng vai trò là điểm kết nối duy nhất để thay đổi cơ chế lưu trữ. Không có thành phần nào trong `controllers/` hay `services/` thực hiện import trực tiếp từ `data/` — chúng chỉ gọi các hàm như `userRepository.findByUsername(...)`.
+Dự án hiện tại đã được cấu hình để kết nối với cơ sở dữ liệu MySQL bằng thư viện `mysql2`.
 
-Hướng dẫn thêm database:
+Các bước thiết lập:
 
-1. Chọn một cơ sở dữ liệu + driver/ORM (ví dụ: MongoDB + Mongoose, hoặc PostgreSQL + Prisma/knex).
-2. Cấu hình kết nối `src/config/config.js`.
-3. Mở `src/repositories/`
-   Viết các function truy vấn; Các truy vấn kiểu SQL và Mongoose để bắt đầu.
-4. Xóa `src/data/users.data.js` and `src/data/classes.data.js` - không còn dùng.
-5. Nếu bạn chuyển các phiên làm việc để chạy trên nhiều phiên bản máy chủ, hãy thay thế kho lưu trữ phiên mặc định trong bộ nhớ ở `src/app.js` bằng kho lưu trữ được hỗ trợ bởi cơ sở dữ liệu của bạn
-(ví dụ: `connect-mongo` hoặc `connect-pg-simple`).
+1. **Import Database:**
+   - Tạo một cơ sở dữ liệu tên là `pilates_db` trong MySQL của bạn (thông qua phpMyAdmin, XAMPP, DBeaver, v.v.).
+   - Import file `pilates_db.sql` vào cơ sở dữ liệu vừa tạo. File này chứa toàn bộ cấu trúc bảng và một số dữ liệu mẫu (đã bao gồm các bảng `simple_classes` tương thích với cấu trúc của ứng dụng).
+2. **Cấu hình môi trường (.env):**
+   - Đảm bảo dự án có file `.env` ở thư mục gốc. Nếu chưa có, hãy tạo mới dựa trên nội dung sau:
+     ```env
+     # SERVER
+     PORT=3000
+     SESSION_SECRET=Huynguyen_726
 
-Routes, controllers, services, and views stay untouched.
+     # DATABASE
+     DB_HOST=localhost
+     DB_USER=root
+     DB_PASSWORD=
+     DB_NAME=pilates_db
+     ```
+   - Điều chỉnh `DB_PASSWORD` (hoặc `DB_USER`) cho khớp với cấu hình MySQL trên máy của bạn.
+3. **Chạy ứng dụng:**
+   - Chạy lệnh `npm run dev` (hoặc `npm start`). Nếu Terminal in ra dòng chữ `✅ Đã kết nối tới cơ sở dữ liệu MySQL (pilates_db)` thì ứng dụng đã kết nối thành công.
 
 ## Notes
 

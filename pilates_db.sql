@@ -540,3 +540,31 @@ INSERT INTO attendances (member_id, schedule_id, status) VALUES
 -- Staffs
 INSERT INTO staffs (full_name, email, phone, role, salary, user_id) VALUES
 ('Nguyễn Văn A', 'staff1@pilates.com', '0901234568', 'Lễ tân', 8000000, 2);
+
+-- =============================================
+-- SIMPLE CLASSES SCHEMA FOR CURRENT APP (Added for Node.js app compatibility)
+-- =============================================
+CREATE TABLE IF NOT EXISTS simple_classes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(200) NOT NULL,
+    instructor VARCHAR(100) NOT NULL,
+    day VARCHAR(50) NOT NULL,
+    time VARCHAR(50) NOT NULL,
+    level VARCHAR(50) NOT NULL,
+    capacity INT DEFAULT 10
+);
+
+CREATE TABLE IF NOT EXISTS simple_class_enrollments (
+    class_id INT NOT NULL,
+    user_id INT NOT NULL,
+    PRIMARY KEY (class_id, user_id),
+    FOREIGN KEY (class_id) REFERENCES simple_classes(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+INSERT INTO simple_classes (id, name, instructor, day, time, level, capacity) VALUES
+(1, 'Beginner Mat Pilates', 'Jenny Tran', 'Mon & Wed', '07:00 - 08:00', 'Beginner', 12),
+(2, 'Reformer Pilates Flow', 'Mark Nguyen', 'Tue & Thu', '18:00 - 19:00', 'Intermediate', 8),
+(3, 'Advanced Power Pilates', 'Linh Pham', 'Friday', '17:30 - 18:45', 'Advanced', 10),
+(4, 'Prenatal Pilates', 'Hoa Le', 'Saturday', '09:00 - 10:00', 'All levels', 10);
+
