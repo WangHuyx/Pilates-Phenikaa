@@ -1,12 +1,12 @@
-# Pilates Phenikaa — booking app starter
+# Pilates Phenikaa
 
-Đây là khung ứng dụng Node.js + Express dành cho trang web đăng ký lớp học Pilates.
+Đây là khung ứng dụng Node.js + Express dành cho trang web đăng ký lớp tập Pilates.
 
-## Tài khoản đăng nhập demo
+## Tài khoản đăng nhập
 
 ```
 username: admin
-password: Pilates@123
+password: admin123
 ```
 
 ## hướng dẫn chạy dự án trên máy local
@@ -65,6 +65,7 @@ Các bước thiết lập:
 
      # DATABASE
      DB_HOST=localhost
+     DB_PORT=3306
      DB_USER=root
      DB_PASSWORD=
      DB_NAME=pilates_db
