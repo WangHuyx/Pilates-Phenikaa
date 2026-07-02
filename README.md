@@ -71,7 +71,7 @@ Các bước thiết lập:
      ```
    - Điều chỉnh `DB_PASSWORD` (hoặc `DB_USER`) cho khớp với cấu hình MySQL trên máy của bạn.
 3. **Chạy ứng dụng:**
-   - Chạy lệnh `npm run dev` (hoặc `npm start`). Nếu Terminal in ra dòng chữ `✅ Đã kết nối tới cơ sở dữ liệu MySQL (pilates_db)` thì ứng dụng đã kết nối thành công.
+   - Chạy lệnh `npm run dev` (hoặc `npm start`). Nếu Terminal in ra dòng chữ `Đã kết nối tới cơ sở dữ liệu MySQL (pilates_db)` thì ứng dụng đã kết nối thành công.
 
 ## Notes
 

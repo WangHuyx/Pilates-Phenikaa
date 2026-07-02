@@ -21,11 +21,11 @@ const pool = mysql.createPool({
 // Kiểm tra kết nối khi khởi động
 pool.getConnection()
   .then(connection => {
-    console.log('✅ Đã kết nối tới cơ sở dữ liệu MySQL (pilates_db)');
+    console.log('Đã kết nối tới cơ sở dữ liệu MySQL (pilates_db)');
     connection.release();
   })
   .catch(err => {
-    console.error('❌ Lỗi kết nối CSDL:', err.message);
+    console.error('Lỗi kết nối CSDL:', err.message);
   });
 
 module.exports = pool;
