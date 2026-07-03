@@ -15,6 +15,8 @@ const config = require('./config/config');
 const indexRoutes = require('./routes/index.routes');
 const authRoutes = require('./routes/auth.routes');
 const classRoutes = require('./routes/class.routes');
+const accountRoutes  = require('./routes/account.routes');
+const employeeRoutes = require('./routes/employee.routes');
 const { notFoundHandler, errorHandler } = require('./middleware/error.middleware');
 
 const app = express();
@@ -46,6 +48,8 @@ app.use(
 app.use('/', indexRoutes);
 app.use('/', authRoutes);
 app.use('/', classRoutes);
+app.use('/accounts',  accountRoutes);
+app.use('/employees', employeeRoutes);
 
 // --- Catch-alls (must be registered last) -------------------------------
 app.use(notFoundHandler);

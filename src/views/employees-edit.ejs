@@ -1,0 +1,100 @@
+<%/* views/employees-edit.ejs */%>
+<%- include('partials/header') %>
+
+<div style="margin-bottom:16px">
+  <a href="/employees" class="btn btn-secondary btn-sm">← Quay lại danh sách</a>
+</div>
+
+<div class="page-eyebrow">System Administration › 1.2</div>
+<h1 class="page-title">Cập nhật nhân viên</h1>
+<p class="page-sub">Chỉnh sửa thông tin cho <strong><%= emp.fullName %></strong> (<%= emp.code %>).</p>
+
+<% if (error) { %>
+  <div class="alert alert-error"><span class="alert-icon">✕</span><%= error %></div>
+<% } %>
+
+<div class="card" style="max-width:680px">
+  <div class="card-header">
+    <span class="card-title">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="
+          width:36px;height:36px;border-radius:50%;
+          display:flex;align-items:center;justify-content:center;
+          font-size:13px;font-weight:700;
+          background:<%= {green:'#B7E4C7',blue:'#B5D4F4',amber:'#FAC775',purple:'#CECBF6',pink:'#F4C0D1',teal:'#9FE1CB'}[emp.avatarColor]||'#eee' %>;
+          color:<%= {green:'#1B4332',blue:'#0C447C',amber:'#633806',purple:'#3C3489',pink:'#72243E',teal:'#085041'}[emp.avatarColor]||'#333' %>;
+        "><%= emp.avatar %></div>
+        ✏️ Chỉnh sửa thông tin
+      </div>
+    </span>
+    <span class="<%= emp.status==='active'?'badge badge-trainer':'badge' %>"
+          style="<%= emp.status!=='active'?'background:#F0EFEB;color:#888':'' %>">
+      <%= emp.status === 'active' ? 'Đang làm việc' : 'Đã nghỉ' %>
+    </span>
+  </div>
+  <div class="card-body">
+    <form action="/employees/<%= emp.id %>/update" method="POST">
+      <div class="form-grid">
+
+        <div class="form-group full">
+          <label class="field-label">Mã nhân viên</label>
+          <input type="text" value="<%= emp.code %>" disabled
+                 style="background:#F4F3EE;color:#999;cursor:not-allowed">
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="fullName">Họ và tên <span class="req">*</span></label>
+          <input type="text" id="fullName" name="fullName" value="<%= emp.fullName %>" required>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="phone">Điện thoại <span class="req">*</span></label>
+          <input type="text" id="phone" name="phone" value="<%= emp.phone %>" required>
+        </div>
+
+        <div class="form-group full">
+          <label class="field-label" for="email">Email</label>
+          <input type="email" id="email" name="email" value="<%= emp.email %>" placeholder="Không bắt buộc">
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="position">Chức vụ <span class="req">*</span></label>
+          <select id="position" name="position" required>
+            <% constants.POSITIONS.forEach(p => { %>
+              <option value="<%= p %>" <%= emp.position === p ? 'selected' : '' %>><%= p %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="department">Phòng ban <span class="req">*</span></label>
+          <select id="department" name="department" required>
+            <% constants.DEPARTMENTS.forEach(d => { %>
+              <option value="<%= d %>" <%= emp.department === d ? 'selected' : '' %>><%= d %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="startDate">Ngày bắt đầu</label>
+          <input type="date" id="startDate" name="startDate" value="<%= emp.startDate %>">
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="status">Trạng thái</label>
+          <select id="status" name="status">
+            <option value="active"   <%= emp.status === 'active'   ? 'selected' : '' %>>Đang làm việc</option>
+            <option value="inactive" <%= emp.status === 'inactive' ? 'selected' : '' %>>Đã nghỉ / tạm nghỉ</option>
+          </select>
+        </div>
+
+        <div class="form-group full" style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+          <a href="/employees" class="btn btn-secondary">Hủy</a>
+          <button type="submit" class="btn btn-primary">💾 Lưu thay đổi</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

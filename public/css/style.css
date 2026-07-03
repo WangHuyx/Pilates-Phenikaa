@@ -954,3 +954,149 @@ em {
     gap: 4px;
   }
 }
+
+/* ==========================================================================
+   Shared UI components (accounts, forms, tables)
+   ========================================================================== */
+
+/* Card */
+.card { background: var(--color-surface); border: 1px solid var(--color-rail); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); overflow: hidden; }
+.card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--color-rail); }
+.card-title { font-weight: 600; font-size: 0.95rem; margin: 0; }
+.card-body { padding: 24px; }
+
+/* Form grid */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label,
+.field-label { font-size: 0.82rem; font-weight: 600; color: var(--color-ink); letter-spacing: 0.02em; display: block; margin-bottom: 4px; }
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%; padding: 10px 14px;
+  border: 1px solid var(--color-rail); border-radius: var(--radius-md);
+  background: var(--color-bg); color: var(--color-ink);
+  font-family: var(--font-body); font-size: 0.9rem;
+  transition: border-color 0.15s;
+}
+.form-group input:focus,
+.form-group select:focus { outline: none; border-color: var(--color-moss); }
+.req { color: #c0392b; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 18px; border-radius: var(--radius-md);
+  font-family: var(--font-body); font-size: 0.875rem; font-weight: 500;
+  cursor: pointer; border: 1px solid transparent; text-decoration: none;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--color-moss-dark); color: #fff; border-color: var(--color-moss-dark); }
+.btn-primary:hover { background: var(--color-moss); border-color: var(--color-moss); }
+.btn-secondary { background: transparent; color: var(--color-ink); border-color: var(--color-rail-strong); }
+.btn-secondary:hover { background: var(--color-rail); }
+.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+.btn-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: var(--radius-md);
+  border: 1px solid var(--color-rail); background: var(--color-surface);
+  color: var(--color-ink-soft); cursor: pointer; font-size: 1rem;
+  transition: background 0.15s, color 0.15s; text-decoration: none;
+}
+.btn-icon:hover { background: var(--color-rail); color: var(--color-ink); }
+.btn-icon.btn-danger { background: #fbeae8; border-color: #f0b8b4; color: #c0392b; }
+.btn-icon.btn-danger:hover { background: #c0392b; color: #fff; border-color: #c0392b; }
+
+/* Table */
+.table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.table thead th {
+  text-align: left; font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--color-ink-soft); padding: 12px 14px;
+  border-bottom: 1px solid var(--color-rail);
+}
+.table tbody td { padding: 14px; border-bottom: 1px solid var(--color-rail); vertical-align: middle; }
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover { background: rgba(91, 107, 79, 0.04); }
+
+/* Badge */
+.badge {
+  display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px;
+  font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500;
+  background: var(--color-bg); border: 1px solid var(--color-rail); color: var(--color-ink-soft);
+}
+.role-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 500; }
+.role-admin   { background: #fef3cd; color: #7c4700;  border: 1px solid #f0d06b; }
+.role-staff   { background: #d1eaff; color: #1a4f7a;  border: 1px solid #93c8f2; }
+.role-trainer { background: #d8f3dc; color: #1b5e34;  border: 1px solid #74c693; }
+.role-member  { background: #f0ece4; color: var(--color-ink-soft); border: 1px solid var(--color-rail); }
+
+/* Action buttons group */
+.action-buttons { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Alert / flash messages */
+.alert {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 14px 18px; border-radius: var(--radius-md);
+  border: 1px solid; margin-bottom: 20px; font-size: 0.9rem;
+}
+.alert-success { background: #d8f3dc; border-color: #74c693; color: #1b5e34; }
+.alert-error   { background: #fbeae8; border-color: #f0b8b4; color: #c0392b; }
+.alert-icon    { flex-shrink: 0; }
+
+/* Page headers (accounts-edit style) */
+.page-eyebrow { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-moss-dark); margin: 0 0 8px; }
+.page-title   { font-weight: 600; font-size: 1.75rem; margin: 0 0 6px; color: var(--color-ink); }
+.page-sub     { color: var(--color-ink-soft); margin: 0 0 24px; }
+
+/* CSS variable aliases — used by employee templates */
+:root {
+  --cream: var(--color-bg);
+  --muted: var(--color-ink-soft);
+}
+
+/* Badge aliases for employee status */
+.badge-trainer { background: #d8f3dc; color: #1b5e34; border: 1px solid #74c693; }
+.badge-member  { background: #f0ece4; color: var(--color-ink-soft); border: 1px solid var(--color-rail); }
+
+/* Standalone danger button (used with .btn, not .btn-icon) */
+.btn.btn-danger { background: #fbeae8; border-color: #f0b8b4; color: #c0392b; }
+.btn.btn-danger:hover { background: #c0392b; color: #fff; border-color: #c0392b; }
+
+/* Warning / amber button */
+.btn-warn { background: #fef3cd; color: #7c4700; border-color: #f0d06b; }
+.btn-warn:hover { background: #f0d06b; }
+
+/* Table wrapper — overflow scroll on mobile */
+.table-wrap { overflow-x: auto; }
+.table-wrap table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.table-wrap table thead th {
+  text-align: left; font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--color-ink-soft); padding: 12px 14px;
+  border-bottom: 1px solid var(--color-rail);
+}
+.table-wrap table tbody td { padding: 13px 14px; border-bottom: 1px solid var(--color-rail); vertical-align: middle; }
+.table-wrap table tbody tr:last-child td { border-bottom: none; }
+.table-wrap table tbody tr:hover { background: rgba(91, 107, 79, 0.04); }
+
+/* Table cell action buttons */
+.td-actions { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Delete confirm modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--color-surface); border-radius: var(--radius-lg);
+  padding: 28px; max-width: 440px; width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.modal h3 { margin: 0 0 12px; font-size: 1.1rem; }
+.modal p { color: var(--color-ink-soft); margin: 0 0 20px; line-height: 1.6; font-size: 0.9rem; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }

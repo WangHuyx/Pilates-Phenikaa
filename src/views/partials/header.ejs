@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Libre+Caslon+Text:ital@0;1&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
 </head>
 <body>
   <header class="site-header">
@@ -15,8 +16,17 @@
       <nav class="nav">
         <% if (typeof user !== 'undefined' && user) { %>
           <a href="/dashboard">Dashboard</a>
-          <a href="/classes">Schedule</a>
-          <a href="/my-bookings">My bookings</a>
+          <a href="/classes">Lịch học</a>
+          <% if (user.role === 'admin') { %>
+            <a href="/employees">Nhân viên</a>
+            <a href="/accounts">Tài khoản</a>
+          <% } %>
+          <% if (user.role === 'admin' || user.role === 'trainer') { %>
+            <a href="/my-bookings">Đăng ký lớp</a>
+          <% } %>
+          <% if (user.role === 'member') { %>
+            <a href="/my-bookings">Lớp của tôi</a>
+          <% } %>
           <a href="/logout" class="nav-logout">Log out</a>
         <% } else { %>
           <a href="/login">Log in</a>

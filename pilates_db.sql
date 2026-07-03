@@ -1,5 +1,6 @@
 -- =============================================
 -- PILATES STUDIO MANAGEMENT SYSTEM DATABASE
+-- Phiên bản: 2.0 (đã sửa lỗi và bổ sung)
 -- =============================================
 
 DROP DATABASE IF EXISTS pilates_db;
@@ -16,9 +17,12 @@ CREATE TABLE roles (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- FIX: Thêm role 'trainer' (3) và 'member' (4) — trước chỉ có admin và staff
 INSERT INTO roles (name, description) VALUES
-('admin', 'Quản trị viên hệ thống'),
-('staff', 'Nhân viên phòng tập');
+('admin',   'Quản trị viên hệ thống'),
+('staff',   'Nhân viên phòng tập'),
+('trainer', 'Huấn luyện viên'),
+('member',  'Hội viên');
 
 -- =============================================
 -- 2. USERS TABLE
@@ -42,10 +46,21 @@ CREATE TABLE users (
 CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_users_role ON users(role_id);
 
--- Default admin: admin / admin123
+-- FIX: Comment sửa từ 'admin123' → 'Pilates@123' (hash bên dưới là của Pilates@123)
+-- FIX: Thêm tài khoản đăng nhập cho Trainers (role_id=3) và Members (role_id=4)
+-- Mapping id sau khi insert: 1=admin, 2=staff1, 3=bich.tran, 4=cuong.le, 5=dung.pham
+--                            6=huong.nguyen, 7=minh.tran, 8=nga.le, 9=phuc.pham, 10=quynh.hoang
 INSERT INTO users (username, password, email, full_name, phone, role_id) VALUES
-('admin', '$2b$10$cNB1WQ.faV047UVInsTOyuCcjUq2xV3XkopEWI.DLeUVmFblaTf6C', 'admin@pilates.com', 'Administrator', '0901234567', 1),
-('staff1', '$2b$10$cNB1WQ.faV047UVInsTOyuCcjUq2xV3XkopEWI.DLeUVmFblaTf6C', 'staff1@pilates.com', 'Nguyễn Văn A', '0901234568', 2);
+('admin',        '$2a$10$4Qde18CSOol2M4hAvqja1O9pdGuWiVGUeA2XFFcq6V5lSLkyw8bcC', 'admin@pilates.com',      'Administrator',     '0901234567', 1),
+('staff1',       '$2a$10$4Qde18CSOol2M4hAvqja1O9pdGuWiVGUeA2XFFcq6V5lSLkyw8bcC', 'staff1@pilates.com',     'Nguyễn Văn A',      '0901234568', 2),
+('bich.tran',    '$2a$10$4Qde18CSOol2M4hAvqja1O9pdGuWiVGUeA2XFFcq6V5lSLkyw8bcC', 'bich.tran@pilates.com',  'Trần Thị Bích',     '0912345001', 3),
+('cuong.le',     '$2a$10$4Qde18CSOol2M4hAvqja1O9pdGuWiVGUeA2XFFcq6V5lSLkyw8bcC', 'cuong.le@pilates.com',   'Lê Văn Cường',      '0912345002', 3),
+('dung.pham',    '$2a$10$4Qde18CSOol2M4hAvqja1O9pdGuWiVGUeA2XFFcq6V5lSLkyw8bcC', 'dung.pham@pilates.com',  'Phạm Thị Dung',     '0912345003', 3),
+('huong.nguyen', '$2a$10$4Qde18CSOol2M4hAvqja1O9pdGuWiVGUeA2XFFcq6V5lSLkyw8bcC', 'huong.nguyen@email.com', 'Nguyễn Thị Hương',  '0987654001', 4),
+('minh.tran',    '$2a$10$4Qde18CSOol2M4hAvqja1O9pdGuWiVGUeA2XFFcq6V5lSLkyw8bcC', 'minh.tran@email.com',    'Trần Văn Minh',     '0987654002', 4),
+('nga.le',       '$2a$10$4Qde18CSOol2M4hAvqja1O9pdGuWiVGUeA2XFFcq6V5lSLkyw8bcC', 'nga.le@email.com',       'Lê Thị Nga',        '0987654003', 4),
+('phuc.pham',    '$2a$10$4Qde18CSOol2M4hAvqja1O9pdGuWiVGUeA2XFFcq6V5lSLkyw8bcC', 'phuc.pham@email.com',    'Phạm Văn Phúc',     '0987654004', 4),
+('quynh.hoang',  '$2a$10$4Qde18CSOol2M4hAvqja1O9pdGuWiVGUeA2XFFcq6V5lSLkyw8bcC', 'quynh.hoang@email.com',  'Hoàng Thị Quỳnh',   '0987654005', 4);
 
 -- =============================================
 -- 3. MEMBERS TABLE
@@ -63,8 +78,10 @@ CREATE TABLE members (
     status ENUM('active', 'inactive', 'expired') DEFAULT 'active',
     avatar VARCHAR(255),
     notes TEXT,
+    user_id INT UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE INDEX idx_members_code ON members(member_code);
@@ -86,8 +103,10 @@ CREATE TABLE trainers (
     avatar VARCHAR(255),
     status ENUM('active', 'inactive') DEFAULT 'active',
     hire_date DATE DEFAULT (CURRENT_DATE),
+    user_id INT UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE INDEX idx_trainers_code ON trainers(trainer_code);
@@ -102,7 +121,7 @@ CREATE TABLE staffs (
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(100),
     phone VARCHAR(20),
-    role VARCHAR(100),
+    role VARCHAR(100) COMMENT 'Chức danh/vị trí công việc, vd: Lễ tân, Kế toán',
     salary DECIMAL(12, 2) DEFAULT 0,
     status ENUM('active', 'inactive') DEFAULT 'active',
     user_id INT,
@@ -217,6 +236,7 @@ CREATE TABLE course_registrations (
 CREATE INDEX idx_registrations_member ON course_registrations(member_id);
 CREATE INDEX idx_registrations_course ON course_registrations(course_id);
 CREATE INDEX idx_registrations_status ON course_registrations(status);
+CREATE INDEX idx_registrations_member_course ON course_registrations(member_id, course_id);
 
 -- =============================================
 -- 11. PAYMENTS TABLE
@@ -236,7 +256,9 @@ CREATE TABLE payments (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    -- FIX: Mỗi thanh toán phải tham chiếu ít nhất 1 trong 2: package hoặc course
+    CONSTRAINT chk_payment_ref CHECK (package_id IS NOT NULL OR course_id IS NOT NULL)
 );
 
 CREATE INDEX idx_payments_code ON payments(payment_code);
@@ -245,7 +267,31 @@ CREATE INDEX idx_payments_date ON payments(payment_date);
 CREATE INDEX idx_payments_status ON payments(status);
 
 -- =============================================
--- 12. ATTENDANCES TABLE
+-- 12. MEMBER_PACKAGES TABLE (FIX: bảng mới)
+-- Theo dõi gói tập nào đang active/expired cho từng hội viên
+-- =============================================
+CREATE TABLE member_packages (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    member_id INT NOT NULL,
+    package_id INT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status ENUM('active', 'expired', 'cancelled') DEFAULT 'active',
+    payment_id INT,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_member_packages_member ON member_packages(member_id);
+CREATE INDEX idx_member_packages_status ON member_packages(status);
+CREATE INDEX idx_member_packages_end ON member_packages(end_date);
+
+-- =============================================
+-- 13. ATTENDANCES TABLE
 -- =============================================
 CREATE TABLE attendances (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -255,6 +301,7 @@ CREATE TABLE attendances (
     status ENUM('present', 'absent', 'late', 'excused') DEFAULT 'present',
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -264,7 +311,7 @@ CREATE INDEX idx_attendances_schedule ON attendances(schedule_id);
 CREATE UNIQUE INDEX idx_attendances_unique ON attendances(member_id, schedule_id);
 
 -- =============================================
--- 13. NOTIFICATIONS TABLE
+-- 14. NOTIFICATIONS TABLE
 -- =============================================
 CREATE TABLE notifications (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -363,16 +410,27 @@ BEGIN
     END IF;
 END//
 
--- Update current_students when attendance is added
+-- Cập nhật current_students khi thêm attendance mới
 CREATE TRIGGER trg_attendance_insert AFTER INSERT ON attendances
 FOR EACH ROW
 BEGIN
     UPDATE schedules SET current_students = (
-        SELECT COUNT(*) FROM attendances WHERE schedule_id = NEW.schedule_id AND status = 'present'
+        SELECT COUNT(*) FROM attendances
+        WHERE schedule_id = NEW.schedule_id AND status = 'present'
     ) WHERE id = NEW.schedule_id;
 END//
 
--- Update completed_sessions on attendance
+-- FIX: Cập nhật current_students khi sửa trạng thái attendance (trước chỉ có INSERT)
+CREATE TRIGGER trg_attendance_update AFTER UPDATE ON attendances
+FOR EACH ROW
+BEGIN
+    UPDATE schedules SET current_students = (
+        SELECT COUNT(*) FROM attendances
+        WHERE schedule_id = NEW.schedule_id AND status = 'present'
+    ) WHERE id = NEW.schedule_id;
+END//
+
+-- Cộng completed_sessions khi điểm danh present/late (INSERT)
 CREATE TRIGGER trg_update_completed_sessions AFTER INSERT ON attendances
 FOR EACH ROW
 BEGIN
@@ -380,7 +438,33 @@ BEGIN
         UPDATE course_registrations cr
         JOIN schedules s ON s.course_id = cr.course_id
         SET cr.completed_sessions = cr.completed_sessions + 1
-        WHERE cr.member_id = NEW.member_id AND s.id = NEW.schedule_id AND cr.status = 'active';
+        WHERE cr.member_id = NEW.member_id
+          AND s.id = NEW.schedule_id
+          AND cr.status = 'active';
+    END IF;
+END//
+
+-- FIX: Điều chỉnh completed_sessions khi sửa trạng thái attendance (UPDATE)
+CREATE TRIGGER trg_update_completed_sessions_update AFTER UPDATE ON attendances
+FOR EACH ROW
+BEGIN
+    -- absent/excused → present/late: cộng 1
+    IF (OLD.status NOT IN ('present', 'late')) AND (NEW.status IN ('present', 'late')) THEN
+        UPDATE course_registrations cr
+        JOIN schedules s ON s.course_id = cr.course_id
+        SET cr.completed_sessions = cr.completed_sessions + 1
+        WHERE cr.member_id = NEW.member_id
+          AND s.id = NEW.schedule_id
+          AND cr.status = 'active';
+    END IF;
+    -- present/late → absent/excused: trừ 1 (không xuống dưới 0)
+    IF (OLD.status IN ('present', 'late')) AND (NEW.status NOT IN ('present', 'late')) THEN
+        UPDATE course_registrations cr
+        JOIN schedules s ON s.course_id = cr.course_id
+        SET cr.completed_sessions = GREATEST(0, cr.completed_sessions - 1)
+        WHERE cr.member_id = NEW.member_id
+          AND s.id = NEW.schedule_id
+          AND cr.status = 'active';
     END IF;
 END//
 
@@ -388,7 +472,7 @@ END//
 -- STORED PROCEDURES
 -- =============================================
 
--- Revenue Report by Period
+-- FIX: Sửa lỗi BETWEEN với DATETIME — bản ghi cuối ngày (vd: 14:30) bị bỏ sót
 CREATE PROCEDURE sp_revenue_report(IN p_start_date DATE, IN p_end_date DATE)
 BEGIN
     SELECT
@@ -397,8 +481,9 @@ BEGIN
         SUM(amount) AS total_revenue,
         AVG(amount) AS avg_revenue
     FROM payments
-    WHERE payment_date BETWEEN p_start_date AND p_end_date
-        AND status = 'paid'
+    WHERE payment_date >= p_start_date
+      AND payment_date < DATE_ADD(p_end_date, INTERVAL 1 DAY)
+      AND status = 'paid'
     GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
     ORDER BY month;
 END//
@@ -450,8 +535,8 @@ BEGIN
         m.full_name,
         COUNT(a.id) AS total_sessions,
         SUM(CASE WHEN a.status = 'present' THEN 1 ELSE 0 END) AS present_count,
-        SUM(CASE WHEN a.status = 'absent' THEN 1 ELSE 0 END) AS absent_count,
-        SUM(CASE WHEN a.status = 'late' THEN 1 ELSE 0 END) AS late_count,
+        SUM(CASE WHEN a.status = 'absent'  THEN 1 ELSE 0 END) AS absent_count,
+        SUM(CASE WHEN a.status = 'late'    THEN 1 ELSE 0 END) AS late_count,
         ROUND(SUM(CASE WHEN a.status = 'present' THEN 1 ELSE 0 END) / COUNT(a.id) * 100, 2) AS attendance_rate
     FROM members m
     LEFT JOIN attendances a ON m.id = a.member_id
@@ -465,69 +550,81 @@ DELIMITER ;
 -- SEED DATA
 -- =============================================
 
--- Trainers
-INSERT INTO trainers (full_name, specialization, phone, email, salary) VALUES
-('Trần Thị Bích', 'Pilates Mat, Reformer', '0912345001', 'bich.tran@pilates.com', 15000000),
-('Lê Văn Cường', 'Pilates Equipment, Yoga', '0912345002', 'cuong.le@pilates.com', 18000000),
-('Phạm Thị Dung', 'Pilates Rehab, Barre', '0912345003', 'dung.pham@pilates.com', 16000000);
+-- Trainers (FIX: thêm user_id — user.id 3,4,5 tương ứng bich.tran, cuong.le, dung.pham)
+INSERT INTO trainers (full_name, specialization, phone, email, salary, user_id) VALUES
+('Trần Thị Bích', 'Pilates Mat, Reformer',   '0912345001', 'bich.tran@pilates.com', 15000000, 3),
+('Lê Văn Cường',  'Pilates Equipment, Yoga', '0912345002', 'cuong.le@pilates.com',  18000000, 4),
+('Phạm Thị Dung', 'Pilates Rehab, Barre',    '0912345003', 'dung.pham@pilates.com', 16000000, 5);
 
--- Members
-INSERT INTO members (full_name, date_of_birth, gender, phone, email, address) VALUES
-('Nguyễn Thị Hương', '1995-03-15', 'female', '0987654001', 'huong.nguyen@email.com', '123 Nguyễn Huệ, Q1, TP.HCM'),
-('Trần Văn Minh', '1990-07-20', 'male', '0987654002', 'minh.tran@email.com', '456 Lê Lợi, Q3, TP.HCM'),
-('Lê Thị Nga', '1998-11-10', 'female', '0987654003', 'nga.le@email.com', '789 Hai Bà Trưng, Q1, TP.HCM'),
-('Phạm Văn Phúc', '1988-05-25', 'male', '0987654004', 'phuc.pham@email.com', '321 Võ Văn Tần, Q3, TP.HCM'),
-('Hoàng Thị Quỳnh', '2000-01-30', 'female', '0987654005', 'quynh.hoang@email.com', '654 Nguyễn Đình Chiểu, Q3, TP.HCM');
+-- Members (FIX: thêm user_id — user.id 6-10 tương ứng 5 hội viên)
+INSERT INTO members (full_name, date_of_birth, gender, phone, email, address, user_id) VALUES
+('Nguyễn Thị Hương', '1995-03-15', 'female', '0987654001', 'huong.nguyen@email.com', '123 Nguyễn Huệ, Q1, TP.HCM',         6),
+('Trần Văn Minh',    '1990-07-20', 'male',   '0987654002', 'minh.tran@email.com',    '456 Lê Lợi, Q3, TP.HCM',              7),
+('Lê Thị Nga',       '1998-11-10', 'female', '0987654003', 'nga.le@email.com',        '789 Hai Bà Trưng, Q1, TP.HCM',        8),
+('Phạm Văn Phúc',    '1988-05-25', 'male',   '0987654004', 'phuc.pham@email.com',    '321 Võ Văn Tần, Q3, TP.HCM',          9),
+('Hoàng Thị Quỳnh',  '2000-01-30', 'female', '0987654005', 'quynh.hoang@email.com',  '654 Nguyễn Đình Chiểu, Q3, TP.HCM',  10);
 
 -- Rooms
 INSERT INTO rooms (name, capacity, description) VALUES
 ('Phòng Mat Pilates', 15, 'Phòng tập Pilates trên thảm, tầng 1'),
-('Phòng Reformer', 8, 'Phòng tập với máy Reformer, tầng 2'),
-('Phòng Barre', 12, 'Phòng tập Barre Pilates, tầng 1'),
-('Phòng VIP', 5, 'Phòng tập cá nhân VIP, tầng 3');
+('Phòng Reformer',     8, 'Phòng tập với máy Reformer, tầng 2'),
+('Phòng Barre',       12, 'Phòng tập Barre Pilates, tầng 1'),
+('Phòng VIP',          5, 'Phòng tập cá nhân VIP, tầng 3');
 
 -- Courses
 INSERT INTO courses (name, description, duration, price, total_sessions, trainer_id) VALUES
 ('Pilates Mat Cơ Bản', 'Khóa học Pilates trên thảm dành cho người mới bắt đầu', 60, 2500000, 12, 1),
-('Pilates Reformer', 'Khóa học sử dụng máy Reformer nâng cao', 45, 4500000, 10, 2),
-('Pilates Barre', 'Kết hợp Pilates và Barre để tăng cường sức mạnh', 50, 3000000, 15, 3),
-('Pilates Rehab', 'Phục hồi chức năng với Pilates', 60, 5000000, 8, 3),
-('Pilates Prenatal', 'Pilates dành cho phụ nữ mang thai', 45, 3500000, 12, 1);
+('Pilates Reformer',   'Khóa học sử dụng máy Reformer nâng cao',                 45, 4500000, 10, 2),
+('Pilates Barre',      'Kết hợp Pilates và Barre để tăng cường sức mạnh',        50, 3000000, 15, 3),
+('Pilates Rehab',      'Phục hồi chức năng với Pilates',                          60, 5000000,  8, 3),
+('Pilates Prenatal',   'Pilates dành cho phụ nữ mang thai',                       45, 3500000, 12, 1);
 
 -- Packages
 INSERT INTO packages (name, type, price, duration_days, discount, description) VALUES
-('Gói Tháng Cơ Bản', 'monthly', 1500000, 30, 0, 'Tập không giới hạn trong 1 tháng'),
-('Gói Quý Tiết Kiệm', 'quarterly', 3800000, 90, 15, 'Tiết kiệm 15% so với gói tháng'),
-('Gói Năm VIP', 'yearly', 12000000, 365, 30, 'Ưu đãi 30%, bao gồm PT cá nhân 2 buổi/tháng');
+('Gói Tháng Cơ Bản',  'monthly',   1500000,  30,  0, 'Tập không giới hạn trong 1 tháng'),
+('Gói Quý Tiết Kiệm', 'quarterly', 3800000,  90, 15, 'Tiết kiệm 15% so với gói tháng'),
+('Gói Năm VIP',       'yearly',   12000000, 365, 30, 'Ưu đãi 30%, bao gồm PT cá nhân 2 buổi/tháng');
 
 -- Schedules
 INSERT INTO schedules (date, start_time, end_time, room_id, trainer_id, course_id, max_students) VALUES
 ('2026-06-18', '08:00', '09:00', 1, 1, 1, 15),
-('2026-06-18', '09:30', '10:15', 2, 2, 2, 8),
+('2026-06-18', '09:30', '10:15', 2, 2, 2,  8),
 ('2026-06-18', '10:30', '11:20', 3, 3, 3, 12),
 ('2026-06-19', '08:00', '09:00', 1, 1, 1, 15),
-('2026-06-19', '14:00', '15:00', 4, 3, 4, 5),
+('2026-06-19', '14:00', '15:00', 4, 3, 4,  5),
 ('2026-06-20', '08:00', '08:45', 1, 1, 5, 10),
-('2026-06-20', '09:00', '09:45', 2, 2, 2, 8);
+('2026-06-20', '09:00', '09:45', 2, 2, 2,  8);
 
 -- Course Registrations
 INSERT INTO course_registrations (member_id, course_id, registration_date, end_date, completed_sessions, status) VALUES
-(1, 1, '2026-06-01', '2026-07-01', 3, 'active'),
-(2, 2, '2026-06-05', '2026-07-15', 2, 'active'),
-(3, 3, '2026-06-10', '2026-07-25', 1, 'active'),
+(1, 1, '2026-06-01', '2026-07-01',  3, 'active'),
+(2, 2, '2026-06-05', '2026-07-15',  2, 'active'),
+(3, 3, '2026-06-10', '2026-07-25',  1, 'active'),
 (4, 1, '2026-05-15', '2026-06-15', 12, 'completed'),
-(5, 5, '2026-06-15', '2026-07-30', 0, 'active');
+(5, 5, '2026-06-15', '2026-07-30',  0, 'active');
 
 -- Payments
+-- FIX: Sửa row 6 (member 1 gia hạn gói tháng) và row 8 (member 3 mua khóa Barre)
+-- để đảm bảo CHECK (package_id IS NOT NULL OR course_id IS NOT NULL)
 INSERT INTO payments (member_id, package_id, course_id, amount, payment_method, payment_date, status) VALUES
-(1, 1, 1, 4000000, 'transfer', '2026-06-01 10:30:00', 'paid'),
-(2, NULL, 2, 4500000, 'card', '2026-06-05 14:00:00', 'paid'),
-(3, 2, 3, 6800000, 'momo', '2026-06-10 09:15:00', 'paid'),
-(4, NULL, 1, 2500000, 'cash', '2026-05-15 11:00:00', 'paid'),
-(5, 1, 5, 5000000, 'zalopay', '2026-06-15 16:30:00', 'paid'),
-(1, NULL, NULL, 1500000, 'transfer', '2026-05-01 10:00:00', 'paid'),
-(2, 3, NULL, 12000000, 'card', '2026-04-10 09:00:00', 'paid'),
-(3, NULL, NULL, 3000000, 'cash', '2026-03-20 15:30:00', 'paid');
+(1,    1,    1, 4000000,  'transfer', '2026-06-01 10:30:00', 'paid'),
+(2, NULL,    2, 4500000,  'card',     '2026-06-05 14:00:00', 'paid'),
+(3,    2,    3, 6800000,  'momo',     '2026-06-10 09:15:00', 'paid'),
+(4, NULL,    1, 2500000,  'cash',     '2026-05-15 11:00:00', 'paid'),
+(5,    1,    5, 5000000,  'zalopay',  '2026-06-15 16:30:00', 'paid'),
+(1,    1, NULL, 1500000,  'transfer', '2026-05-01 10:00:00', 'paid'),
+(2,    3, NULL, 12000000, 'card',     '2026-04-10 09:00:00', 'paid'),
+(3, NULL,    3, 3000000,  'cash',     '2026-03-20 15:30:00', 'paid');
+
+-- Member Packages (FIX: bảng mới theo dõi gói tập của hội viên)
+-- payment.id: 1=member1+pkg1+course1, 3=member3+pkg2+course3, 5=member5+pkg1+course5
+--             6=member1+pkg1(gia hạn), 7=member2+pkg3
+INSERT INTO member_packages (member_id, package_id, start_date, end_date, status, payment_id) VALUES
+(1, 1, '2026-05-01', '2026-05-31', 'expired', 6),
+(1, 1, '2026-06-01', '2026-07-01', 'active',  1),
+(2, 3, '2026-04-10', '2027-04-10', 'active',  7),
+(3, 2, '2026-06-10', '2026-09-07', 'active',  3),
+(5, 1, '2026-06-15', '2026-07-15', 'active',  5);
 
 -- Attendances
 INSERT INTO attendances (member_id, schedule_id, status) VALUES
@@ -542,7 +639,9 @@ INSERT INTO staffs (full_name, email, phone, role, salary, user_id) VALUES
 ('Nguyễn Văn A', 'staff1@pilates.com', '0901234568', 'Lễ tân', 8000000, 2);
 
 -- =============================================
--- SIMPLE CLASSES SCHEMA FOR CURRENT APP (Added for Node.js app compatibility)
+-- SIMPLE CLASSES SCHEMA (Tương thích với app Node.js hiện tại)
+-- NOTE: Đây là giải pháp tạm thời. Hai bảng này sẽ được xóa khi app
+-- được kết nối đầy đủ với schema chính (courses / schedules).
 -- =============================================
 CREATE TABLE IF NOT EXISTS simple_classes (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -563,8 +662,7 @@ CREATE TABLE IF NOT EXISTS simple_class_enrollments (
 );
 
 INSERT INTO simple_classes (id, name, instructor, day, time, level, capacity) VALUES
-(1, 'Beginner Mat Pilates', 'Jenny Tran', 'Mon & Wed', '07:00 - 08:00', 'Beginner', 12),
-(2, 'Reformer Pilates Flow', 'Mark Nguyen', 'Tue & Thu', '18:00 - 19:00', 'Intermediate', 8),
-(3, 'Advanced Power Pilates', 'Linh Pham', 'Friday', '17:30 - 18:45', 'Advanced', 10),
-(4, 'Prenatal Pilates', 'Hoa Le', 'Saturday', '09:00 - 10:00', 'All levels', 10);
-
+(1, 'Beginner Mat Pilates',   'Jenny Tran',  'Mon & Wed', '07:00 - 08:00', 'Beginner',    12),
+(2, 'Reformer Pilates Flow',  'Mark Nguyen', 'Tue & Thu', '18:00 - 19:00', 'Intermediate', 8),
+(3, 'Advanced Power Pilates', 'Linh Pham',   'Friday',    '17:30 - 18:45', 'Advanced',    10),
+(4, 'Prenatal Pilates',       'Hoa Le',      'Saturday',  '09:00 - 10:00', 'All levels',  10);
