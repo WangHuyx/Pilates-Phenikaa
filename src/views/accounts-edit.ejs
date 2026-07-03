@@ -1,0 +1,72 @@
+<%/* views/accounts-edit.ejs */%>
+<%- include('partials/header') %>
+
+<div style="margin-bottom:16px">
+  <a href="/accounts" class="btn btn-secondary btn-sm">← Quay lại danh sách</a>
+</div>
+
+<div class="page-eyebrow">System Administration</div>
+<h1 class="page-title">Chỉnh sửa tài khoản</h1>
+<p class="page-sub">Cập nhật thông tin và vai trò cho <strong><%= editUser.username %></strong>.</p>
+
+<% if (error) { %>
+  <div class="alert alert-error">
+    <span class="alert-icon">✕</span><%= error %>
+  </div>
+<% } %>
+
+<div class="card" style="max-width:600px">
+  <div class="card-header">
+    <span class="card-title">✏️ Thông tin tài khoản</span>
+    <span class="badge badge-<%= editUser.role.toLowerCase() %>"><%= editUser.role %></span>
+  </div>
+  <div class="card-body">
+    <form action="/accounts/<%= editUser.id %>/update" method="POST">
+      <div class="form-grid">
+
+        <div class="form-group full">
+          <label class="field-label">Tên đăng nhập</label>
+          <input type="text" value="<%= editUser.username %>" disabled
+                 style="background:#F4F3EE; color:#999; cursor:not-allowed">
+          <small style="font-size:11px;color:#999;margin-top:3px">Tên đăng nhập không thể thay đổi.</small>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="fullName">Họ và tên <span class="req">*</span></label>
+          <input type="text" id="fullName" name="fullName"
+                 value="<%= editUser.fullName %>" required>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="email">Email <span class="req">*</span></label>
+          <input type="email" id="email" name="email"
+                 value="<%= editUser.email %>" required>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="role">Vai trò</label>
+          <select id="role" name="role">
+            <% roles.forEach(r => { %>
+              <option value="<%= r %>" <%= editUser.role === r ? 'selected' : '' %>><%= r %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="password">Mật khẩu mới</label>
+          <input type="password" id="password" name="password"
+                 placeholder="Để trống nếu không đổi">
+          <small style="font-size:11px;color:#999;margin-top:3px">Bỏ trống nếu không muốn thay đổi mật khẩu.</small>
+        </div>
+
+        <div class="form-group full" style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+          <a href="/accounts" class="btn btn-secondary">Hủy</a>
+          <button type="submit" class="btn btn-primary">💾 Lưu thay đổi</button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

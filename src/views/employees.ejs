@@ -1,0 +1,186 @@
+<%/* views/employees.ejs */%>
+<%- include('partials/header') %>
+
+<div class="page-eyebrow">System Administration › 1.2</div>
+<h1 class="page-title">Quản lý nhân viên</h1>
+<p class="page-sub">Thêm, cập nhật, xóa nhân viên và xem lịch phân ca làm việc.</p>
+
+<%/* Flash */%>
+<% if (success) { %><div class="alert alert-success"><span class="alert-icon">✓</span><%= success %></div><% } %>
+<% if (error)   { %><div class="alert alert-error"><span class="alert-icon">✕</span><%= error %></div><% } %>
+
+<%/* ── THỐNG KÊ NHANH ── */%>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px">
+  <div class="card" style="padding:18px 22px">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:6px">Tổng nhân viên</div>
+    <div style="font-size:28px;font-weight:600;color:#1B4332"><%= total %></div>
+  </div>
+  <div class="card" style="padding:18px 22px">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:6px">Đang làm việc</div>
+    <div style="font-size:28px;font-weight:600;color:#1B4332"><%= totalActive %></div>
+  </div>
+  <div class="card" style="padding:18px 22px">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:6px">Nghỉ việc / tạm nghỉ</div>
+    <div style="font-size:28px;font-weight:600;color:#BA7517"><%= totalInactive %></div>
+  </div>
+</div>
+
+<%/* ── FORM THÊM NHÂN VIÊN ── */%>
+<div class="card" style="margin-bottom:24px">
+  <div class="card-header">
+    <span class="card-title">➕ Thêm nhân viên mới</span>
+  </div>
+  <div class="card-body">
+    <form action="/employees/create" method="POST">
+      <div class="form-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="form-group">
+          <label class="field-label" for="fullName">Họ và tên <span class="req">*</span></label>
+          <input type="text" id="fullName" name="fullName" placeholder="Nguyễn Thị Lan" required>
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="phone">Số điện thoại <span class="req">*</span></label>
+          <input type="text" id="phone" name="phone" placeholder="0912 345 678" required>
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="ten@pilatespka.vn">
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="position">Chức vụ <span class="req">*</span></label>
+          <select id="position" name="position" required>
+            <option value="">-- Chọn chức vụ --</option>
+            <% constants.POSITIONS.forEach(p => { %>
+              <option value="<%= p %>"><%= p %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="department">Phòng ban <span class="req">*</span></label>
+          <select id="department" name="department" required>
+            <option value="">-- Chọn phòng ban --</option>
+            <% constants.DEPARTMENTS.forEach(d => { %>
+              <option value="<%= d %>"><%= d %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="startDate">Ngày bắt đầu <span class="req">*</span></label>
+          <input type="date" id="startDate" name="startDate" required>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <button type="submit" class="btn btn-primary">➕ Thêm nhân viên</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%/* ── DANH SÁCH ── */%>
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">👥 Danh sách nhân viên</span>
+    <div style="display:flex;gap:8px;align-items:center">
+      <%/* Filter */%>
+      <a href="/employees?status=all"
+         class="btn btn-sm <%= filterStatus==='all'?'btn-primary':'btn-secondary' %>">Tất cả (<%= total %>)</a>
+      <a href="/employees?status=active"
+         class="btn btn-sm <%= filterStatus==='active'?'btn-primary':'btn-secondary' %>">Đang làm (<%= totalActive %>)</a>
+      <a href="/employees?status=inactive"
+         class="btn btn-sm <%= filterStatus==='inactive'?'btn-primary':'btn-secondary' %>">Nghỉ (<%= totalInactive %>)</a>
+      <a href="/employees/schedule" class="btn btn-warn btn-sm">📅 Xem lịch phân ca</a>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Mã NV</th>
+          <th>Họ tên</th>
+          <th>Điện thoại</th>
+          <th>Email</th>
+          <th>Chức vụ</th>
+          <th>Phòng ban</th>
+          <th>Ngày vào</th>
+          <th>Trạng thái</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (employees.length === 0) { %>
+        <tr><td colspan="9" style="text-align:center;color:#999;padding:32px">Không có nhân viên nào.</td></tr>
+        <% } %>
+        <% employees.forEach(emp => { %>
+        <tr>
+          <td style="font-size:12px;color:#999;font-weight:600"><%= emp.code %></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="
+                width:32px;height:32px;border-radius:50%;
+                display:flex;align-items:center;justify-content:center;
+                font-size:11px;font-weight:700;flex-shrink:0;
+                background:<%= {green:'#B7E4C7',blue:'#B5D4F4',amber:'#FAC775',purple:'#CECBF6',pink:'#F4C0D1',teal:'#9FE1CB'}[emp.avatarColor]||'#eee' %>;
+                color:<%= {green:'#1B4332',blue:'#0C447C',amber:'#633806',purple:'#3C3489',pink:'#72243E',teal:'#085041'}[emp.avatarColor]||'#333' %>;
+              "><%= emp.avatar %></div>
+              <strong><%= emp.fullName %></strong>
+            </div>
+          </td>
+          <td><%= emp.phone %></td>
+          <td style="color:#666;font-size:12.5px"><%= emp.email || '—' %></td>
+          <td><span class="badge-position"><%= emp.position %></span></td>
+          <td style="font-size:12.5px;color:#555"><%= emp.department %></td>
+          <td style="font-size:12.5px;color:#777"><%= emp.startDate %></td>
+          <td>
+            <% if (emp.status === 'active') { %>
+              <span class="badge badge-trainer">Đang làm</span>
+            <% } else { %>
+              <span class="badge badge-member" style="background:#F0EFEB;color:#888">Nghỉ</span>
+            <% } %>
+          </td>
+          <td>
+            <div class="td-actions">
+              <a href="/employees/<%= emp.id %>/edit" class="btn btn-secondary btn-sm">✏️ Sửa</a>
+              <button class="btn btn-danger btn-sm"
+                      onclick="confirmDelete('<%= emp.id %>','<%= emp.fullName %>')">🗑 Xóa</button>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%/* ── MODAL XÓA ── */%>
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal">
+    <h3>🗑 Xác nhận xóa nhân viên</h3>
+    <p>Bạn có chắc muốn xóa nhân viên <strong id="modal-name"></strong>?<br>
+       Toàn bộ lịch phân ca của nhân viên này cũng sẽ bị xóa. Thao tác không thể hoàn tác.</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+      <form id="delete-form" method="POST">
+        <button type="submit" class="btn btn-danger">Xóa nhân viên</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+.badge-position {
+  display:inline-flex; padding:2px 9px; border-radius:20px;
+  font-size:11.5px; font-weight:600;
+  background:#F0EDE4; color:#555; border:1px solid #D8D3C8;
+}
+</style>
+<script>
+function confirmDelete(id, name) {
+  document.getElementById('modal-name').textContent = name;
+  document.getElementById('delete-form').action = '/employees/' + id + '/delete';
+  document.getElementById('delete-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('delete-modal').classList.remove('open'); }
+document.getElementById('delete-modal').addEventListener('click', e => { if(e.target===document.getElementById('delete-modal')) closeModal(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+</script>
+
+<%- include('partials/footer') %>
