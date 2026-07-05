@@ -122,6 +122,9 @@ CREATE TABLE staffs (
     email VARCHAR(100),
     phone VARCHAR(20),
     role VARCHAR(100) COMMENT 'Chức danh/vị trí công việc, vd: Lễ tân, Kế toán',
+    -- FIX: Đã thêm 2 cột 'department' và 'start_date' để khớp với requirements của Backend (employee.repository.js)
+    department VARCHAR(100),
+    start_date DATE,
     salary DECIMAL(12, 2) DEFAULT 0,
     status ENUM('active', 'inactive') DEFAULT 'active',
     user_id INT,
@@ -256,9 +259,8 @@ CREATE TABLE payments (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL ON UPDATE CASCADE,
-    -- FIX: Mỗi thanh toán phải tham chiếu ít nhất 1 trong 2: package hoặc course
-    CONSTRAINT chk_payment_ref CHECK (package_id IS NOT NULL OR course_id IS NOT NULL)
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL ON UPDATE CASCADE
+    -- FIX: Đã xóa constraint chk_payment_ref do MySQL báo lỗi xung đột giữa CHECK constraint và ON DELETE SET NULL ở khóa ngoại
 );
 
 CREATE INDEX idx_payments_code ON payments(payment_code);
@@ -326,6 +328,23 @@ CREATE TABLE notifications (
 
 CREATE INDEX idx_notifications_user ON notifications(user_id);
 CREATE INDEX idx_notifications_read ON notifications(is_read);
+
+-- =============================================
+-- 15. EMPLOYEE_SCHEDULE_ASSIGNMENTS TABLE
+-- FIX: Đã thêm bảng này để lưu trữ lịch phân ca của nhân viên (sử dụng bởi employee.repository.js)
+-- =============================================
+CREATE TABLE employee_schedule_assignments (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    employee_id INT NOT NULL,
+    shift_id VARCHAR(50) NOT NULL,
+    date DATE NOT NULL,
+    note TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES staffs(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_employee_schedule_assignments_date ON employee_schedule_assignments(date);
+CREATE INDEX idx_employee_schedule_assignments_employee ON employee_schedule_assignments(employee_id);
 
 -- =============================================
 -- TRIGGERS
