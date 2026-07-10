@@ -1,0 +1,93 @@
+<%- include('partials/header') %>
+
+<div class="page-head">
+  <div>
+    <h1 class="page-title">Phân quyền hệ thống</h1>
+    <p class="lede">Cấu hình quyền truy cập cho từng vai trò</p>
+  </div>
+</div>
+
+<% if (success) { %><div class="alert alert-success"><i class="ti ti-circle-check"></i> <%= success %></div><% } %>
+<% if (error)   { %><div class="alert alert-error"><i class="ti ti-alert-circle"></i> <%= error %></div><% } %>
+
+<div class="perm-layout">
+
+  <!-- ── Vai trò (left panel) ── -->
+  <div class="perm-role-panel">
+    <div class="perm-panel-title">Vai trò</div>
+    <% roles.forEach(function(r) { %>
+      <% const isActive = r.key === selectedRole; %>
+      <a href="/permissions?role=<%= r.key %>"
+         class="perm-role-item <%= isActive ? 'perm-role-active' : '' %>">
+        <span class="perm-role-label"><%= r.label %></span>
+        <span class="perm-role-count"><%= counts[r.key] || 0 %> quyền</span>
+      </a>
+    <% }) %>
+  </div>
+
+  <!-- ── Quyền hạn (right panel) ── -->
+  <div class="perm-content-panel">
+    <%
+      const roleObj = roles.find(r => r.key === selectedRole);
+      const isAdmin = selectedRole === 'admin';
+    %>
+    <div class="perm-content-header">
+      <h2 class="perm-content-title">
+        Quyền hạn – <span><%= roleObj ? roleObj.label : selectedRole %></span>
+      </h2>
+      <% if (!isAdmin) { %>
+      <button type="submit" form="perm-form" class="btn btn-primary">
+        <i class="ti ti-device-floppy"></i> Lưu thay đổi
+      </button>
+      <% } %>
+    </div>
+
+    <% if (isAdmin) { %>
+    <div class="perm-admin-notice">
+      <i class="ti ti-shield-check"></i>
+      Quản trị viên (Admin) có <strong>toàn quyền</strong> truy cập — không thể giới hạn.
+    </div>
+    <% } %>
+
+    <form id="perm-form" method="POST" action="/permissions/save">
+      <input type="hidden" name="role" value="<%= selectedRole %>" />
+
+      <% groups.forEach(function(group) { %>
+      <div class="perm-group">
+        <div class="perm-group-label"><%= group.label %></div>
+        <div class="perm-items-grid">
+          <% group.items.forEach(function(item) { %>
+            <% const isChecked = activePerms.has(item.key); %>
+            <label class="perm-item <%= isChecked ? 'perm-item-checked' : '' %>">
+              <div class="perm-checkbox-wrap">
+                <input
+                  type="checkbox"
+                  name="<%= item.key %>"
+                  class="perm-checkbox-input"
+                  <%= isChecked ? 'checked' : '' %>
+                  <%= isAdmin ? 'disabled' : '' %>
+                  onchange="toggleItem(this)"
+                />
+                <div class="perm-checkbox-box">
+                  <i class="ti ti-check perm-check-icon"></i>
+                </div>
+              </div>
+              <span class="perm-item-label"><%= item.label %></span>
+            </label>
+          <% }) %>
+        </div>
+      </div>
+      <% }) %>
+    </form>
+  </div>
+
+</div>
+
+<script>
+function toggleItem(cb) {
+  var label = cb.closest('.perm-item');
+  label.classList.toggle('perm-item-checked', cb.checked);
+}
+</script>
+
+<%- include('partials/footer') %>

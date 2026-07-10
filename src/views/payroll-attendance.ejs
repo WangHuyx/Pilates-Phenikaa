@@ -1,0 +1,165 @@
+<%- include('partials/header') %>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Bảng lương</p>
+    <h1 class="page-title">Điểm danh — <%= person.full_name %></h1>
+    <p class="lede">Tháng <%= month %></p>
+  </div>
+  <a href="/payroll?month=<%= month %>" class="btn btn-secondary"><i class="ti ti-arrow-left"></i> Quay lại</a>
+</div>
+
+<% if (success) { %><div class="alert alert-success"><i class="ti ti-circle-check"></i> <%= success %></div><% } %>
+<% if (error) { %><div class="alert alert-error"><i class="ti ti-alert-circle"></i> <%= error %></div><% } %>
+
+<!-- Thống kê tháng -->
+<div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+  <div class="stat-card" style="flex:1;min-width:140px;">
+    <p class="stat-card-label">Ngày có mặt</p>
+    <p class="stat-card-value"><%= counts.present %></p>
+    <div class="stat-card-icon stat-icon-green"><i class="ti ti-check"></i></div>
+  </div>
+  <div class="stat-card" style="flex:1;min-width:140px;">
+    <p class="stat-card-label">Ngày vắng</p>
+    <p class="stat-card-value"><%= counts.absent %></p>
+    <div class="stat-card-icon stat-icon-orange"><i class="ti ti-x"></i></div>
+  </div>
+  <div class="stat-card" style="flex:1;min-width:140px;">
+    <p class="stat-card-label">Đã điểm danh</p>
+    <p class="stat-card-value"><%= counts.total %> / <%= days.length %></p>
+    <div class="stat-card-icon stat-icon-blue"><i class="ti ti-calendar-check"></i></div>
+  </div>
+  <div class="stat-card" style="flex:1;min-width:140px;">
+    <p class="stat-card-label">Lương cơ bản</p>
+    <p class="stat-card-value" style="font-size:1rem;"><%= Number(person.salary||0).toLocaleString('vi-VN') %>đ</p>
+    <div class="stat-card-icon stat-icon-amber"><i class="ti ti-coin"></i></div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;">
+
+  <!-- Calendar điểm danh -->
+  <div class="card">
+    <div class="card-header"><span class="card-title"><i class="ti ti-calendar-check"></i> Lịch điểm danh tháng <%= month %></span></div>
+    <div style="padding:16px;">
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;margin-bottom:8px;">
+        <% ['CN','T2','T3','T4','T5','T6','T7'].forEach(d => { %>
+          <div style="font-size:0.72rem;font-weight:600;color:var(--color-ink-soft);padding:4px;"><%= d %></div>
+        <% }) %>
+      </div>
+      <%
+        // Xác định ngày đầu tháng là thứ mấy
+        const firstDay = new Date(month + '-01').getDay(); // 0=CN
+        const totalCells = firstDay + days.length;
+        const rows2 = Math.ceil(totalCells / 7);
+      %>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;">
+        <% for (let cell = 0; cell < rows2*7; cell++) { %>
+          <% const dayIdx = cell - firstDay; %>
+          <% if (dayIdx < 0 || dayIdx >= days.length) { %>
+            <div></div>
+          <% } else { %>
+            <% const d = days[dayIdx]; %>
+            <%
+              let bgColor = 'var(--color-bg)';
+              let textColor = 'var(--color-ink)';
+              let label = '';
+              if (d.isWeekend) { bgColor='#f5f5f5'; textColor='#aaa'; }
+              if (d.rec) {
+                if (d.rec.status==='present')  { bgColor='#d8f3dc'; textColor='#1b5e34'; label='✓'; }
+                if (d.rec.status==='absent')   { bgColor='#fbeae8'; textColor='#c0392b'; label='✗'; }
+                if (d.rec.status==='late')     { bgColor='#fff3cd'; textColor='#7c4700'; label='T'; }
+                if (d.rec.status==='half_day') { bgColor='#d1eaff'; textColor='#1a4f7a'; label='½'; }
+              }
+            %>
+            <div
+              onclick="openMarkModal('<%= d.date %>','<%= d.rec ? d.rec.status : 'present' %>','<%= d.rec ? d.rec.id : '' %>')"
+              style="background:<%= bgColor %>;color:<%= textColor %>;border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;border:1.5px solid <%= d.rec ? 'transparent' : 'var(--color-rail)' %>;transition:all .15s;"
+              title="<%= d.date %>"
+            >
+              <div style="font-size:0.78rem;font-weight:600;"><%= d.day %></div>
+              <div style="font-size:0.65rem;margin-top:2px;"><%= label %></div>
+            </div>
+          <% } %>
+        <% } %>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;font-size:0.78rem;">
+        <span style="display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;border-radius:4px;background:#d8f3dc;display:inline-block;"></span> Có mặt</span>
+        <span style="display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;border-radius:4px;background:#fbeae8;display:inline-block;"></span> Vắng</span>
+        <span style="display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;border-radius:4px;background:#fff3cd;display:inline-block;"></span> Đi trễ</span>
+        <span style="display:flex;align-items:center;gap:4px;"><span style="width:14px;height:14px;border-radius:4px;background:#d1eaff;display:inline-block;"></span> Nửa ngày</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Danh sách điểm danh -->
+  <div class="card">
+    <div class="card-header"><span class="card-title"><i class="ti ti-list"></i> Chi tiết</span></div>
+    <div style="overflow-y:auto;max-height:500px;">
+      <table class="table">
+        <thead><tr><th>Ngày</th><th>Trạng thái</th></tr></thead>
+        <tbody>
+          <% const markedDays = days.filter(d => d.rec); %>
+          <% if (!markedDays.length) { %>
+            <tr><td colspan="2" style="text-align:center;color:var(--color-ink-soft);padding:20px;">Chưa điểm danh ngày nào.</td></tr>
+          <% } %>
+          <% markedDays.forEach(d => { %>
+          <tr>
+            <td style="font-size:0.85rem;"><%= new Date(d.date).toLocaleDateString('vi-VN') %></td>
+            <td>
+              <% const stMap={present:['Có mặt','#d8f3dc','#1b5e34'],absent:['Vắng','#fbeae8','#c0392b'],late:['Đi trễ','#fff3cd','#7c4700'],half_day:['Nửa ngày','#d1eaff','#1a4f7a']}; %>
+              <% const [stL,stBg,stC] = stMap[d.rec.status]||stMap.present; %>
+              <span class="badge" style="background:<%= stBg %>;color:<%= stC %>;border:none;"><%= stL %></span>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal điểm danh -->
+<div id="mark-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:28px;width:360px;max-width:92vw;">
+    <h3 style="margin:0 0 4px;font-size:1rem;">Điểm danh</h3>
+    <p id="mark-date-label" style="margin:0 0 16px;color:var(--color-ink-soft);font-size:0.88rem;"></p>
+    <form method="POST" action="/payroll/attendance">
+      <input type="hidden" name="employee_type" value="<%= type %>" />
+      <input type="hidden" name="employee_ref_id" value="<%= person.id %>" />
+      <input type="hidden" name="work_date" id="mark-date" />
+      <div class="form-group">
+        <label>Trạng thái</label>
+        <select name="status" id="mark-status">
+          <option value="present">Có mặt</option>
+          <option value="absent">Vắng</option>
+          <option value="late">Đi trễ</option>
+          <option value="half_day">Nửa ngày</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>Ghi chú</label>
+        <input type="text" name="note" id="mark-note" placeholder="Lý do..." />
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn btn-primary" type="submit"><i class="ti ti-check"></i> Lưu</button>
+        <button class="btn btn-secondary" type="button" onclick="closeMarkModal()">Hủy</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openMarkModal(date, currentStatus, recId) {
+  document.getElementById('mark-date').value = date;
+  document.getElementById('mark-status').value = currentStatus || 'present';
+  document.getElementById('mark-note').value = '';
+  document.getElementById('mark-date-label').textContent = 'Ngày: ' + new Date(date).toLocaleDateString('vi-VN');
+  document.getElementById('mark-modal').style.display = 'flex';
+}
+function closeMarkModal() { document.getElementById('mark-modal').style.display = 'none'; }
+document.getElementById('mark-modal').addEventListener('click', function(e){ if(e.target===this) closeMarkModal(); });
+</script>
+
+<%- include('partials/footer') %>

@@ -1,19 +1,31 @@
 <%- include('partials/header', { title, user }) %>
 
 <div class="page-head">
-  <p class="eyebrow">Class schedule</p>
-  <h1><em>Find your next</em> session</h1>
-  <p class="lede">Reserve a spot below — capacity updates the moment you book.</p>
+  <div>
+    <p class="eyebrow">Lịch học</p>
+    <h1>Chọn lớp học của bạn</h1>
+    <p class="lede">Đăng ký ngay bên dưới — số chỗ trống cập nhật theo thời gian thực.</p>
+  </div>
+  <% if (user.role === 'admin' || user.role === 'staff') { %>
+  <a href="/classes/manage" class="btn btn-secondary"><i class="ti ti-settings"></i> Quản lý lớp học</a>
+  <% } %>
 </div>
 
 <% if (message) { %>
-  <div class="alert alert-info"><%= message %></div>
+  <div class="alert alert-info"><i class="ti ti-info-circle" style="flex-shrink:0"></i><span><%= message %></span></div>
 <% } %>
 
-<div class="class-grid">
-  <% classes.forEach(function (classItem) { %>
-    <%- include('partials/class-card', { classItem, user, showRegister: true }) %>
-  <% }); %>
-</div>
+<% if (classes.length === 0) { %>
+  <div class="empty-state">
+    <h1>Chưa có lớp học nào</h1>
+    <p>Hiện tại chưa có lớp học nào được lên lịch. Vui lòng quay lại sau.</p>
+  </div>
+<% } else { %>
+  <div class="class-grid">
+    <% classes.forEach(function (classItem) { %>
+      <%- include('partials/class-card', { classItem, user, showRegister: true }) %>
+    <% }); %>
+  </div>
+<% } %>
 
 <%- include('partials/footer') %>

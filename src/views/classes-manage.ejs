@@ -1,0 +1,101 @@
+<%- include('partials/header') %>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Lớp học</p>
+    <h1 class="page-title">Quản lý lớp học</h1>
+    <p class="lede">Thêm, sửa, xóa lớp học và xem danh sách học viên</p>
+  </div>
+  <a href="/classes" class="btn btn-secondary"><i class="ti ti-eye"></i> Xem lịch học</a>
+</div>
+
+<% if (success) { %><div class="alert alert-success"><i class="ti ti-circle-check"></i> <%= success %></div><% } %>
+<% if (error) { %><div class="alert alert-error"><i class="ti ti-alert-circle"></i> <%= error %></div><% } %>
+
+<div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;">
+
+  <div class="card">
+    <div class="card-header"><span class="card-title"><i class="ti ti-calendar"></i> Danh sách lớp học (<%= classes.length %>)</span></div>
+    <div style="overflow-x:auto;">
+      <table class="table">
+        <thead><tr><th>Tên lớp</th><th>HLV</th><th>Thứ</th><th>Giờ</th><th>Cấp độ</th><th>Sĩ số</th><th></th></tr></thead>
+        <tbody>
+          <% if (!classes.length) { %>
+            <tr><td colspan="7" style="text-align:center;color:var(--color-ink-soft);padding:32px;">Chưa có lớp học nào.</td></tr>
+          <% } %>
+          <% classes.forEach(c => { %>
+          <tr>
+            <td><strong><%= c.name %></strong></td>
+            <td style="font-size:0.88rem;"><%= c.instructor %></td>
+            <td><%= c.day %></td>
+            <td><%= c.time %></td>
+            <td><span class="badge"><%= {Beginner:'Cơ bản',Intermediate:'Trung cấp',Advanced:'Nâng cao','All levels':'Mọi cấp độ'}[c.level]||c.level %></span></td>
+            <td>
+              <% const enrolled = c.enrolledUserIds ? c.enrolledUserIds.length : 0; %>
+              <span style="<%= enrolled>=c.capacity?'color:#c0392b;font-weight:600':'' %>"><%= enrolled %>/<%= c.capacity %></span>
+            </td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <a href="/classes/<%= c.id %>/edit" class="btn-icon" title="Sửa"><i class="ti ti-edit"></i></a>
+                <form method="POST" action="/classes/<%= c.id %>/delete" onsubmit="return confirm('Xóa lớp học này và toàn bộ đăng ký?')">
+                  <button class="btn-icon btn-danger" type="submit"><i class="ti ti-trash"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title"><i class="ti ti-plus"></i> Thêm lớp học</span></div>
+    <div class="card-body">
+      <form method="POST" action="/classes/create">
+        <div class="form-group">
+          <label>Tên lớp <span class="req">*</span></label>
+          <input type="text" name="name" placeholder="VD: Reformer Cơ bản" required />
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Huấn luyện viên <span class="req">*</span></label>
+          <input type="text" name="instructor" placeholder="Tên HLV" required />
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Thứ <span class="req">*</span></label>
+          <select name="day" required>
+            <option value="">-- Chọn thứ --</option>
+            <option value="Thứ Hai">Thứ Hai</option>
+            <option value="Thứ Ba">Thứ Ba</option>
+            <option value="Thứ Tư">Thứ Tư</option>
+            <option value="Thứ Năm">Thứ Năm</option>
+            <option value="Thứ Sáu">Thứ Sáu</option>
+            <option value="Thứ Bảy">Thứ Bảy</option>
+            <option value="Chủ Nhật">Chủ Nhật</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Giờ học <span class="req">*</span></label>
+          <input type="text" name="time" placeholder="VD: 08:00 - 09:00" required />
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Cấp độ</label>
+          <select name="level">
+            <option value="All levels">Mọi cấp độ</option>
+            <option value="Beginner">Cơ bản</option>
+            <option value="Intermediate">Trung cấp</option>
+            <option value="Advanced">Nâng cao</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Sĩ số tối đa</label>
+          <input type="number" name="capacity" value="10" min="1" max="50" />
+        </div>
+        <button class="btn btn-primary" type="submit" style="margin-top:16px;width:100%;"><i class="ti ti-plus"></i> Tạo lớp học</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>

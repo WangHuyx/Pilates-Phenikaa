@@ -17,6 +17,14 @@ const authRoutes = require('./routes/auth.routes');
 const classRoutes = require('./routes/class.routes');
 const accountRoutes  = require('./routes/account.routes');
 const employeeRoutes = require('./routes/employee.routes');
+const packageRoutes   = require('./routes/package.routes');
+const checkinRoutes   = require('./routes/checkin.routes');
+const financeRoutes   = require('./routes/finance.routes');
+const reportsRoutes   = require('./routes/reports.routes');
+const trainerRoutes     = require('./routes/trainer.routes');
+const equipmentRoutes   = require('./routes/equipment.routes');
+const payrollRoutes     = require('./routes/payroll.routes');
+const permissionsRoutes = require('./routes/permissions.routes');
 const { notFoundHandler, errorHandler } = require('./middleware/error.middleware');
 
 const app = express();
@@ -50,6 +58,14 @@ app.use('/', authRoutes);
 app.use('/', classRoutes);
 app.use('/accounts',  accountRoutes);
 app.use('/employees', employeeRoutes);
+app.use('/packages',  packageRoutes);
+app.use('/checkin',   checkinRoutes);
+app.use('/finance',   financeRoutes);
+app.use('/reports',   reportsRoutes);
+app.use('/trainers',     trainerRoutes);
+app.use('/equipment',   equipmentRoutes);
+app.use('/payroll',     payrollRoutes);
+app.use('/permissions', permissionsRoutes);
 
 // --- Catch-alls (must be registered last) -------------------------------
 app.use(notFoundHandler);

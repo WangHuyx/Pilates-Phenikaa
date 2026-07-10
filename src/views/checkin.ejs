@@ -1,0 +1,140 @@
+<%- include('partials/header') %>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Điểm danh</p>
+    <h1 class="page-title">Check-in / Chấm công</h1>
+    <p class="lede">Ghi nhận vào/ra phòng tập</p>
+  </div>
+  <a href="/checkin/history" class="btn btn-secondary"><i class="ti ti-history"></i> Lịch sử điểm danh</a>
+</div>
+
+<% if (success) { %>
+  <div class="alert alert-success"><i class="ti ti-circle-check"></i> <%= success %></div>
+<% } %>
+<% if (error) { %>
+  <div class="alert alert-error"><i class="ti ti-alert-circle"></i> <%= error %></div>
+<% } %>
+
+<!-- Ô nhập mã check-in -->
+<div style="display:flex;justify-content:center;margin-bottom:28px;">
+  <div class="card" style="width:100%;max-width:560px;text-align:center;">
+    <div class="card-body" style="padding:36px 32px;">
+      <div style="width:56px;height:56px;border-radius:14px;background:var(--color-mint);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.6rem;">
+        <i class="ti ti-scan" style="color:var(--color-moss-dark);"></i>
+      </div>
+      <h2 style="font-size:1.1rem;font-weight:600;margin:0 0 6px;">Nhập mã Check-in</h2>
+      <p style="color:var(--color-ink-soft);font-size:0.88rem;margin:0 0 20px;">Nhập mã hội viên, số điện thoại hoặc quét thẻ</p>
+      <form method="POST" action="/checkin/by-code" style="display:flex;gap:0;">
+        <div style="position:relative;flex:1;">
+          <i class="ti ti-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--color-ink-soft);font-size:1rem;pointer-events:none;"></i>
+          <input
+            type="text"
+            name="code"
+            id="checkin-code"
+            placeholder="HV001 HOẶC 0901234567"
+            autofocus
+            autocomplete="off"
+            style="width:100%;padding:13px 14px 13px 40px;border:1.5px solid var(--color-rail);border-right:none;border-radius:var(--radius-md) 0 0 var(--radius-md);font-size:0.95rem;background:var(--color-bg);color:var(--color-ink);font-family:var(--font-mono);"
+          />
+        </div>
+        <button type="submit" style="padding:13px 22px;background:var(--color-moss-dark);color:#fff;border:none;border-radius:0 var(--radius-md) var(--radius-md) 0;cursor:pointer;font-size:1rem;display:flex;align-items:center;gap:6px;font-weight:500;transition:background .15s;">
+          <i class="ti ti-arrow-right"></i>
+        </button>
+      </form>
+      <p style="margin:10px 0 0;font-size:0.8rem;color:var(--color-ink-soft);">Demo: thử <strong><%= demoCodes %></strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- 2 cột: đang trong phòng | lịch sử hôm nay -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+  <!-- Đang trong phòng tập -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="ti ti-door-enter"></i> Đang trong phòng tập</span>
+      <span style="background:var(--color-moss);color:#fff;font-size:0.75rem;font-weight:600;padding:3px 10px;border-radius:999px;"><%= currentlyIn.length %> người</span>
+    </div>
+    <div style="padding:8px 0;">
+      <% if (currentlyIn.length === 0) { %>
+        <div style="text-align:center;padding:32px;color:var(--color-ink-soft);">
+          <i class="ti ti-door-enter" style="font-size:2rem;opacity:.3;display:block;margin-bottom:8px;"></i>
+          Chưa có ai trong phòng tập
+        </div>
+      <% } %>
+      <% currentlyIn.forEach(c => { %>
+      <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--color-rail);">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--color-mint);color:var(--color-moss-dark);font-weight:700;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <%= c.full_name.trim().split(' ').pop()[0].toUpperCase() %>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:0.92rem;"><%= c.full_name %></div>
+          <div style="font-size:0.8rem;color:var(--color-ink-soft);display:flex;align-items:center;gap:4px;">
+            <i class="ti ti-clock"></i>
+            Vào: <%= new Date(c.check_in_time).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}) %>
+          </div>
+        </div>
+        <form method="POST" action="/checkin/<%= c.id %>/checkout">
+          <button type="submit" style="display:flex;align-items:center;gap:5px;padding:6px 14px;border:1.5px solid var(--color-rail);border-radius:var(--radius-md);background:#fff;color:var(--color-moss-dark);font-size:0.82rem;font-weight:500;cursor:pointer;white-space:nowrap;">
+            <i class="ti ti-door-exit"></i> Ra
+          </button>
+        </form>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <!-- Lịch sử hôm nay -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="ti ti-list-check"></i> Lịch sử hôm nay</span>
+      <span style="background:var(--color-rail);color:var(--color-ink-soft);font-size:0.75rem;font-weight:600;padding:3px 10px;border-radius:999px;"><%= todayCount %> lượt</span>
+    </div>
+    <div style="padding:8px 0;">
+      <% if (todayAll.length === 0) { %>
+        <div style="text-align:center;padding:32px;color:var(--color-ink-soft);">
+          <i class="ti ti-calendar-off" style="font-size:2rem;opacity:.3;display:block;margin-bottom:8px;"></i>
+          Chưa có check-in nào hôm nay
+        </div>
+      <% } %>
+      <% todayAll.forEach(c => { %>
+      <div style="display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--color-rail);">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--color-mint);color:var(--color-moss-dark);font-weight:700;font-size:0.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <%= c.full_name.trim().split(' ').pop()[0].toUpperCase() %>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:0.9rem;"><%= c.full_name %></div>
+          <div style="font-size:0.78rem;color:var(--color-ink-soft);">
+            Vào: <%= new Date(c.check_in_time).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}) %>
+            <% if (c.check_out_time) { %>
+              · Ra: <%= new Date(c.check_out_time).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}) %>
+            <% } %>
+          </div>
+        </div>
+        <% if (!c.check_out_time) { %>
+          <span style="font-size:0.75rem;font-weight:600;color:var(--color-moss-dark);background:var(--color-mint);padding:3px 10px;border-radius:999px;white-space:nowrap;">Đang tập</span>
+        <% } else { %>
+          <span style="font-size:0.75rem;color:var(--color-ink-soft);white-space:nowrap;">
+            <%
+              const dur = Math.round((new Date(c.check_out_time) - new Date(c.check_in_time)) / 60000);
+              const h = Math.floor(dur/60), m = dur%60;
+            %>
+            Ra: <%= h>0?h+'g ':'' %><%= m %>ph
+          </span>
+        <% } %>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Auto-focus + Enter submit
+document.getElementById('checkin-code').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { this.closest('form').submit(); }
+});
+</script>
+
+<%- include('partials/footer') %>

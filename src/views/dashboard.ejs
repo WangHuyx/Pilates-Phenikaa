@@ -1,31 +1,131 @@
 <%- include('partials/header', { title, user }) %>
 
-<div class="page-head">
-  <p class="eyebrow">Dashboard</p>
-  <h1>Welcome back, <em><%= user.fullName %></em></h1>
-  <p class="lede">Pick up where you left off.</p>
-</div>
+<%# ── Stats Row ── %>
+<div class="stats-grid">
 
-<div class="quick-links">
-  <a class="quick-card" href="/classes">
-    <span class="quick-card-label">Browse schedule</span>
-    <span class="quick-card-desc"><%= classes.length %> classes running this week</span>
-  </a>
-  <a class="quick-card" href="/my-bookings">
-    <span class="quick-card-label">My bookings</span>
-    <span class="quick-card-desc">Review what you've reserved</span>
-  </a>
-</div>
-
-<h2 class="section-title">This week's rail</h2>
-<div class="schedule-strip">
-  <% classes.forEach(function (c) { %>
-    <div class="strip-row">
-      <span class="strip-time"><%= c.day %> · <%= c.time %></span>
-      <span class="strip-name"><%= c.name %></span>
-      <span class="strip-instructor"><%= c.instructor %></span>
+  <div class="stat-card">
+    <div>
+      <p class="stat-card-label">Hội viên</p>
+      <p class="stat-card-value"><%= stats.totalMembers %></p>
+      <p class="stat-card-sub">Tổng số tài khoản hội viên</p>
     </div>
-  <% }); %>
+    <div class="stat-card-icon stat-icon-green">
+      <i class="ti ti-users"></i>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div>
+      <p class="stat-card-label">Lớp học tuần này</p>
+      <p class="stat-card-value"><%= stats.totalClasses %></p>
+      <p class="stat-card-sub">Lớp đang hoạt động</p>
+    </div>
+    <div class="stat-card-icon stat-icon-blue">
+      <i class="ti ti-calendar"></i>
+    </div>
+  </div>
+
+  <% if (user.role === 'admin' || user.role === 'staff') { %>
+  <div class="stat-card">
+    <div>
+      <p class="stat-card-label">Nhân viên</p>
+      <p class="stat-card-value"><%= stats.totalEmployees %></p>
+      <p class="stat-card-sub">Đang làm việc</p>
+    </div>
+    <div class="stat-card-icon stat-icon-amber">
+      <i class="ti ti-briefcase"></i>
+    </div>
+  </div>
+  <% } else { %>
+  <div class="stat-card">
+    <div>
+      <p class="stat-card-label">Lớp đã đăng ký</p>
+      <p class="stat-card-value"><%= stats.myBookings %></p>
+      <p class="stat-card-sub">Của bạn</p>
+    </div>
+    <div class="stat-card-icon stat-icon-amber">
+      <i class="ti ti-bookmark"></i>
+    </div>
+  </div>
+  <% } %>
+
+  <div class="stat-card">
+    <div>
+      <p class="stat-card-label">Chỗ đã đặt</p>
+      <p class="stat-card-value"><%= stats.myBookings %></p>
+      <p class="stat-card-sub">Lớp đã đăng ký của bạn</p>
+    </div>
+    <div class="stat-card-icon stat-icon-orange">
+      <i class="ti ti-ticket"></i>
+    </div>
+  </div>
+
+</div>
+
+<%# ── Main Content Grid ── %>
+<div class="dash-grid">
+
+  <%# Left: Schedule list %>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="ti ti-calendar-week"></i> Lịch học tuần này</span>
+      <a href="/classes" class="btn btn-sm btn-secondary">Xem tất cả →</a>
+    </div>
+
+    <% if (classes.length === 0) { %>
+      <div style="padding:32px 20px;text-align:center;color:var(--color-ink-soft);font-size:0.88rem">
+        <i class="ti ti-calendar-off" style="font-size:2rem;display:block;margin-bottom:10px;opacity:0.4"></i>
+        Chưa có lớp học nào được lên lịch.
+      </div>
+    <% } else { %>
+      <% classes.forEach(function(c) { %>
+        <div class="strip-row">
+          <span class="strip-time"><%= c.day %> · <%= c.time %></span>
+          <span class="strip-name"><%= c.name %></span>
+          <span class="strip-instructor">HLV <%= c.instructor %></span>
+        </div>
+      <% }); %>
+    <% } %>
+  </div>
+
+  <%# Right: Quick actions %>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="ti ti-zap"></i> Truy cập nhanh</span>
+    </div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+
+      <a href="/classes" class="quick-action">
+        <i class="ti ti-calendar"></i>
+        Xem lịch lớp học
+      </a>
+
+      <a href="/my-bookings" class="quick-action">
+        <i class="ti ti-bookmark"></i>
+        Lớp của tôi
+      </a>
+
+      <% if (user.role === 'admin' || user.role === 'staff') { %>
+      <a href="/accounts" class="quick-action">
+        <i class="ti ti-users"></i>
+        Quản lý hội viên
+      </a>
+      <% } %>
+
+      <% if (user.role === 'admin') { %>
+      <a href="/employees" class="quick-action">
+        <i class="ti ti-briefcase"></i>
+        Quản lý nhân viên
+      </a>
+      <a href="/employees/schedule" class="quick-action">
+        <i class="ti ti-calendar-stats"></i>
+        Lịch phân ca
+      </a>
+      <% } %>
+
+    </div>
+  </div>
+
 </div>
 
 <%- include('partials/footer') %>

@@ -1,20 +1,42 @@
 <%- include('partials/header', { title, user }) %>
 
 <div class="page-head">
-  <p class="eyebrow">My bookings</p>
-  <h1>Your <em>reserved</em> classes</h1>
+  <p class="eyebrow">Lớp đã đặt</p>
+  <h1>Lớp học đã đăng ký </h1>
+  <p class="lede">Danh sách các lớp bạn đã đặt chỗ.</p>
 </div>
 
 <% if (myClasses.length === 0) { %>
   <div class="empty-state">
-    <p>You haven't booked a class yet.</p>
-    <a class="btn btn-primary" href="/classes">Browse the schedule</a>
+    <h1>Chưa có lớp nào</h1>
+    <p>Bạn chưa đăng ký lớp học nào. Khám phá lịch học và đặt chỗ ngay!</p>
+    <a class="btn btn-primary" href="/classes">Xem lịch học</a>
   </div>
 <% } else { %>
-  <div class="class-grid">
-    <% myClasses.forEach(function (classItem) { %>
-      <%- include('partials/class-card', { classItem, user, showRegister: false }) %>
-    <% }); %>
+  <div class="card">
+    <div class="card-header"><span class="card-title"><i class="ti ti-bookmark"></i> Lớp học đã đặt (<%= myClasses.length %>)</span></div>
+    <div style="overflow-x:auto;">
+      <table class="table">
+        <thead><tr><th>Tên lớp</th><th>HLV</th><th>Thứ</th><th>Giờ</th><th>Cấp độ</th><th>Sĩ số</th><th></th></tr></thead>
+        <tbody>
+          <% myClasses.forEach(function (c) { %>
+          <tr>
+            <td><strong><%= c.name %></strong></td>
+            <td style="font-size:0.88rem;"><%= c.instructor %></td>
+            <td><%= c.day %></td>
+            <td><%= c.time %></td>
+            <td><span class="badge"><%= {Beginner:'Cơ bản',Intermediate:'Trung cấp',Advanced:'Nâng cao','All levels':'Mọi cấp độ'}[c.level]||c.level %></span></td>
+            <td><%= c.enrolledUserIds ? c.enrolledUserIds.length : 0 %>/<%= c.capacity %></td>
+            <td>
+              <form method="POST" action="/classes/<%= c.id %>/cancel" onsubmit="return confirm('Hủy đặt chỗ lớp này?')">
+                <button class="btn btn-sm btn-secondary" type="submit" style="color:#c0392b;border-color:#f0b8b4;"><i class="ti ti-x"></i> Hủy</button>
+              </form>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
   </div>
 <% } %>
 

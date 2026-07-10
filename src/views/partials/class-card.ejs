@@ -1,48 +1,51 @@
 <%
-  // Small bit of view-level logic — fine to keep in the template since
-  // it's purely about *display*, not business rules (those live in
-  // class.service.js).
   const spotsTaken = classItem.enrolledUserIds.length;
   const spotsLeft = classItem.capacity - spotsTaken;
   const isFull = spotsLeft <= 0;
   const isBooked = typeof user !== 'undefined' && user && classItem.enrolledUserIds.includes(user.id);
 
-  // Maps a class level to a "spring colour" tag — a nod to how
-  // reformer resistance springs are colour-coded by intensity.
   const levelToSpring = {
-    'Beginner': 'spring-light',
+    'Beginner':     'spring-light',
     'Intermediate': 'spring-medium',
-    'Advanced': 'spring-heavy',
-    'All levels': 'spring-all',
+    'Advanced':     'spring-heavy',
+    'All levels':   'spring-all',
   };
   const springClass = levelToSpring[classItem.level] || 'spring-all';
+
+  const levelLabel = {
+    'Beginner':     'Cơ bản',
+    'Intermediate': 'Trung cấp',
+    'Advanced':     'Nâng cao',
+    'All levels':   'Mọi cấp độ',
+  };
+  const displayLevel = levelLabel[classItem.level] || classItem.level;
 %>
 <article class="class-card">
   <span class="class-card-rail"></span>
   <div class="class-card-body">
     <div class="class-card-top">
-      <span class="spring-tag <%= springClass %>"><%= classItem.level %></span>
+      <span class="spring-tag <%= springClass %>"><%= displayLevel %></span>
       <span class="class-time"><%= classItem.day %> · <%= classItem.time %></span>
     </div>
 
     <h3 class="class-name"><%= classItem.name %></h3>
-    <p class="class-instructor">with <%= classItem.instructor %></p>
+    <p class="class-instructor">HLV <%= classItem.instructor %></p>
 
-    <div class="capacity-row" aria-label="<%= spotsTaken %> of <%= classItem.capacity %> spots booked">
+    <div class="capacity-row" aria-label="<%= spotsTaken %>/<%= classItem.capacity %> chỗ đã đặt">
       <% for (let i = 0; i < classItem.capacity; i++) { %>
         <span class="capacity-dot<%= i < spotsTaken ? ' is-filled' : '' %>"></span>
       <% } %>
-      <span class="capacity-label"><%= spotsTaken %>/<%= classItem.capacity %></span>
+      <span class="capacity-label"><%= spotsTaken %>/<%= classItem.capacity %> chỗ</span>
     </div>
 
     <% if (typeof showRegister !== 'undefined' && showRegister) { %>
       <% if (isBooked) { %>
-        <button class="btn btn-ghost" type="button" disabled>Booked ✓</button>
+        <button class="btn btn-secondary" type="button" disabled style="opacity:0.7;cursor:not-allowed">✓ Đã đặt chỗ</button>
       <% } else if (isFull) { %>
-        <button class="btn btn-ghost" type="button" disabled>Full</button>
+        <button class="btn btn-secondary" type="button" disabled style="opacity:0.6;cursor:not-allowed">Hết chỗ</button>
       <% } else { %>
         <form method="POST" action="/classes/<%= classItem.id %>/register">
-          <button type="submit" class="btn btn-primary">Reserve spot</button>
+          <button type="submit" class="btn btn-primary">Đặt chỗ ngay</button>
         </form>
       <% } %>
     <% } %>
