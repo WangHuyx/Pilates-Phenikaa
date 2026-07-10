@@ -67,7 +67,7 @@
          <%= new Date(weekEnd).toLocaleDateString('vi-VN') %>
   </span>
   <a href="/employees/schedule?week=<%= nextWeek %>" class="btn btn-secondary">Tuần sau →</a>
-  <a href="/employees/schedule" class="btn btn-warn btn-sm">📅 Tuần này</a>
+  <a href="/employees/schedule" class="btn btn-warn btn-sm">Tuần này</a>
 </div>
 
 <%/* ── CHÚ THÍCH CA ── */%>
@@ -157,7 +157,7 @@
 
 <%/* ── FORM PHÂN CA CHI TIẾT (dành cho nhân viên ngừng hoạt động hoặc phân ca có ghi chú) ── */%>
 <div class="card" style="margin-top:24px;max-width:580px">
-  <div class="card-header"><span class="card-title">📌 Phân ca nâng cao (có ghi chú)</span></div>
+  <div class="card-header"><span class="card-title"> Phân ca nâng cao (có ghi chú)</span></div>
   <div class="card-body">
     <form action="/employees/schedule/assign" method="POST">
       <input type="hidden" name="week" value="<%= weekStart %>">
@@ -188,7 +188,7 @@
           <input type="text" id="adv-note" name="note" placeholder="Họp, sự kiện...">
         </div>
         <div class="form-group full" style="text-align:right">
-          <button type="submit" class="btn btn-primary">📌 Phân ca</button>
+          <button type="submit" class="btn btn-primary"> Phân ca</button>
         </div>
       </div>
     </form>

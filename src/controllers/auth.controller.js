@@ -30,6 +30,9 @@ async function handleLogin(req, res, next) {
     // Storing the (already password-stripped) user on the session
     // is what "remembers" the visitor across requests.
     req.session.user = result.user;
+    if (req.body.remember === 'on') {
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 ngày
+    }
     res.redirect('/dashboard');
   } catch (err) {
     next(err);

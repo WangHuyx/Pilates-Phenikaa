@@ -1,7 +1,7 @@
 <%/* views/employees.ejs */%>
 <%- include('partials/header') %>
 
-<div class="page-eyebrow">System Administration › 1.2</div>
+<div class="page-eyebrow">Quản trị hệ thống › Nhân viên</div>
 <h1 class="page-title">Quản lý nhân viên</h1>
 <p class="page-sub">Thêm, cập nhật, xóa nhân viên và xem lịch phân ca làm việc.</p>
 
@@ -12,23 +12,23 @@
 <%/* ── THỐNG KÊ NHANH ── */%>
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px">
   <div class="card" style="padding:18px 22px">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:6px">Tổng nhân viên</div>
-    <div style="font-size:28px;font-weight:600;color:#1B4332"><%= total %></div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-moss);margin-bottom:6px">Tổng nhân viên</div>
+    <div style="font-size:28px;font-weight:700;color:var(--color-moss-dark)"><%= total %></div>
   </div>
   <div class="card" style="padding:18px 22px">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:6px">Đang làm việc</div>
-    <div style="font-size:28px;font-weight:600;color:#1B4332"><%= totalActive %></div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-moss);margin-bottom:6px">Đang làm việc</div>
+    <div style="font-size:28px;font-weight:700;color:var(--color-moss-dark)"><%= totalActive %></div>
   </div>
   <div class="card" style="padding:18px 22px">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#999;margin-bottom:6px">Nghỉ việc / tạm nghỉ</div>
-    <div style="font-size:28px;font-weight:600;color:#BA7517"><%= totalInactive %></div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-moss);margin-bottom:6px">Nghỉ việc / tạm nghỉ</div>
+    <div style="font-size:28px;font-weight:700;color:#D97706"><%= totalInactive %></div>
   </div>
 </div>
 
 <%/* ── FORM THÊM NHÂN VIÊN ── */%>
 <div class="card" style="margin-bottom:24px">
   <div class="card-header">
-    <span class="card-title">➕ Thêm nhân viên mới</span>
+    <span class="card-title">Thêm nhân viên mới</span>
   </div>
   <div class="card-body">
     <form action="/employees/create" method="POST">
@@ -69,7 +69,7 @@
         </div>
       </div>
       <div style="margin-top:16px">
-        <button type="submit" class="btn btn-primary">➕ Thêm nhân viên</button>
+        <button type="submit" class="btn btn-primary"> Thêm nhân viên</button>
       </div>
     </form>
   </div>
@@ -78,7 +78,7 @@
 <%/* ── DANH SÁCH ── */%>
 <div class="card">
   <div class="card-header">
-    <span class="card-title">👥 Danh sách nhân viên</span>
+    <span class="card-title"> Danh sách nhân viên</span>
     <div style="display:flex;gap:8px;align-items:center">
       <%/* Filter */%>
       <a href="/employees?status=all"
@@ -87,7 +87,7 @@
          class="btn btn-sm <%= filterStatus==='active'?'btn-primary':'btn-secondary' %>">Đang làm (<%= totalActive %>)</a>
       <a href="/employees?status=inactive"
          class="btn btn-sm <%= filterStatus==='inactive'?'btn-primary':'btn-secondary' %>">Nghỉ (<%= totalInactive %>)</a>
-      <a href="/employees/schedule" class="btn btn-warn btn-sm">📅 Xem lịch phân ca</a>
+      <a href="/employees/schedule" class="btn btn-warn btn-sm"> Xem lịch phân ca</a>
     </div>
   </div>
   <div class="table-wrap">
@@ -138,9 +138,9 @@
           </td>
           <td>
             <div class="td-actions">
-              <a href="/employees/<%= emp.id %>/edit" class="btn btn-secondary btn-sm">✏️ Sửa</a>
+              <a href="/employees/<%= emp.id %>/edit" class="btn btn-secondary btn-sm"> Sửa</a>
               <button class="btn btn-danger btn-sm"
-                      onclick="confirmDelete('<%= emp.id %>','<%= emp.fullName %>')">🗑 Xóa</button>
+                      onclick="confirmDelete('<%= emp.id %>','<%= emp.fullName %>')"> Xóa</button>
             </div>
           </td>
         </tr>
@@ -167,9 +167,9 @@
 
 <style>
 .badge-position {
-  display:inline-flex; padding:2px 9px; border-radius:20px;
-  font-size:11.5px; font-weight:600;
-  background:#F0EDE4; color:#555; border:1px solid #D8D3C8;
+  display:inline-flex; padding:3px 10px; border-radius:20px;
+  font-size:11px; font-weight:600; letter-spacing:0.02em;
+  background:var(--color-mint); color:var(--color-moss-dark); border:1px solid var(--color-rail);
 }
 </style>
 <script>

@@ -1,0 +1,93 @@
+<%- include('partials/header') %>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Nhân sự</p>
+    <h1 class="page-title">Huấn luyện viên</h1>
+    <p class="lede">Quản lý thông tin và lịch dạy của HLV</p>
+  </div>
+</div>
+
+<% if (success) { %><div class="alert alert-success"><i class="ti ti-circle-check"></i> <%= success %></div><% } %>
+<% if (error) { %><div class="alert alert-error"><i class="ti ti-alert-circle"></i> <%= error %></div><% } %>
+
+<div style="display:flex;gap:12px;margin-bottom:20px;">
+  <a href="/trainers" class="btn <%= filterStatus==='all'?'btn-primary':'btn-secondary' %>">Tất cả (<%= total %>)</a>
+  <a href="/trainers?status=active" class="btn <%= filterStatus==='active'?'btn-primary':'btn-secondary' %>">Đang dạy (<%= totalActive %>)</a>
+  <a href="/trainers?status=inactive" class="btn <%= filterStatus==='inactive'?'btn-primary':'btn-secondary' %>">Không hoạt động (<%= totalInactive %>)</a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
+
+  <div class="card">
+    <div class="card-header"><span class="card-title"><i class="ti ti-users"></i> Danh sách HLV</span></div>
+    <div style="overflow-x:auto;">
+      <table class="table">
+        <thead><tr><th>Mã HLV</th><th>Họ tên</th><th>Chuyên môn</th><th>SĐT</th><th>Email</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody>
+          <% if (!trainers.length) { %>
+            <tr><td colspan="7" style="text-align:center;color:var(--color-ink-soft);padding:32px;">Chưa có huấn luyện viên nào.</td></tr>
+          <% } %>
+          <% trainers.forEach(t => { %>
+          <tr>
+            <td><span class="badge"><%= t.trainer_code %></span></td>
+            <td><strong><%= t.full_name %></strong><% if(t.username){ %><br><span style="font-size:0.8rem;color:var(--color-ink-soft);">@<%= t.username %></span><% } %></td>
+            <td style="color:var(--color-ink-soft);font-size:0.88rem;"><%= t.specialization || '—' %></td>
+            <td style="font-size:0.88rem;"><%= t.phone || '—' %></td>
+            <td style="font-size:0.88rem;"><%= t.email || '—' %></td>
+            <td>
+              <span class="badge" style="<%= t.status==='active'?'background:#d8f3dc;color:#1b5e34;border-color:#74c693':'background:#fbeae8;color:#c0392b;border-color:#f0b8b4' %>">
+                <%= t.status==='active'?'Đang dạy':'Không hoạt động' %>
+              </span>
+            </td>
+            <td>
+              <% if (user.role === 'admin') { %>
+              <div style="display:flex;gap:6px;">
+                <a href="/trainers/<%= t.id %>/edit" class="btn-icon" title="Sửa"><i class="ti ti-edit"></i></a>
+                <form method="POST" action="/trainers/<%= t.id %>/delete" onsubmit="return confirm('Xóa HLV này?')">
+                  <button class="btn-icon btn-danger" type="submit" title="Xóa"><i class="ti ti-trash"></i></button>
+                </form>
+              </div>
+              <% } %>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <% if (user.role === 'admin') { %>
+  <div class="card">
+    <div class="card-header"><span class="card-title"><i class="ti ti-plus"></i> Thêm HLV mới</span></div>
+    <div class="card-body">
+      <form method="POST" action="/trainers/create">
+        <div class="form-group">
+          <label>Họ tên <span class="req">*</span></label>
+          <input type="text" name="full_name" placeholder="Nguyễn Thị A" required />
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Chuyên môn</label>
+          <input type="text" name="specialization" placeholder="Reformer, Mat Pilates..." />
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Số điện thoại</label>
+          <input type="text" name="phone" placeholder="09xxxxxxxx" />
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Email</label>
+          <input type="email" name="email" placeholder="hlv@pilates.com" />
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Ngày vào làm</label>
+          <input type="date" name="hire_date" />
+        </div>
+        <button class="btn btn-primary" type="submit" style="margin-top:16px;width:100%;"><i class="ti ti-plus"></i> Thêm HLV</button>
+      </form>
+    </div>
+  </div>
+  <% } %>
+
+</div>
+
+<%- include('partials/footer') %>

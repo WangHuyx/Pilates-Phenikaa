@@ -1,0 +1,295 @@
+<%- include('partials/header') %>
+
+<div class="page-head">
+  <div>
+    <h1 class="page-title">Quản lý Gói tập</h1>
+    <p class="lede"><%= packages.length %> gói đang hoạt động</p>
+  </div>
+  <button onclick="openAddModal()" class="btn btn-primary">
+    <i class="ti ti-plus"></i> Thêm gói tập
+  </button>
+</div>
+
+<% if (success) { %>
+  <div class="alert alert-success"><i class="ti ti-circle-check"></i> <%= success %></div>
+<% } %>
+<% if (error) { %>
+  <div class="alert alert-error"><i class="ti ti-alert-circle"></i> <%= error %></div>
+<% } %>
+
+<%
+  const CATEGORY_STYLES = {
+    'Pilates':     { bg: '#dcfce7', color: '#15803d' },
+    'PT Cá nhân':  { bg: '#fed7aa', color: '#c2410c' },
+    'Yoga':        { bg: '#dbeafe', color: '#1e40af' },
+    'Combo':       { bg: '#f3f4f6', color: '#374151' },
+    'default':     { bg: '#ede9fe', color: '#5b21b6' },
+  };
+  function catStyle(cat) {
+    return CATEGORY_STYLES[cat] || CATEGORY_STYLES['default'];
+  }
+%>
+
+<!-- ───── Package Cards ───── -->
+<div class="package-grid">
+  <% if (!packages.length) { %>
+    <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#6b7280;">
+      <i class="ti ti-package" style="font-size:2.5rem;opacity:.35;"></i>
+      <p style="margin-top:12px;">Chưa có gói tập nào. Nhấn "+ Thêm gói tập" để bắt đầu.</p>
+    </div>
+  <% } %>
+  <% packages.forEach(pkg => { %>
+  <%
+    const cs = catStyle(pkg.category);
+    const featureLines = pkg.features ? pkg.features.split('\n').filter(f => f.trim()) : [];
+  %>
+  <div class="package-card" data-cat="<%= (pkg.category||'').toLowerCase().replace(/\s+/g,'-') %>">
+    <div class="package-card-top">
+      <span class="pkg-cat-badge" style="background:<%= cs.bg %>;color:<%= cs.color %>;">
+        <%= pkg.category || 'Gói tập' %>
+      </span>
+      <span class="pkg-status-badge">
+        <i class="ti ti-circle-check-filled"></i> Active
+      </span>
+    </div>
+
+    <h3 class="package-card-name"><%= pkg.name %></h3>
+    <p class="package-card-price"><%= Number(pkg.price).toLocaleString('vi-VN') %>đ</p>
+    <p class="package-card-meta"><%= pkg.duration_days %> ngày</p>
+
+    <% if (pkg.description) { %>
+    <p class="package-card-desc"><%= pkg.description %></p>
+    <% } %>
+
+    <% if (featureLines.length) { %>
+    <ul class="pkg-features">
+      <% featureLines.forEach(f => { %>
+      <li><i class="ti ti-circle-check"></i> <%= f.trim() %></li>
+      <% }) %>
+    </ul>
+    <% } %>
+
+    <div class="package-card-actions">
+      <button class="pkg-btn-edit" onclick="openEditModal(<%- JSON.stringify(pkg) %>)">
+        <i class="ti ti-edit"></i> Sửa
+      </button>
+      <form method="POST" action="/packages/<%= pkg.id %>/delete" onsubmit="return confirm('Xóa gói tập «<%= pkg.name %>»?')" style="flex:1;display:flex;">
+        <button class="pkg-btn-delete" type="submit" style="width:100%;">
+          <i class="ti ti-trash"></i> Xóa
+        </button>
+      </form>
+    </div>
+  </div>
+  <% }) %>
+</div>
+
+<!-- ───── Membership assignments ───── -->
+<div class="card" style="margin-bottom:24px;">
+  <div class="card-header">
+    <span class="card-title"><i class="ti ti-id-badge"></i> Đăng ký gói của hội viên</span>
+    <span style="font-size:0.8rem;color:#6b7280;"><%= memberships.length %> đăng ký</span>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Hội viên</th>
+          <th>Gói tập</th>
+          <th>Bắt đầu</th>
+          <th>Hết hạn</th>
+          <th>Trạng thái</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!memberships.length) { %>
+          <tr><td colspan="6" style="text-align:center;color:#6b7280;padding:28px;">Chưa có đăng ký nào.</td></tr>
+        <% } %>
+        <% memberships.forEach(m => { %>
+          <tr>
+            <td>
+              <strong><%= m.full_name %></strong>
+              <span style="color:#9ca3af;font-size:0.8rem;margin-left:4px;">(<%= m.username %>)</span>
+            </td>
+            <td><%= m.package_name %></td>
+            <td style="font-size:0.85rem;"><%= m.start_date ? new Date(m.start_date).toLocaleDateString('vi-VN') : '—' %></td>
+            <td style="font-size:0.85rem;"><%= m.end_date   ? new Date(m.end_date).toLocaleDateString('vi-VN')   : '—' %></td>
+            <td>
+              <% const isExp = m.end_date && new Date(m.end_date) < new Date(); %>
+              <span class="badge" style="<%= isExp ? 'background:#fee2e2;color:#dc2626;border-color:#fca5a5' : 'background:#dcfce7;color:#15803d;border-color:#86efac' %>">
+                <%= isExp ? 'Hết hạn' : (m.status === 'active' ? 'Hoạt động' : m.status) %>
+              </span>
+            </td>
+            <td>
+              <form method="POST" action="/packages/membership/<%= m.id %>/delete" onsubmit="return confirm('Xóa đăng ký này?')">
+                <button class="btn-icon btn-danger" type="submit" title="Xóa"><i class="ti ti-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ───── Gán gói cho hội viên ───── -->
+<div class="card">
+  <div class="card-header"><span class="card-title"><i class="ti ti-user-check"></i> Gán gói cho hội viên</span></div>
+  <div class="card-body">
+    <form method="POST" action="/packages/assign">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Hội viên <span class="req">*</span></label>
+          <select name="user_id" required>
+            <option value="">-- Chọn hội viên --</option>
+            <% members.forEach(m => { %>
+              <option value="<%= m.id %>"><%= m.full_name %> (<%= m.username %>)</option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Gói tập <span class="req">*</span></label>
+          <select name="package_id" required>
+            <option value="">-- Chọn gói tập --</option>
+            <% packages.forEach(pkg => { %>
+              <option value="<%= pkg.id %>"><%= pkg.name %> — <%= Number(pkg.price).toLocaleString('vi-VN') %>đ</option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Ngày bắt đầu <span class="req">*</span></label>
+          <input type="date" name="start_date" required value="<%= new Date().toISOString().split('T')[0] %>" />
+        </div>
+        <div class="form-group">
+          <label>Ghi chú</label>
+          <input type="text" name="note" placeholder="Ghi chú..." />
+        </div>
+      </div>
+      <button class="btn btn-primary" type="submit" style="margin-top:16px;">
+        <i class="ti ti-user-check"></i> Gán gói
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════ Modal: Thêm gói ══════════════ -->
+<div id="add-modal" class="pkg-modal-overlay" onclick="if(event.target===this)closeAddModal()">
+  <div class="pkg-modal">
+    <div class="pkg-modal-header">
+      <h3><i class="ti ti-plus"></i> Thêm gói tập mới</h3>
+      <button class="pkg-modal-close" onclick="closeAddModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <form method="POST" action="/packages">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Tên gói <span class="req">*</span></label>
+          <input type="text" name="name" placeholder="VD: Gói Pilates 1 tháng" required />
+        </div>
+        <div class="form-group">
+          <label>Danh mục</label>
+          <select name="category">
+            <option value="Pilates">Pilates</option>
+            <option value="Yoga">Yoga</option>
+            <option value="PT Cá nhân">PT Cá nhân</option>
+            <option value="Combo">Combo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Giá (VNĐ) <span class="req">*</span></label>
+          <input type="number" name="price" placeholder="VD: 1500000" min="0" required />
+        </div>
+        <div class="form-group">
+          <label>Thời hạn (ngày) <span class="req">*</span></label>
+          <input type="number" name="duration_days" placeholder="VD: 30" min="1" required />
+        </div>
+        <div class="form-group full">
+          <label>Mô tả</label>
+          <input type="text" name="description" placeholder="Mô tả ngắn về gói..." />
+        </div>
+        <div class="form-group full">
+          <label>Tính năng <span style="color:#9ca3af;font-weight:400;">(mỗi dòng 1 tính năng)</span></label>
+          <textarea name="features" rows="4" placeholder="Vào tập tự do&#10;Tham gia tất cả lớp Pilates&#10;..."></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px;">
+        <button class="btn btn-primary" type="submit"><i class="ti ti-check"></i> Thêm gói</button>
+        <button class="btn btn-secondary" type="button" onclick="closeAddModal()">Hủy</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════ Modal: Sửa gói ══════════════ -->
+<div id="edit-modal" class="pkg-modal-overlay" onclick="if(event.target===this)closeEditModal()">
+  <div class="pkg-modal">
+    <div class="pkg-modal-header">
+      <h3><i class="ti ti-edit"></i> Sửa gói tập</h3>
+      <button class="pkg-modal-close" onclick="closeEditModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <form id="edit-form" method="POST" action="">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Tên gói <span class="req">*</span></label>
+          <input type="text" id="edit-name" name="name" required />
+        </div>
+        <div class="form-group">
+          <label>Danh mục</label>
+          <select id="edit-category" name="category">
+            <option value="Pilates">Pilates</option>
+            <option value="Yoga">Yoga</option>
+            <option value="PT Cá nhân">PT Cá nhân</option>
+            <option value="Combo">Combo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Giá (VNĐ) <span class="req">*</span></label>
+          <input type="number" id="edit-price" name="price" min="0" required />
+        </div>
+        <div class="form-group">
+          <label>Thời hạn (ngày) <span class="req">*</span></label>
+          <input type="number" id="edit-duration" name="duration_days" min="1" required />
+        </div>
+        <div class="form-group full">
+          <label>Mô tả</label>
+          <input type="text" id="edit-description" name="description" />
+        </div>
+        <div class="form-group full">
+          <label>Tính năng <span style="color:#9ca3af;font-weight:400;">(mỗi dòng 1 tính năng)</span></label>
+          <textarea id="edit-features" name="features" rows="4"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px;">
+        <button class="btn btn-primary" type="submit"><i class="ti ti-check"></i> Lưu thay đổi</button>
+        <button class="btn btn-secondary" type="button" onclick="closeEditModal()">Hủy</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openAddModal() {
+  document.getElementById('add-modal').style.display = 'flex';
+}
+function closeAddModal() {
+  document.getElementById('add-modal').style.display = 'none';
+}
+
+function openEditModal(pkg) {
+  document.getElementById('edit-name').value        = pkg.name || '';
+  document.getElementById('edit-price').value       = pkg.price || '';
+  document.getElementById('edit-duration').value    = pkg.duration_days || '';
+  document.getElementById('edit-description').value = pkg.description || '';
+  document.getElementById('edit-features').value    = pkg.features || '';
+  var sel = document.getElementById('edit-category');
+  for (var i=0; i<sel.options.length; i++) {
+    sel.options[i].selected = sel.options[i].value === (pkg.category || 'Pilates');
+  }
+  document.getElementById('edit-form').action = '/packages/' + pkg.id + '/update';
+  document.getElementById('edit-modal').style.display = 'flex';
+}
+function closeEditModal() {
+  document.getElementById('edit-modal').style.display = 'none';
+}
+</script>
+
+<%- include('partials/footer') %>

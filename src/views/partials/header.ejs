@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,28 +10,187 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
 </head>
 <body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="/">Pilates Phenikaa</a>
-      <nav class="nav">
-        <% if (typeof user !== 'undefined' && user) { %>
-          <a href="/dashboard">Dashboard</a>
-          <a href="/classes">Lịch học</a>
-          <% if (user.role === 'admin') { %>
-            <a href="/employees">Nhân viên</a>
-            <a href="/accounts">Tài khoản</a>
-          <% } %>
-          <% if (user.role === 'admin' || user.role === 'trainer') { %>
-            <a href="/my-bookings">Đăng ký lớp</a>
-          <% } %>
-          <% if (user.role === 'member') { %>
-            <a href="/my-bookings">Lớp của tôi</a>
-          <% } %>
-          <a href="/logout" class="nav-logout">Log out</a>
-        <% } else { %>
-          <a href="/login">Log in</a>
-        <% } %>
-      </nav>
+<div class="app-shell">
+
+<%# ===================== SIDEBAR ===================== %>
+<% if (typeof user !== 'undefined' && user) { %>
+<aside class="sidebar">
+
+  <%# Logo %>
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">🌿</div>
+    <div>
+      <div class="sidebar-app-name">Pilates Phenikaa</div>
+      <div class="sidebar-app-sub">Quản lý phòng tập</div>
+    </div>
+  </div>
+
+  <%# User info %>
+  <div class="sidebar-user">
+    <div class="sidebar-user-avatar">
+      <%= user.fullName ? user.fullName.trim().split(' ').pop()[0].toUpperCase() : 'U' %>
+    </div>
+    <div style="min-width:0">
+      <div class="sidebar-user-name"><%= user.fullName %></div>
+      <div class="sidebar-user-role">
+        <%= user.role === 'admin'   ? 'Quản trị viên'   :
+            user.role === 'staff'   ? 'Nhân viên'        :
+            user.role === 'trainer' ? 'Huấn luyện viên' : 'Hội viên' %>
+      </div>
+    </div>
+  </div>
+
+  <%# Navigation %>
+  <nav class="sidebar-nav">
+
+    <a href="/dashboard" class="sidebar-link" data-path="/dashboard">
+      <i class="ti ti-layout-dashboard sidebar-link-icon"></i>
+      Tổng quan
+    </a>
+
+    <%# Admin + Staff: quản lý hội viên %>
+    <% if (user.role === 'admin' || user.role === 'staff') { %>
+    <a href="/accounts" class="sidebar-link" data-path="/accounts">
+      <i class="ti ti-users sidebar-link-icon"></i>
+      Hội viên
+    </a>
+    <% } %>
+
+    <%# Admin: quản lý nhân sự (bao gồm bảng lương + phân quyền) %>
+    <% if (user.role === 'admin') { %>
+    <button class="sidebar-link sidebar-group-toggle" onclick="toggleSidebarGroup('nhansu')">
+      <i class="ti ti-briefcase sidebar-link-icon"></i>
+      <span>Nhân sự</span>
+      <i class="ti ti-chevron-down sidebar-link-chevron" id="chevron-nhansu"></i>
+    </button>
+    <div class="sidebar-group-items" id="group-nhansu">
+      <a href="/employees" class="sidebar-link sidebar-sublink" data-path="/employees">
+        <i class="ti ti-circle sidebar-sublink-dot"></i>
+        Danh sách nhân sự
+      </a>
+      <a href="/employees/schedule" class="sidebar-link sidebar-sublink" data-path="/employees/schedule">
+        <i class="ti ti-circle sidebar-sublink-dot"></i>
+        Lịch làm việc
+      </a>
+      <a href="/trainers" class="sidebar-link sidebar-sublink" data-path="/trainers">
+        <i class="ti ti-circle sidebar-sublink-dot"></i>
+        Huấn luyện viên
+      </a>
+      <a href="/payroll" class="sidebar-link sidebar-sublink" data-path="/payroll">
+        <i class="ti ti-circle sidebar-sublink-dot"></i>
+        Bảng lương
+      </a>
+      <a href="/permissions" class="sidebar-link sidebar-sublink" data-path="/permissions">
+        <i class="ti ti-circle sidebar-sublink-dot"></i>
+        Phân quyền
+      </a>
+    </div>
+    <% } %>
+
+    <%# Admin + Staff: gói tập %>
+    <% if (user.role === 'admin' || user.role === 'staff') { %>
+    <a href="/packages" class="sidebar-link" data-path="/packages">
+      <i class="ti ti-package sidebar-link-icon"></i>
+      Gói tập
+    </a>
+    <% } %>
+
+    <%# All: lịch lớp học %>
+    <a href="/classes" class="sidebar-link" data-path="/classes">
+      <i class="ti ti-calendar sidebar-link-icon"></i>
+      Lớp học
+    </a>
+
+    <%# Trainer + Member: lớp đã đăng ký %>
+    <% if (user.role === 'trainer' || user.role === 'member') { %>
+    <a href="/my-bookings" class="sidebar-link" data-path="/my-bookings">
+      <i class="ti ti-bookmark sidebar-link-icon"></i>
+      Lớp của tôi
+    </a>
+    <% } %>
+
+    <%# Admin + Staff: check-in group %>
+    <% if (user.role === 'admin' || user.role === 'staff') { %>
+    <button class="sidebar-link sidebar-group-toggle" onclick="toggleSidebarGroup('checkin')">
+      <i class="ti ti-qrcode sidebar-link-icon"></i>
+      <span>Check-in</span>
+      <i class="ti ti-chevron-down sidebar-link-chevron" id="chevron-checkin"></i>
+    </button>
+    <div class="sidebar-group-items" id="group-checkin">
+      <a href="/checkin" class="sidebar-link sidebar-sublink" data-path="/checkin">
+        <i class="ti ti-circle sidebar-sublink-dot"></i>
+        Check-in nhanh
+      </a>
+      <a href="/checkin" class="sidebar-link sidebar-sublink" data-path="/checkin-history">
+        <i class="ti ti-circle sidebar-sublink-dot"></i>
+        Lịch sử điểm danh
+      </a>
+    </div>
+    <% } %>
+
+    <%# Admin + Staff: tài chính + thiết bị %>
+    <% if (user.role === 'admin' || user.role === 'staff') { %>
+    <a href="/finance" class="sidebar-link" data-path="/finance">
+      <i class="ti ti-coin sidebar-link-icon"></i>
+      Tài chính
+    </a>
+    <a href="/equipment" class="sidebar-link" data-path="/equipment">
+      <i class="ti ti-tool sidebar-link-icon"></i>
+      Thiết bị
+    </a>
+    <% } %>
+
+    <%# Admin: báo cáo %>
+    <% if (user.role === 'admin') { %>
+    <a href="/reports" class="sidebar-link" data-path="/reports">
+      <i class="ti ti-chart-bar sidebar-link-icon"></i>
+      Báo cáo
+    </a>
+    <% } %>
+
+    <%# All users: hồ sơ cá nhân %>
+    <div class="sidebar-divider"></div>
+    <a href="/accounts/<%= user.id %>/edit" class="sidebar-link" data-path="/__profile__">
+      <i class="ti ti-user-circle sidebar-link-icon"></i>
+      Hồ sơ cá nhân
+    </a>
+
+  </nav>
+
+  <%# Logout %>
+  <div class="sidebar-footer">
+    <a href="/logout" class="sidebar-logout">
+      <i class="ti ti-logout"></i>
+      Đăng xuất
+    </a>
+  </div>
+
+</aside>
+<% } %>
+
+<%# ===================== MAIN AREA ===================== %>
+<div class="main-area">
+
+  <%# Topbar %>
+  <% if (typeof user !== 'undefined' && user) { %>
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 class="topbar-title"><%= title %></h1>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-search">
+        <i class="ti ti-search topbar-search-icon"></i>
+        <input type="text" placeholder="Tìm kiếm..." class="topbar-search-input" />
+      </div>
+      <button class="topbar-notify" title="Thông báo">
+        <i class="ti ti-bell"></i>
+      </button>
+      <div class="topbar-avatar" title="<%= user.fullName %>">
+        <%= user.fullName ? user.fullName.trim().split(' ').pop()[0].toUpperCase() : 'U' %>
+      </div>
     </div>
   </header>
-  <main class="container main-content">
+  <% } %>
+
+  <%# Page content — views render here %>
+  <main class="page-content">

@@ -1,8 +1,45 @@
-  </main>
-  <footer class="site-footer">
-    <div class="container">
-      <p>&copy; <%= new Date().getFullYear() %> Pilates Phenikaa.</p>
-    </div>
-  </footer>
+  </main><%# /page-content %>
+</div><%# /main-area %>
+</div><%# /app-shell %>
+
+<script>
+(function () {
+  var path = window.location.pathname;
+  var links = document.querySelectorAll('.sidebar-link[data-path]');
+  links.forEach(function (link) {
+    var lp = link.getAttribute('data-path');
+    if (path === lp) link.classList.add('active');
+    if (lp === '/employees' && path.startsWith('/employees')) link.classList.add('active');
+    if (lp === '/packages'  && path.startsWith('/packages'))  link.classList.add('active');
+    if (lp === '/checkin'   && path.startsWith('/checkin'))   link.classList.add('active');
+    if (lp === '/trainers'  && path.startsWith('/trainers'))  link.classList.add('active');
+    if (lp === '/accounts'  && path.startsWith('/accounts'))  link.classList.add('active');
+  });
+
+  /* Auto-expand Nhân sự group */
+  if (path.startsWith('/employees') || path.startsWith('/trainers') || path === '/payroll' || path === '/permissions') {
+    var grp = document.getElementById('group-nhansu');
+    var chv = document.getElementById('chevron-nhansu');
+    if (grp) grp.classList.add('expanded');
+    if (chv) chv.style.transform = 'rotate(180deg)';
+  }
+
+  /* Auto-expand Check-in group */
+  if (path.startsWith('/checkin')) {
+    var grp2 = document.getElementById('group-checkin');
+    var chv2 = document.getElementById('chevron-checkin');
+    if (grp2) grp2.classList.add('expanded');
+    if (chv2) chv2.style.transform = 'rotate(180deg)';
+  }
+}());
+
+function toggleSidebarGroup(name) {
+  var grp = document.getElementById('group-' + name);
+  var chv = document.getElementById('chevron-' + name);
+  if (!grp) return;
+  var isOpen = grp.classList.toggle('expanded');
+  if (chv) chv.style.transform = isOpen ? 'rotate(180deg)' : '';
+}
+</script>
 </body>
 </html>

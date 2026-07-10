@@ -46,4 +46,8 @@ async function myClasses(userId) {
   return classRepository.findClassesByUserId(userId);
 }
 
-module.exports = { listClasses, registerForClass, myClasses };
+async function getClassById(id) {
+  return classRepository.findById(id);
+}
+
+module.exports = { listClasses, registerForClass, myClasses, getClassById };

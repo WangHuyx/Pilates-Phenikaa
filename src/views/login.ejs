@@ -111,44 +111,35 @@
         <div class="icon">🌿</div>
         <span class="name">PilatesPhenikaa</span>
       </div>
-      <div class="card-title">Hệ thống quản lý phòng tập</div>
+      <div class="card-title">Đăng nhập</div>
+      <p class="card-subtitle">Chào mừng trở lại — vui lòng nhập thông tin của bạn</p>
 
       <form id="login-form" method="POST" action="/login" novalidate>
-        
+
         <div id="form-error" class="form-error" <%= error ? '' : 'hidden' %>>
           <i class="ti ti-alert-circle"></i>
           <span id="form-error-text"><%= error %></span>
         </div>
 
         <div class="field-group">
-          <label for="role">Chọn vai trò của bạn</label>
-          <div class="select-wrap">
-            <select id="role" name="role">
-              <option value="admin">Quản lý phòng tập</option>
-              <option value="trainer">Huấn luyện viên</option>
-              <option value="member">Hội viên</option>
-            </select>
-            <i class="ti ti-chevron-down"></i>
-          </div>
-        </div>
-
-        <div class="field-group">
-          <label for="username">Tên đăng nhập (Email / SĐT) <span class="req">*</span></label>
+          <label for="username">Tên đăng nhập <span class="req">*</span></label>
           <div class="input-wrap">
-            <input type="text" id="username" name="username" placeholder="ten@pilatesflow.vn" autocomplete="username" required>
+            <i class="ti ti-user field-icon"></i>
+            <input type="text" id="username" name="username" placeholder="Nhập tên đăng nhập" autocomplete="username" required>
           </div>
-          <span class="field-hint" id="username-hint" hidden>Vui lòng nhập tên đăng nhập.</span>
+          <!-- <span class="field-hint" id="username-hint" hidden>Vui lòng nhập tên đăng nhập.</span> -->
         </div>
 
         <div class="field-group">
           <label for="password">Mật khẩu <span class="req">*</span></label>
           <div class="input-wrap">
+            <i class="ti ti-lock field-icon"></i>
             <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" autocomplete="current-password" required>
             <button type="button" class="toggle-pw" id="toggle-pw" aria-label="Hiện mật khẩu">
               <i class="ti ti-eye"></i>
             </button>
           </div>
-          <span class="field-hint" id="password-hint" hidden>Vui lòng nhập mật khẩu.</span>
+          <!-- <span class="field-hint" id="password-hint" hidden>Vui lòng nhập mật khẩu.</span> -->
         </div>
 
         <div class="options-row">
@@ -164,18 +155,56 @@
           <span class="btn-spinner" hidden><i class="ti ti-loader-2"></i></span>
         </button>
       </form>
-      
+
+      <div class="card-divider"></div>
+
       <div class="card-footer-note">
         © 2026 PilatesPhenikaa. Mọi quyền được bảo lưu.<br>
         Hotline hỗ trợ: 1900 0009 — hỗ trợ kỹ thuật 24/7.
       </div>
       <div class="contact-icons">
         <a href="tel:19000009" title="Gọi điện"><i class="ti ti-phone"></i></a>
-        <a href="#" title="Chat hỗ trợ"><i class="ti ti-message-circle"></i></a>
-        <a href="mailto:support@pilatesflow.vn" title="Email"><i class="ti ti-mail"></i></a>
+        <a href="https://www.facebook.com/phuonganhkhongnguu" target="_blank" title="Facebook"><i class="ti ti-brand-facebook"></i></a>
+        <a href="mailto:phuonganhhd6789@gmail.com" title="Email hỗ trợ"><i class="ti ti-mail"></i></a>
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- Modal quên mật khẩu -->
+<div class="modal-overlay" id="forgot-modal">
+  <div class="modal" style="max-width:380px">
+    <h3 style="margin:0 0 10px;font-size:1rem;display:flex;align-items:center;gap:8px">
+      <i class="ti ti-lock-question" style="color:#2D6A4F"></i> Quên mật khẩu?
+    </h3>
+    <p style="color:#6B6B68;font-size:13px;margin:0 0 18px;line-height:1.65">
+      Hệ thống chưa hỗ trợ đặt lại mật khẩu tự động.<br>
+      Vui lòng liên hệ quản trị viên để được cấp lại mật khẩu:
+    </p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+      <a href="tel:19000009" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1A1A1A;font-size:13.5px;font-weight:500">
+        <span style="width:32px;height:32px;border-radius:8px;background:#D8F3DC;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-phone" style="color:#1B4332;font-size:15px"></i>
+        </span>
+        1900 0009
+      </a>
+      <a href="mailto:phuonganhhd6789@gmail.com" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1A1A1A;font-size:13.5px;font-weight:500">
+        <span style="width:32px;height:32px;border-radius:8px;background:#D8F3DC;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-mail" style="color:#1B4332;font-size:15px"></i>
+        </span>
+        phuonganhhd6789@gmail.com
+      </a>
+      <a href="https://www.facebook.com/phuonganhkhongnguu" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1A1A1A;font-size:13.5px;font-weight:500">
+        <span style="width:32px;height:32px;border-radius:8px;background:#D8F3DC;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-brand-facebook" style="color:#1B4332;font-size:15px"></i>
+        </span>
+        Facebook Pilates Phenikaa
+      </a>
+    </div>
+    <div class="modal-actions">
+      <button id="forgot-modal-close" class="btn btn-secondary btn-sm">Đóng</button>
+    </div>
   </div>
 </div>
 
@@ -184,6 +213,90 @@
   <span id="toast-text">Đăng nhập thành công</span>
 </div>
 
-<!-- <script src="script.js"></script> -->
+<script>
+(function () {
+  const pwInput     = document.getElementById('password');
+  const toggleBtn   = document.getElementById('toggle-pw');
+  const toggleIcon  = toggleBtn.querySelector('i');
+  const usernameEl  = document.getElementById('username');
+  const rememberEl  = document.getElementById('remember');
+  const form        = document.getElementById('login-form');
+  const submitBtn   = document.getElementById('submit-btn');
+  const forgotModal = document.getElementById('forgot-modal');
+
+  /* ── 1. Xem / ẩn mật khẩu ── */
+  toggleBtn.addEventListener('click', function () {
+    const show = pwInput.type === 'password';
+    pwInput.type = show ? 'text' : 'password';
+    toggleIcon.className = show ? 'ti ti-eye-off' : 'ti ti-eye';
+    toggleBtn.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+    pwInput.focus();
+  });
+
+  /* ── 2. Ghi nhớ đăng nhập (lưu username vào localStorage) ── */
+  var saved = localStorage.getItem('pilates_saved_user');
+  if (saved) {
+    usernameEl.value  = saved;
+    rememberEl.checked = true;
+  }
+
+  /* ── 3. Submit: validate + spinner + lưu/xóa remember ── */
+  form.addEventListener('submit', function (e) {
+    var un = usernameEl.value.trim();
+    var pw = pwInput.value.trim();
+    var ok = true;
+
+    if (!un) {
+      document.getElementById('username-hint').removeAttribute('hidden');
+      usernameEl.classList.add('field-invalid');
+      ok = false;
+    } else {
+      document.getElementById('username-hint').setAttribute('hidden', '');
+      usernameEl.classList.remove('field-invalid');
+    }
+
+    if (!pw) {
+      document.getElementById('password-hint').removeAttribute('hidden');
+      pwInput.classList.add('field-invalid');
+      ok = false;
+    } else {
+      document.getElementById('password-hint').setAttribute('hidden', '');
+      pwInput.classList.remove('field-invalid');
+    }
+
+    if (!ok) { e.preventDefault(); return; }
+
+    /* Lưu hoặc xóa username đã ghi nhớ */
+    if (rememberEl.checked) {
+      localStorage.setItem('pilates_saved_user', un);
+    } else {
+      localStorage.removeItem('pilates_saved_user');
+    }
+
+    /* Hiện spinner */
+    submitBtn.disabled = true;
+    submitBtn.querySelector('.btn-text').setAttribute('hidden', '');
+    submitBtn.querySelector('.btn-spinner').removeAttribute('hidden');
+  });
+
+  /* ── 4. Modal quên mật khẩu ── */
+  document.getElementById('forgot-link').addEventListener('click', function (e) {
+    e.preventDefault();
+    forgotModal.classList.add('open');
+  });
+
+  document.getElementById('forgot-modal-close').addEventListener('click', function () {
+    forgotModal.classList.remove('open');
+  });
+
+  forgotModal.addEventListener('click', function (e) {
+    if (e.target === forgotModal) forgotModal.classList.remove('open');
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') forgotModal.classList.remove('open');
+  });
+}());
+</script>
 </body>
 </html>
