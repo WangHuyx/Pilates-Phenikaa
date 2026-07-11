@@ -100,7 +100,7 @@
     <div class="top-banner">
       <div class="banner-brand">
         <div class="icon">🌿</div>
-        <span class="name">PilatesPhenikaa</span>
+        <span class="name">Pilates Phenikaa</span>
       </div>
       <div class="banner-pill">Hướng dẫn truy cập tài khoản</div>
     </div>
@@ -109,7 +109,7 @@
     <div id="login-card">
       <div class="card-logo">
         <div class="icon">🌿</div>
-        <span class="name">PilatesPhenikaa</span>
+        <span class="name">Pilates Phenikaa</span>
       </div>
       <div class="card-title">Đăng nhập</div>
       <p class="card-subtitle">Chào mừng trở lại — vui lòng nhập thông tin của bạn</p>
@@ -127,7 +127,6 @@
             <i class="ti ti-user field-icon"></i>
             <input type="text" id="username" name="username" placeholder="Nhập tên đăng nhập" autocomplete="username" required>
           </div>
-          <!-- <span class="field-hint" id="username-hint" hidden>Vui lòng nhập tên đăng nhập.</span> -->
         </div>
 
         <div class="field-group">
@@ -139,7 +138,6 @@
               <i class="ti ti-eye"></i>
             </button>
           </div>
-          <!-- <span class="field-hint" id="password-hint" hidden>Vui lòng nhập mật khẩu.</span> -->
         </div>
 
         <div class="options-row">
@@ -159,7 +157,7 @@
       <div class="card-divider"></div>
 
       <div class="card-footer-note">
-        © 2026 PilatesPhenikaa. Mọi quyền được bảo lưu.<br>
+        © 2026 Pilates Phenikaa. Mọi quyền được bảo lưu.<br>
         Hotline hỗ trợ: 1900 0009 — hỗ trợ kỹ thuật 24/7.
       </div>
       <div class="contact-icons">
@@ -238,6 +236,7 @@
   if (saved) {
     usernameEl.value  = saved;
     rememberEl.checked = true;
+    console.log('Saved username to localStorage:', saved);
   }
 
   /* ── 3. Submit: validate + spinner + lưu/xóa remember ── */
@@ -246,32 +245,35 @@
     var pw = pwInput.value.trim();
     var ok = true;
 
-    if (!un) {
-      document.getElementById('username-hint').removeAttribute('hidden');
-      usernameEl.classList.add('field-invalid');
-      ok = false;
-    } else {
-      document.getElementById('username-hint').setAttribute('hidden', '');
-      usernameEl.classList.remove('field-invalid');
-    }
+    //FIXME: Sửa lỗi không ghi nhớ tài khoản đăng nhập
+    // if (!un) {
+    //   document.getElementById('username-hint').removeAttribute('hidden');
+    //   usernameEl.classList.add('field-invalid');
+    //   ok = false;
+    // } else {
+    //   document.getElementById('username-hint').setAttribute('hidden', '');
+    //   usernameEl.classList.remove('field-invalid');
+    // }
 
-    if (!pw) {
-      document.getElementById('password-hint').removeAttribute('hidden');
-      pwInput.classList.add('field-invalid');
-      ok = false;
-    } else {
-      document.getElementById('password-hint').setAttribute('hidden', '');
-      pwInput.classList.remove('field-invalid');
-    }
+    // if (!pw) {
+    //   document.getElementById('password-hint').removeAttribute('hidden');
+    //   pwInput.classList.add('field-invalid');
+    //   ok = false;
+    // } else {
+    //   document.getElementById('password-hint').setAttribute('hidden', '');
+    //   pwInput.classList.remove('field-invalid');
+    // }
 
     if (!ok) { e.preventDefault(); return; }
 
     /* Lưu hoặc xóa username đã ghi nhớ */
     if (rememberEl.checked) {
       localStorage.setItem('pilates_saved_user', un);
-    } else {
-      localStorage.removeItem('pilates_saved_user');
-    }
+      console.log('Saved username to localStorage:', un);
+    } 
+    // else {
+    //   localStorage.removeItem('pilates_saved_user');
+    // }
 
     /* Hiện spinner */
     submitBtn.disabled = true;
