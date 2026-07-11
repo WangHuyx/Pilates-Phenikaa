@@ -1,14 +1,38 @@
 <%- include('partials/header', { title, user }) %>
 
+<%
+/*
+  GIẢ ĐỊNH VỀ DỮ LIỆU classItem — vui lòng đối chiếu với model thực tế và báo lại nếu khác:
+    - classItem.id (hoặc _id)              : mã lớp, dùng để tạo link đặt chỗ
+    - classItem.name                       : tên lớp (vd "Beginner Mat Pilates")
+    - classItem.level                      : 'basic' | 'intermediate' | 'advanced' | 'all'
+    - classItem.instructor                 : tên HLV
+    - classItem.capacity                   : tổng số chỗ
+    - classItem.registeredCount            : số chỗ đã đặt
+    - classItem.isRegistered               : true nếu user hiện tại đã đặt chỗ này
+    - Lịch buổi học — hỗ trợ 1 trong 2 dạng:
+        a) classItem.schedule = [{ day: 'Mon', startTime: '07:00', endTime: '08:00' }, ...]
+        b) classItem.days = ['Mon','Wed'] + classItem.startTime + classItem.endTime (cùng giờ mỗi ngày)
+      day chấp nhận: Mon..Sun hoặc T2..T7/CN.
+  Nếu tên trường thực tế khác, chỉnh hàm normalizeClass() trong <script> bên dưới — không cần sửa phần còn lại.
+*/
+%>
+
 <div class="page-head">
   <div>
     <p class="eyebrow">Lịch học</p>
     <h1>Chọn lớp học của bạn</h1>
-    <p class="lede">Đăng ký ngay bên dưới — số chỗ trống cập nhật theo thời gian thực.</p>
+    <p class="lede">Đăng ký ngay bên dưới — cập nhật theo thời gian thực.</p>
   </div>
-  <% if (user.role === 'admin' || user.role === 'staff') { %>
-  <a href="/classes/manage" class="btn btn-secondary"><i class="ti ti-settings"></i> Quản lý lớp học</a>
-  <% } %>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <div class="view-toggle" role="tablist" aria-label="Chế độ xem lịch học">
+      <button type="button" class="view-toggle-btn active" data-view="calendar" role="tab" aria-selected="true"><i class="ti ti-calendar-week"></i> Lịch tuần</button>
+      <button type="button" class="view-toggle-btn" data-view="list" role="tab" aria-selected="false"><i class="ti ti-list"></i> Danh sách</button>
+    </div>
+    <% if (user.role === 'admin' || user.role === 'staff') { %>
+    <a href="/classes/manage" class="btn btn-secondary"><i class="ti ti-settings"></i> Quản lý lớp học</a>
+    <% } %>
+  </div>
 </div>
 
 <% if (message) { %>
@@ -21,11 +45,301 @@
     <p>Hiện tại chưa có lớp học nào được lên lịch. Vui lòng quay lại sau.</p>
   </div>
 <% } else { %>
-  <div class="class-grid">
+
+  <div id="calendar-view">
+    <div class="cal-legend">
+      <span class="cal-legend-item"><i class="cal-dot" style="background:var(--cal-basic)"></i>Cơ bản</span>
+      <span class="cal-legend-item"><i class="cal-dot" style="background:var(--cal-intermediate)"></i>Trung cấp</span>
+      <span class="cal-legend-item"><i class="cal-dot" style="background:var(--cal-advanced)"></i>Nâng cao</span>
+      <span class="cal-legend-item"><i class="cal-dot" style="background:var(--cal-all)"></i>Mọi cấp độ</span>
+    </div>
+
+    <div class="cal-wrap">
+      <div class="cal-header" id="cal-header"></div>
+      <div class="cal-body" id="cal-body">
+        <div class="cal-hours" id="cal-hours"></div>
+        <div class="cal-grid-lines" id="cal-grid-lines"></div>
+        <div class="cal-now-line" id="cal-now-line" style="display:none;"><span></span></div>
+        <div class="cal-events" id="cal-events"></div>
+      </div>
+    </div>
+
+    <div id="cal-unscheduled" class="cal-unscheduled" style="display:none;">
+      <p class="cal-unscheduled-title"><i class="ti ti-alert-triangle"></i> Không xác định được lịch của các lớp sau — kiểm tra lại dữ liệu:</p>
+      <ul id="cal-unscheduled-list"></ul>
+    </div>
+  </div>
+
+  <div id="list-view" class="class-grid" style="display:none;">
     <% classes.forEach(function (classItem) { %>
       <%- include('partials/class-card', { classItem, user, showRegister: true }) %>
     <% }); %>
   </div>
+
+  <div id="cal-popover-root"></div>
+
 <% } %>
 
 <%- include('partials/footer') %>
+
+<% if (classes.length > 0) { %>
+<script id="classes-raw-data" type="application/json"><%- JSON.stringify(classes) %></script>
+<script>
+(function () {
+  var CSRF_TOKEN = <%- typeof csrfToken !== 'undefined' ? JSON.stringify(csrfToken) : 'null' %>;
+  var CURRENT_USER_ID = <%- (user && (user.id || user._id)) ? JSON.stringify(user.id || user._id) : 'null' %>;
+
+  var HOUR_H = 56;
+  var DAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+  var DAY_ALIASES = {
+    mon: 0, monday: 0, t2: 0, 'thứ 2': 0, 'thu 2': 0, 'thứ hai': 0, 'thu hai': 0,
+    tue: 1, tuesday: 1, t3: 1, 'thứ 3': 1, 'thu 3': 1, 'thứ ba': 1, 'thu ba': 1,
+    wed: 2, wednesday: 2, t4: 2, 'thứ 4': 2, 'thu 4': 2, 'thứ tư': 2, 'thu tu': 2,
+    thu: 3, thursday: 3, t5: 3, 'thứ 5': 3, 'thu 5': 3, 'thứ năm': 3, 'thu nam': 3,
+    fri: 4, friday: 4, t6: 4, 'thứ 6': 4, 'thu 6': 4, 'thứ sáu': 4, 'thu sau': 4,
+    sat: 5, saturday: 5, t7: 5, 'thứ 7': 5, 'thu 7': 5, 'thứ bảy': 5, 'thu bay': 5,
+    sun: 6, sunday: 6, cn: 6, 'chủ nhật': 6, 'chu nhat': 6
+  };
+  var LEVEL_META = {
+    basic: { label: 'Cơ bản', varName: '--cal-basic' },
+    intermediate: { label: 'Trung cấp', varName: '--cal-intermediate' },
+    advanced: { label: 'Nâng cao', varName: '--cal-advanced' },
+    all: { label: 'Mọi cấp độ', varName: '--cal-all' }
+  };
+
+  function dayIndexOf(rawDay) {
+    if (typeof rawDay === 'number') return ((rawDay % 7) + 7) % 7 === 0 ? 6 : rawDay - 1;
+    var key = String(rawDay || '').trim().toLowerCase();
+    return DAY_ALIASES.hasOwnProperty(key) ? DAY_ALIASES[key] : null;
+  }
+
+  function toMinutes(t) {
+    var parts = String(t || '0:0').split(':');
+    return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+  }
+
+  var LEVEL_MAP = { 'Beginner': 'basic', 'Intermediate': 'intermediate', 'Advanced': 'advanced' };
+  function normalizeLevel(classItem) {
+    return LEVEL_MAP[classItem.level] || 'all';
+  }
+
+  function getSessions(classItem) {
+    var sessions = [];
+    if (!classItem.day || !classItem.time) return sessions;
+    var dayParts = String(classItem.day).split(/&|,|;|\//).map(function (s) { return s.trim(); });
+    var timeParts = String(classItem.time).split('-').map(function (s) { return s.trim(); });
+    if (timeParts.length !== 2) return sessions;
+    dayParts.forEach(function (day) {
+      var d = dayIndexOf(day);
+      if (d !== null) sessions.push({ dayIndex: d, start: timeParts[0], end: timeParts[1] });
+    });
+    return sessions;
+  }
+
+  function normalizeClass(classItem) {
+    return {
+      id: classItem.id || classItem._id,
+      name: classItem.name || classItem.title || 'Lớp học',
+      levelKey: normalizeLevel(classItem),
+      instructor: classItem.instructor || classItem.trainer || '',
+      capacity: classItem.capacity,
+      registeredCount: (classItem.enrolledUserIds || []).length,
+      isFull: (classItem.enrolledUserIds || []).length >= classItem.capacity,
+      isRegistered: !!(CURRENT_USER_ID && (classItem.enrolledUserIds || []).indexOf(CURRENT_USER_ID) > -1),
+      sessions: getSessions(classItem)
+    };
+  }
+
+  var rawClasses = JSON.parse(document.getElementById('classes-raw-data').textContent || '[]');
+  var classes = rawClasses.map(normalizeClass);
+
+  var calHeader = document.getElementById('cal-header');
+  var calHours = document.getElementById('cal-hours');
+  var calGridLines = document.getElementById('cal-grid-lines');
+  var calEvents = document.getElementById('cal-events');
+  var calNowLine = document.getElementById('cal-now-line');
+  var unscheduledBox = document.getElementById('cal-unscheduled');
+  var unscheduledList = document.getElementById('cal-unscheduled-list');
+
+  var today = new Date();
+  var todayIndex = (today.getDay() + 6) % 7;
+  var monday = new Date(today);
+  monday.setDate(today.getDate() - todayIndex);
+
+  var headerHtml = '<div class="cal-corner"></div>';
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    var isToday = i === todayIndex;
+    headerHtml += '<div class="cal-day-head' + (isToday ? ' is-today' : '') + '">' +
+      '<span class="cal-day-name">' + DAY_LABELS[i] + '</span>' +
+      '<span class="cal-day-num">' + d.getDate() + '/' + (d.getMonth() + 1) + '</span></div>';
+  }
+  calHeader.innerHTML = headerHtml;
+
+  var hoursHtml = '';
+  var linesHtml = '';
+  for (var h = 0; h < 24; h++) {
+    hoursHtml += '<div class="cal-hour-label" style="top:' + (h * HOUR_H - 7) + 'px">' + (h < 10 ? '0' + h : h) + ':00</div>';
+    linesHtml += '<div class="cal-hline" style="top:' + (h * HOUR_H) + 'px"></div>';
+  }
+  calHours.innerHTML = hoursHtml;
+  calGridLines.innerHTML = linesHtml;
+  calGridLines.style.height = (24 * HOUR_H) + 'px';
+  calEvents.style.height = (24 * HOUR_H) + 'px';
+  calHours.style.height = (24 * HOUR_H) + 'px';
+
+  var unscheduledItems = [];
+  var eventsHtml = '';
+  var allSessions = [];
+
+  // 1. Thu thập và làm phẳng toàn bộ sessions
+  classes.forEach(function (c) {
+    if (!c.sessions.length) {
+      unscheduledItems.push(c.name);
+      return;
+    }
+    c.sessions.forEach(function (s) {
+      allSessions.push({
+        classItem: c,
+        dayIndex: s.dayIndex,
+        startMin: toMinutes(s.start),
+        endMin: toMinutes(s.end),
+        startStr: s.start,
+        endStr: s.end
+      });
+    });
+  });
+
+  // 2. Nhóm theo ngày và tính toán va chạm (overlap)
+  for (var day = 0; day < 7; day++) {
+    var daySessions = allSessions.filter(function(s) { return s.dayIndex === day; });
+    
+    // Sắp xếp các lớp trong ngày theo thời gian bắt đầu
+    daySessions.sort(function(a, b) { return a.startMin - b.startMin; });
+
+    var columns = []; // Lưu thời gian kết thúc của lớp cuối cùng trong mỗi cột
+    
+    daySessions.forEach(function(session) {
+      var placed = false;
+      for (var i = 0; i < columns.length; i++) {
+        if (columns[i] <= session.startMin) { 
+          // Nếu lớp trước đó đã kết thúc, xếp lớp này vào cùng cột
+          columns[i] = session.endMin;
+          session.colIndex = i;
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        // Nếu tất cả các cột đều đang có lớp, tạo cột mới
+        session.colIndex = columns.length;
+        columns.push(session.endMin);
+      }
+    });
+
+    var maxCols = columns.length > 0 ? columns.length : 1;
+
+    // 3. Render HTML với toạ độ và chiều rộng động
+    daySessions.forEach(function(session) {
+      var top = (session.startMin / 60) * HOUR_H;
+      var height = Math.max((session.endMin - session.startMin) / 60 * HOUR_H, 22);
+      
+      var baseLeftPercent = session.dayIndex * (100 / 7);
+      var widthPerColPercent = (100 / 7) / maxCols;
+      var leftPercent = baseLeftPercent + (session.colIndex * widthPerColPercent);
+
+      // Thêm margin nhỏ (1px, 2px) để có khoảng trống phân cách giữa các khối
+      var left = 'calc(' + leftPercent + '% + 1px)';
+      var width = 'calc(' + widthPerColPercent + '% - 1px)';
+
+      eventsHtml += '<div class="cal-event level-' + session.classItem.levelKey + '" ' +
+        'style="top:' + top + 'px;height:' + height + 'px;left:' + left + ';width:' + width + ';" ' +
+        'data-class-id="' + session.classItem.id + '" tabindex="0" role="button" ' +
+        'aria-label="' + session.classItem.name + ', ' + session.startStr + ' đến ' + session.endStr + '">' +
+        '<span class="cal-event-name">' + session.classItem.name + '</span>' +
+        '<span class="cal-event-time">' + session.startStr + ' - ' + session.endStr + '</span></div>';
+    });
+  }
+
+  calEvents.innerHTML = eventsHtml;
+
+  if (unscheduledItems.length) {
+    unscheduledBox.style.display = '';
+    unscheduledList.innerHTML = unscheduledItems.map(function (n) { return '<li>' + n + '</li>'; }).join('');
+  }
+
+  var nowMinutes = today.getHours() * 60 + today.getMinutes();
+  if (todayIndex >= 0) {
+    calNowLine.style.display = '';
+    calNowLine.style.top = (nowMinutes / 60 * HOUR_H) + 'px';
+    calNowLine.style.left = 'calc(' + todayIndex + ' * (100% / 7))';
+    calNowLine.style.width = 'calc(100% / 7)';
+  }
+
+  var calBody = document.getElementById('cal-body');
+  calBody.scrollTop = Math.max(0, 6 * HOUR_H - 40);
+
+  var popoverRoot = document.getElementById('cal-popover-root');
+
+  function closePopover() {
+    popoverRoot.innerHTML = '';
+  }
+
+  function openPopover(classId) {
+    var c = classes.filter(function (x) { return String(x.id) === String(classId); })[0];
+    if (!c) return;
+    var meta = LEVEL_META[c.levelKey];
+    var seatsText = c.capacity != null ? (c.registeredCount + '/' + c.capacity + ' chỗ') : '';
+    var actionBtn = c.isRegistered
+      ? '<button type="button" class="btn btn-secondary" disabled style="opacity:0.7;cursor:not-allowed">✓ Đã đặt chỗ</button>'
+      : c.isFull
+      ? '<button type="button" class="btn btn-secondary" disabled style="opacity:0.6;cursor:not-allowed">Hết chỗ</button>'
+      : '<form method="POST" action="/classes/' + c.id + '/register">' +
+        (CSRF_TOKEN ? '<input type="hidden" name="_csrf" value="' + CSRF_TOKEN + '">' : '') +
+        '<button type="submit" class="btn btn-primary">Đặt chỗ ngay</button></form>';
+
+    popoverRoot.innerHTML =
+      '<div class="cal-popover-overlay" id="cal-popover-overlay">' +
+      '<div class="cal-popover" role="dialog" aria-modal="true">' +
+      '<button type="button" class="cal-popover-close" aria-label="Đóng"><i class="ti ti-x"></i></button>' +
+      '<span class="cal-badge level-' + c.levelKey + '">' + meta.label + '</span>' +
+      '<h3 class="cal-popover-title">' + c.name + '</h3>' +
+      '<p class="cal-popover-meta"><i class="ti ti-user"></i> HLV ' + c.instructor + '</p>' +
+      (seatsText ? '<p class="cal-popover-meta"><i class="ti ti-users"></i> ' + seatsText + '</p>' : '') +
+      '<div class="cal-popover-action">' + actionBtn + '</div>' +
+      '</div></div>';
+
+    document.getElementById('cal-popover-overlay').addEventListener('click', function (e) {
+      if (e.target.id === 'cal-popover-overlay') closePopover();
+    });
+    popoverRoot.querySelector('.cal-popover-close').addEventListener('click', closePopover);
+  }
+
+  calEvents.addEventListener('click', function (e) {
+    var el = e.target.closest('.cal-event');
+    if (el) openPopover(el.getAttribute('data-class-id'));
+  });
+  calEvents.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      var el = e.target.closest('.cal-event');
+      if (el) { e.preventDefault(); openPopover(el.getAttribute('data-class-id')); }
+    }
+  });
+
+  var toggleBtns = document.querySelectorAll('.view-toggle-btn');
+  var calendarView = document.getElementById('calendar-view');
+  var listView = document.getElementById('list-view');
+  toggleBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      toggleBtns.forEach(function (b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      var isCalendar = btn.getAttribute('data-view') === 'calendar';
+      calendarView.style.display = isCalendar ? '' : 'none';
+      listView.style.display = isCalendar ? 'none' : '';
+    });
+  });
+})();
+</script>
+<% } %>

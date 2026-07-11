@@ -48,11 +48,11 @@
       Tổng quan
     </a>
 
-    <%# Admin + Staff: quản lý hội viên %>
-    <% if (user.role === 'admin' || user.role === 'staff') { %>
+    <%# Admin: quản lý tài khoản %>
+    <% if (user.role === 'admin') { %>
     <a href="/accounts" class="sidebar-link" data-path="/accounts">
       <i class="ti ti-users sidebar-link-icon"></i>
-      Hội viên
+      Quản lí tài khoản
     </a>
     <% } %>
 
@@ -128,8 +128,8 @@
     </div>
     <% } %>
 
-    <%# Admin + Staff: tài chính + thiết bị %>
-    <% if (user.role === 'admin' || user.role === 'staff') { %>
+    <%# Admin: tài chính + thiết bị %>
+    <% if (user.role === 'admin') { %>
     <a href="/finance" class="sidebar-link" data-path="/finance">
       <i class="ti ti-coin sidebar-link-icon"></i>
       Tài chính

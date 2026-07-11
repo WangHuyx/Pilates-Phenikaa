@@ -6,7 +6,7 @@
 
 ```
 username: admin
-password: admin123
+password: Pilates@123
 ```
 
 ## hướng dẫn chạy dự án trên máy local
@@ -47,6 +47,25 @@ Các tầng phụ thuộc:
 routes -> controllers -> services -> repositories -> data
 ```
 
+Vai trò và vị trí sửa đổi:
+```
+(FE):
+   src/
+    view/
+   public/
+    assets/
+    css/
+(BE):
+   controllers/
+   middleware/
+   routes/
+   services/
+(Database):
+   repositories/
+Dùng chung:
+   config/
+   app.js
+```
 ## Hướng dẫn kết nối MySQL Database
 
 Dự án hiện tại đã được cấu hình để kết nối với cơ sở dữ liệu MySQL bằng thư viện `mysql2`.

@@ -11,5 +11,5 @@ const config = require('./config/config');
 
 app.listen(config.port, () => {
   console.log(`Pilates Phenikaa app running at http://localhost:${config.port}`);
-  console.log('username: admin | password: admin123');
+  console.log('username: admin | password: Pilates@123');
 });
