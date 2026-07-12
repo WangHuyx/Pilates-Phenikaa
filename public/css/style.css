@@ -1689,6 +1689,73 @@ body {
 .stat-icon-amber  { background: #FFF8E1; color: #7C5B00; }
 .stat-icon-orange { background: #FFF3E0; color: #E65100; }
 
+.grid-2-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.mb-4 { margin-bottom: 24px; }
+.mt-2 { margin-top: 8px; }
+.pt-3 { padding-top: 12px; }
+.border-top { border-top: 1px solid var(--color-rail); }
+.text-muted { color: var(--color-ink-soft); font-size: 0.88rem; }
+.empty-state { text-align: center; color: var(--color-ink-soft); padding: 24px; }
+.table-responsive { overflow-x: auto; }
+
+/* Progress bar tự chế */
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.progress-bar {
+  height: 8px;
+  border-radius: 4px;
+}
+.bg-moss { background: var(--color-moss); }
+.bg-danger { background: #c0392b; }
+
+/* Phân bổ người dùng */
+.role-distribution-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.role-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.role-label {
+  min-width: 120px;
+  font-size: 0.9rem;
+}
+.role-track {
+  flex: 1;
+  height: 12px;
+  border-radius: 6px;
+  background: var(--color-rail);
+  overflow: hidden;
+}
+.role-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+.role-count {
+  min-width: 32px;
+  text-align: right;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.role-summary-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: var(--color-ink-soft);
+}
+.role-summary-item strong { color: var(--color-ink); }
+
 /* ── Dashboard content grid ── */
 .dash-grid {
   display: grid;

@@ -4,83 +4,64 @@
   <div>
     <p class="eyebrow">Quản lý</p>
     <h1 class="page-title">Thiết bị</h1>
-    <p class="lede">Quản lý máy tập và lịch bảo trì</p>
+    <p class="lede">Quản lý danh sách và số lượng máy tập</p>
   </div>
 </div>
 
-<% if (success) { %><div class="alert alert-success"><i class="ti ti-circle-check"></i> <%= success %></div><% } %>
-<% if (error) { %><div class="alert alert-error"><i class="ti ti-alert-circle"></i> <%= error %></div><% } %>
+<% if (typeof success !== 'undefined' && success) { %><div class="alert alert-success"><i class="ti ti-circle-check"></i> <%= success %></div><% } %>
+<% if (typeof error !== 'undefined' && error) { %><div class="alert alert-error"><i class="ti ti-alert-circle"></i> <%= error %></div><% } %>
 
-<% if (overdueItems.length > 0) { %>
-<div class="alert" style="background:#fff3cd;border-color:#f0d06b;color:#7c4700;margin-bottom:20px;">
-  <i class="ti ti-alert-triangle"></i>
-  <strong><%= overdueItems.length %> thiết bị</strong> có lịch bảo trì đã quá hạn!
-  <% overdueItems.forEach(o => { %><span style="margin-left:8px;">· <%= o.equipment_name %></span><% }) %>
-</div>
-<% } %>
-
-<% if (upcoming.length > 0) { %>
-<div class="alert alert-info" style="background:#E3F2FD;border-color:#90CAF9;color:#1565C0;margin-bottom:20px;">
-  <i class="ti ti-clock"></i>
-  <strong><%= upcoming.length %> lịch bảo trì</strong> trong 7 ngày tới:
-  <% upcoming.forEach(u => { %>
-    <span style="margin-left:8px;">· <%= u.equipment_name %> (<%= new Date(u.scheduled_date).toLocaleDateString('vi-VN') %>)</span>
-  <% }) %>
-</div>
-<% } %>
-
-<!-- Stats -->
 <div class="stats-grid" style="margin-bottom:20px;">
   <div class="stat-card">
     <p class="stat-card-label">Đang hoạt động</p>
-    <p class="stat-card-value"><%= counts.active %></p>
+    <p class="stat-card-value"><%= counts.active || 0 %></p>
     <div class="stat-card-icon stat-icon-green"><i class="ti ti-check"></i></div>
   </div>
   <div class="stat-card">
     <p class="stat-card-label">Đang bảo trì</p>
-    <p class="stat-card-value"><%= counts.maintenance %></p>
+    <p class="stat-card-value"><%= counts.maintenance || 0 %></p>
     <div class="stat-card-icon stat-icon-amber"><i class="ti ti-tool"></i></div>
   </div>
   <div class="stat-card">
     <p class="stat-card-label">Ngưng hoạt động</p>
-    <p class="stat-card-value"><%= counts.retired %></p>
+    <p class="stat-card-value"><%= counts.retired || 0 %></p>
     <div class="stat-card-icon stat-icon-orange"><i class="ti ti-archive"></i></div>
   </div>
   <div class="stat-card">
-    <p class="stat-card-label">Bảo trì quá hạn</p>
-    <p class="stat-card-value"><%= overdueItems.length %></p>
-    <div class="stat-card-icon stat-icon-blue" style="background:#fbeae8;color:#c0392b;"><i class="ti ti-alert-circle"></i></div>
+    <p class="stat-card-label">Tổng số máy tập</p>
+    <p class="stat-card-value"><%= equipment.length || 0 %></p>
+    <div class="stat-card-icon stat-icon-blue"><i class="ti ti-device-desktop"></i></div>
   </div>
 </div>
 
 <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
 
-  <div style="display:flex;flex-direction:column;gap:20px;">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="ti ti-list"></i> Danh sách thiết bị</span>
+      <div style="display:flex;gap:8px;">
+        <a href="/equipment" class="btn btn-sm <%= (!typeof filterStatus || filterStatus === 'all') ? 'btn-primary' : 'btn-secondary' %>">Tất cả</a>
+        <a href="/equipment?status=active" class="btn btn-sm <%= (typeof filterStatus !== 'undefined' && filterStatus === 'active') ? 'btn-primary' : 'btn-secondary' %>">Hoạt động</a>
+      </div>
+    </div>
+    
+    <div class="finance-toolbar" style="border-top:none;padding:12px 20px;">
+      <div class="finance-search-wrap" style="max-width:340px;">
+        <i class="ti ti-search"></i>
+        <input type="text" id="eq-search" placeholder="Tìm theo tên, loại hoặc số hiệu..." oninput="filterEquipment(this.value)" />
+      </div>
+      <span id="eq-count" style="font-size:0.82rem;color:var(--color-ink-soft);margin-left:auto;"><%= equipment.length %> thiết bị</span>
+    </div>
 
-    <!-- Danh sách thiết bị -->
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title"><i class="ti ti-device-desktop"></i> Danh sách thiết bị</span>
-        <div style="display:flex;gap:8px;">
-          <a href="/equipment" class="btn btn-sm <%= filterStatus==='all'?'btn-primary':'btn-secondary' %>">Tất cả</a>
-          <a href="/equipment?status=active" class="btn btn-sm <%= filterStatus==='active'?'btn-primary':'btn-secondary' %>">Hoạt động</a>
-          <a href="/equipment?status=maintenance" class="btn btn-sm <%= filterStatus==='maintenance'?'btn-primary':'btn-secondary' %>">Bảo trì</a>
-        </div>
-      </div>
-      <div class="finance-toolbar" style="border-top:none;padding:12px 20px;">
-        <div class="finance-search-wrap" style="max-width:340px;">
-          <i class="ti ti-search"></i>
-          <input type="text" id="eq-search" placeholder="Tìm theo tên, loại hoặc số hiệu..." oninput="filterEquipment(this.value)" />
-        </div>
-        <span id="eq-count" style="font-size:0.82rem;color:var(--color-ink-soft);margin-left:auto;"><%= equipment.length %> thiết bị</span>
-      </div>
-      <div style="overflow-x:auto;">
-        <table class="table">
-          <thead><tr><th>Tên thiết bị</th><th>Loại</th><th>Số hiệu</th><th>Trạng thái</th><th></th></tr></thead>
-          <tbody id="eq-tbody">
-            <% if (!equipment.length) { %>
-              <tr><td colspan="5" style="text-align:center;color:var(--color-ink-soft);padding:32px;">Chưa có thiết bị nào.</td></tr>
-            <% } %>
+    <div style="overflow-x:auto;">
+      <table class="table">
+        <thead>
+          <tr><th>Tên thiết bị</th><th>Loại</th><th>Số hiệu</th><th>Trạng thái</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody id="eq-tbody">
+          <% if (!equipment || !equipment.length) { %>
+            <tr><td colspan="5" style="text-align:center;color:var(--color-ink-soft);padding:32px;">Chưa có thiết bị nào.</td></tr>
+          <% } else { %>
             <% equipment.forEach(e => { %>
             <tr>
               <td><strong><%= e.name %></strong><% if(e.notes){ %><br><span style="font-size:0.8rem;color:var(--color-ink-soft);"><%= e.notes %></span><% } %></td>
@@ -94,143 +75,65 @@
               <td>
                 <div style="display:flex;gap:6px;">
                   <button class="btn-icon" title="Sửa" onclick="openEditModal(<%= JSON.stringify(e) %>)"><i class="ti ti-edit"></i></button>
-                  <form method="POST" action="/equipment/<%= e.id %>/delete" onsubmit="return confirm('Xóa thiết bị này?')">
+                  <form method="POST" action="/equipment/<%= e.id %>/delete" style="margin:0;" onsubmit="return confirm('Xóa thiết bị này?')">
                     <button class="btn-icon btn-danger" type="submit"><i class="ti ti-trash"></i></button>
                   </form>
                 </div>
               </td>
             </tr>
             <% }) %>
-          </tbody>
-        </table>
-      </div>
+          <% } %>
+        </tbody>
+      </table>
     </div>
-
-    <!-- Lịch bảo trì -->
-    <div class="card">
-      <div class="card-header"><span class="card-title"><i class="ti ti-tool"></i> Lịch bảo trì</span></div>
-      <div style="overflow-x:auto;">
-        <table class="table">
-          <thead><tr><th>Thiết bị</th><th>Loại bảo trì</th><th>Ngày dự kiến</th><th>Ngày hoàn thành</th><th>Trạng thái</th><th></th></tr></thead>
-          <tbody>
-            <% if (!logs.length) { %>
-              <tr><td colspan="6" style="text-align:center;color:var(--color-ink-soft);padding:32px;">Chưa có lịch bảo trì nào.</td></tr>
-            <% } %>
-            <% logs.forEach(l => { %>
-            <tr>
-              <td><strong><%= l.equipment_name %></strong></td>
-              <td style="font-size:0.88rem;"><%= l.type %></td>
-              <td><%= new Date(l.scheduled_date).toLocaleDateString('vi-VN') %></td>
-              <td><%= l.completed_date ? new Date(l.completed_date).toLocaleDateString('vi-VN') : '—' %></td>
-              <td>
-                <% const logMap = {scheduled:['Đã lên lịch','#d1eaff','#1a4f7a','#93c8f2'],completed:['Hoàn thành','#d8f3dc','#1b5e34','#74c693'],overdue:['Quá hạn','#fbeae8','#c0392b','#f0b8b4']}; %>
-                <% const [lLabel,lBg,lColor,lBorder] = logMap[l.status]||logMap.scheduled; %>
-                <span class="badge" style="background:<%= lBg %>;color:<%= lColor %>;border-color:<%= lBorder %>"><%= lLabel %></span>
-              </td>
-              <td>
-                <div style="display:flex;gap:6px;">
-                  <% if (l.status !== 'completed') { %>
-                  <form method="POST" action="/equipment/maintenance/<%= l.id %>/complete">
-                    <button class="btn-icon" title="Đánh dấu hoàn thành" style="color:var(--color-moss-dark);"><i class="ti ti-check"></i></button>
-                  </form>
-                  <% } %>
-                  <form method="POST" action="/equipment/maintenance/<%= l.id %>/delete" onsubmit="return confirm('Xóa lịch này?')">
-                    <button class="btn-icon btn-danger" type="submit"><i class="ti ti-trash"></i></button>
-                  </form>
-                </div>
-              </td>
-            </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
   </div>
 
-  <div style="display:flex;flex-direction:column;gap:20px;">
-
-    <!-- Thêm thiết bị -->
-    <div class="card">
-      <div class="card-header"><span class="card-title"><i class="ti ti-plus"></i> Thêm thiết bị</span></div>
-      <div class="card-body">
-        <form method="POST" action="/equipment/create">
-          <div class="form-group">
-            <label>Tên thiết bị <span class="req">*</span></label>
-            <input type="text" name="name" placeholder="Reformer #4" required />
-          </div>
-          <div class="form-group" style="margin-top:12px;">
-            <label>Loại</label>
-            <select name="type">
-              <option value="reformer">Reformer</option>
-              <option value="cadillac">Cadillac</option>
-              <option value="chair">Wunda Chair</option>
-              <option value="barrel">Barrel / Spine Corrector</option>
-              <option value="tower">Tower</option>
-              <option value="other">Khác</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-top:12px;">
-            <label>Số hiệu</label>
-            <input type="text" name="serial_number" placeholder="RF-004" />
-          </div>
-          <div class="form-group" style="margin-top:12px;">
-            <label>Trạng thái</label>
-            <select name="status">
-              <option value="active">Hoạt động</option>
-              <option value="maintenance">Đang bảo trì</option>
-              <option value="retired">Ngưng hoạt động</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-top:12px;">
-            <label>Ghi chú</label>
-            <input type="text" name="notes" placeholder="Ghi chú..." />
-          </div>
-          <button class="btn btn-primary" type="submit" style="margin-top:16px;width:100%;"><i class="ti ti-plus"></i> Thêm thiết bị</button>
-        </form>
-      </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title"><i class="ti ti-plus"></i> Thêm thiết bị</span></div>
+    <div class="card-body">
+      <form method="POST" action="/equipment/create">
+        <div class="form-group">
+          <label>Tên thiết bị <span class="req">*</span></label>
+          <input type="text" name="name" placeholder="Ví dụ: Reformer #4" required />
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Loại máy</label>
+          <select name="type">
+            <option value="reformer">Reformer</option>
+            <option value="cadillac">Cadillac</option>
+            <option value="chair">Wunda Chair</option>
+            <option value="barrel">Barrel</option>
+            <option value="tower">Tower</option>
+            <option value="other">Khác</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Số hiệu (S/N)</label>
+          <input type="text" name="serial_number" placeholder="RF-004" />
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Trạng thái</label>
+          <select name="status">
+            <option value="active">Hoạt động</option>
+            <option value="maintenance">Đang bảo trì</option>
+            <option value="retired">Ngưng hoạt động</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Ghi chú thêm</label>
+          <input type="text" name="notes" placeholder="Tình trạng, vị trí..." />
+        </div>
+        <button class="btn btn-primary" type="submit" style="margin-top:16px;width:100%;"><i class="ti ti-plus"></i> Lưu thiết bị</button>
+      </form>
     </div>
-
-    <!-- Lên lịch bảo trì -->
-    <div class="card">
-      <div class="card-header"><span class="card-title"><i class="ti ti-calendar-plus"></i> Lên lịch bảo trì</span></div>
-      <div class="card-body">
-        <form method="POST" action="/equipment/maintenance/create">
-          <div class="form-group">
-            <label>Thiết bị <span class="req">*</span></label>
-            <select name="equipment_id" required>
-              <option value="">-- Chọn thiết bị --</option>
-              <% equipment.forEach(e => { %>
-                <option value="<%= e.id %>"><%= e.name %></option>
-              <% }) %>
-            </select>
-          </div>
-          <div class="form-group" style="margin-top:12px;">
-            <label>Ngày bảo trì <span class="req">*</span></label>
-            <input type="date" name="scheduled_date" required />
-          </div>
-          <div class="form-group" style="margin-top:12px;">
-            <label>Loại bảo trì</label>
-            <input type="text" name="type" placeholder="Bảo trì định kỳ / Sửa chữa..." value="Bảo trì định kỳ" />
-          </div>
-          <div class="form-group" style="margin-top:12px;">
-            <label>Ghi chú</label>
-            <input type="text" name="notes" placeholder="Mô tả công việc..." />
-          </div>
-          <button class="btn btn-primary" type="submit" style="margin-top:16px;width:100%;"><i class="ti ti-calendar-plus"></i> Thêm lịch</button>
-        </form>
-      </div>
-    </div>
-
   </div>
+
 </div>
 
-<!-- Modal sửa thiết bị -->
 <div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:12px;padding:28px;width:400px;max-width:90vw;">
-    <h3 style="margin:0 0 16px;font-size:1rem;">Cập nhật thiết bị</h3>
+    <h3 style="margin:0 0 16px;font-size:1rem;">Cập nhật thông tin</h3>
     <form method="POST" id="edit-form">
-      <input type="hidden" name="_method" value="update" />
       <div class="form-group"><label>Tên</label><input type="text" name="name" id="edit-name" required /></div>
       <div class="form-group" style="margin-top:10px;"><label>Loại</label>
         <select name="type" id="edit-type">
@@ -247,7 +150,7 @@
       </div>
       <div class="form-group" style="margin-top:10px;"><label>Ghi chú</label><input type="text" name="notes" id="edit-notes" /></div>
       <div style="display:flex;gap:10px;margin-top:18px;">
-        <button class="btn btn-primary" type="submit">Lưu</button>
+        <button class="btn btn-primary" type="submit">Lưu thay đổi</button>
         <button class="btn btn-secondary" type="button" onclick="closeEditModal()">Hủy</button>
       </div>
     </form>
