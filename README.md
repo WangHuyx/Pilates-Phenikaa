@@ -1,8 +1,8 @@
-# Pilates Phenikaa — booking app starter
+# Pilates Phenikaa
 
-Đây là khung ứng dụng Node.js + Express dành cho trang web đăng ký lớp học Pilates.
+Đây là khung ứng dụng Node.js + Express dành cho trang web đăng ký lớp tập Pilates.
 
-## Tài khoản đăng nhập demo
+## Tài khoản đăng nhập
 
 ```
 username: admin
@@ -47,6 +47,25 @@ Các tầng phụ thuộc:
 routes -> controllers -> services -> repositories -> data
 ```
 
+Vai trò và vị trí sửa đổi:
+```
+(FE):
+   src/
+    view/
+   public/
+    assets/
+    css/
+(BE):
+   controllers/
+   middleware/
+   routes/
+   services/
+(Database):
+   repositories/
+Dùng chung:
+   config/
+   app.js
+```
 ## Hướng dẫn kết nối MySQL Database
 
 Dự án hiện tại đã được cấu hình để kết nối với cơ sở dữ liệu MySQL bằng thư viện `mysql2`.
@@ -65,6 +84,7 @@ Các bước thiết lập:
 
      # DATABASE
      DB_HOST=localhost
+     DB_PORT=3306
      DB_USER=root
      DB_PASSWORD=
      DB_NAME=pilates_db

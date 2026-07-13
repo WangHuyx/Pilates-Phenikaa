@@ -5,9 +5,8 @@
   <a href="/accounts" class="btn btn-secondary btn-sm">← Quay lại danh sách</a>
 </div>
 
-<div class="page-eyebrow">System Administration</div>
 <h1 class="page-title">Chỉnh sửa tài khoản</h1>
-<p class="page-sub">Cập nhật thông tin và vai trò cho <strong><%= editUser.username %></strong>.</p>
+<p class="page-sub">Cập nhật thông tin và vai trò cho <strong><%= editUser.fullName %></strong>.</p>
 
 <% if (error) { %>
   <div class="alert alert-error">
@@ -45,11 +44,17 @@
 
         <div class="form-group">
           <label class="field-label" for="role">Vai trò</label>
-          <select id="role" name="role">
-            <% roles.forEach(r => { %>
-              <option value="<%= r %>" <%= editUser.role === r ? 'selected' : '' %>><%= r %></option>
-            <% }) %>
-          </select>
+          <% if (typeof user !== 'undefined' && user.role === 'admin') { %>
+            <select id="role" name="role">
+              <% roles.forEach(r => { %>
+                <option value="<%= r %>" <%= editUser.role === r ? 'selected' : '' %>><%= r %></option>
+              <% }) %>
+            </select>
+          <% } else { %>
+            <input type="text" value="<%= editUser.role %>" disabled 
+                   style="background:#F4F3EE; color:#999; cursor:not-allowed">
+            <input type="hidden" name="role" value="<%= editUser.role %>">
+          <% } %>
         </div>
 
         <div class="form-group">

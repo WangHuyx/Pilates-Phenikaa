@@ -25,7 +25,7 @@
             <td style="font-size:0.88rem;"><%= c.instructor %></td>
             <td><%= c.day %></td>
             <td><%= c.time %></td>
-            <td><span class="badge"><%= {Beginner:'Cơ bản',Intermediate:'Trung cấp',Advanced:'Nâng cao','All levels':'Mọi cấp độ'}[c.level]||c.level %></span></td>
+            <td><span class="badge"><%= {Beginner:'Cơ bản',Intermediate:'Trung cấp',Advanced:'Nâng cao'}[c.level]||c.level %></span></td>
             <td><%= c.enrolledUserIds ? c.enrolledUserIds.length : 0 %>/<%= c.capacity %></td>
             <td>
               <form method="POST" action="/classes/<%= c.id %>/cancel" onsubmit="return confirm('Hủy đặt chỗ lớp này?')">

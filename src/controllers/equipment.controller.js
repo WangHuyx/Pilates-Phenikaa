@@ -10,17 +10,15 @@ function popFlash(req) {
 async function index(req, res, next) {
   try {
     const { status } = req.query;
-    const [equipment, counts, logs, upcoming] = await Promise.all([
+    const [equipment, counts] = await Promise.all([
       eqRepo.findAll(status || null),
       eqRepo.countByStatus(),
-      eqRepo.findLogs(),
-      eqRepo.upcomingMaintenance(),
     ]);
-    await eqRepo.overdueCount();
-    const overdueItems = logs.filter(l => l.status === 'overdue');
+    // await eqRepo.overdueCount();
+    // const overdueItems = logs.filter(l => l.status === 'overdue');
     res.render('equipment', {
       title: 'Thiết bị', user: req.session.user,
-      equipment, counts, logs, upcoming, overdueItems,
+      equipment, counts, /* logs, upcoming, overdueItems, */
       filterStatus: status || 'all',
       ...popFlash(req),
     });
@@ -54,30 +52,5 @@ async function remove(req, res) {
   res.redirect('/equipment');
 }
 
-async function createLog(req, res) {
-  const { equipment_id, scheduled_date, type, notes } = req.body;
-  try {
-    if (!equipment_id || !scheduled_date) throw new Error('Thiếu thông tin lịch bảo trì.');
-    await eqRepo.createLog({ equipment_id, scheduled_date, type, notes, created_by: req.session.user.id });
-    flash(req, 'flash_success', 'Đã thêm lịch bảo trì.');
-  } catch (err) { flash(req, 'flash_error', err.message); }
-  res.redirect('/equipment');
-}
 
-async function completeLog(req, res) {
-  try {
-    await eqRepo.completeLog(req.params.id);
-    flash(req, 'flash_success', 'Đã đánh dấu hoàn thành bảo trì.');
-  } catch (err) { flash(req, 'flash_error', err.message); }
-  res.redirect('/equipment');
-}
-
-async function deleteLog(req, res) {
-  try {
-    await eqRepo.deleteLog(req.params.id);
-    flash(req, 'flash_success', 'Đã xóa lịch bảo trì.');
-  } catch (err) { flash(req, 'flash_error', err.message); }
-  res.redirect('/equipment');
-}
-
-module.exports = { index, create, update, remove, createLog, completeLog, deleteLog };
+module.exports = { index, create, update, remove};

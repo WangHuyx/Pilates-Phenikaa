@@ -112,7 +112,7 @@ async function createClass(req, res, next) {
     }
     await pool.query(
       'INSERT INTO simple_classes (name, instructor, day, time, level, capacity) VALUES (?,?,?,?,?,?)',
-      [name, instructor, day, time, level || 'All levels', parseInt(capacity) || 10]
+      [name, instructor, day, time, level, parseInt(capacity) || 10]
     );
     req.session.flash_success = `Đã tạo lớp "${name}".`;
     res.redirect('/classes/manage');
@@ -134,7 +134,7 @@ async function updateClass(req, res, next) {
     const { name, instructor, day, time, level, capacity } = req.body;
     await pool.query(
       'UPDATE simple_classes SET name=?, instructor=?, day=?, time=?, level=?, capacity=? WHERE id=?',
-      [name, instructor, day, time, level || 'All levels', parseInt(capacity) || 10, req.params.id]
+      [name, instructor, day, time, level, parseInt(capacity) || 10, req.params.id]
     );
     req.session.flash_success = 'Cập nhật lớp học thành công.';
     res.redirect('/classes/manage');

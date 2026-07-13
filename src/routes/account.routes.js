@@ -6,10 +6,10 @@ const { requireLogin } = require('../middleware/auth.middleware');
 const { requireAdmin } = require('../middleware/admin.middleware');
 
 // Tất cả route trong file này yêu cầu đăng nhập + là Admin
-router.use(requireLogin, requireAdmin);
-
-router.get('/',               AccountCtrl.index);
+router.use(requireLogin);
 router.get('/:id/edit',       AccountCtrl.showEdit);
+router.use(requireAdmin);
+router.get('/',               AccountCtrl.index);
 router.get('/:id/history',    AccountCtrl.history);
 router.post('/create',        AccountCtrl.create);
 router.post('/:id/update',    AccountCtrl.update);
