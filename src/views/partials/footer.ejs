@@ -3,26 +3,33 @@
 </div><%# /app-shell %>
 
 <script>
-(function () {
+function applySidebarState() {
   var path = window.location.pathname;
   var links = document.querySelectorAll('.sidebar-link[data-path]');
   links.forEach(function (link) {
     var lp = link.getAttribute('data-path');
-    if (path === lp) link.classList.add('active');
-    if (lp === '/employees' && path.startsWith('/employees')) link.classList.add('active');
-    if (lp === '/packages'  && path.startsWith('/packages'))  link.classList.add('active');
-    if (lp === '/trainers'  && path.startsWith('/trainers'))  link.classList.add('active');
-    if (lp === '/accounts'  && path.startsWith('/accounts'))  link.classList.add('active');
+    var isActive = path === lp ||
+      (lp === '/employees' && path.startsWith('/employees')) ||
+      (lp === '/packages'  && path.startsWith('/packages'))  ||
+      (lp === '/trainers'  && path.startsWith('/trainers'))  ||
+      (lp === '/accounts'  && path.startsWith('/accounts'));
+    link.classList.toggle('active', isActive);
   });
 
-  /* Auto-expand Nhân sự group */
-  if (path.startsWith('/employees') || path.startsWith('/trainers') || path === '/payroll' || path === '/permissions') {
-    var grp = document.getElementById('group-nhansu');
-    var chv = document.getElementById('chevron-nhansu');
-    if (grp) grp.classList.add('expanded');
-    if (chv) chv.style.transform = 'rotate(180deg)';
-  }
-}());
+  /* Nhân sự group: mở khi đang ở trang con của nó, đóng lại ở mọi trang khác */
+  var shouldExpandNhanSu = path.startsWith('/employees') || path.startsWith('/trainers') ||
+    path === '/payroll' || path === '/permissions';
+  var grp = document.getElementById('group-nhansu');
+  var chv = document.getElementById('chevron-nhansu');
+  if (grp) grp.classList.toggle('expanded', shouldExpandNhanSu);
+  if (chv) chv.style.transform = shouldExpandNhanSu ? 'rotate(180deg)' : '';
+}
+
+applySidebarState();
+/* Trang được khôi phục từ bfcache (nút back/forward) vẫn giữ state DOM cũ — chạy lại để đồng bộ đúng trang hiện tại */
+window.addEventListener('pageshow', function (e) {
+  if (e.persisted) applySidebarState();
+});
 
 function toggleSidebarGroup(name) {
   var grp = document.getElementById('group-' + name);

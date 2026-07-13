@@ -73,25 +73,4 @@ async function remove(id) {
   return result.affectedRows > 0;
 }
 
-async function findScheduleAssignments(weekStart, weekEnd) {
-  const [rows] = await pool.query(
-    'SELECT * FROM employee_schedule_assignments WHERE date BETWEEN ? AND ? ORDER BY date, employee_id',
-    [weekStart, weekEnd]
-  );
-  return rows;
-}
-
-async function addAssignment({ employeeId, shiftId, date, note }) {
-  const [result] = await pool.query(
-    'INSERT IGNORE INTO employee_schedule_assignments (employee_id, shift_id, date, note) VALUES (?, ?, ?, ?)',
-    [Number(employeeId), shiftId, date, note || null]
-  );
-  return result.insertId;
-}
-
-async function deleteAssignment(id) {
-  const [result] = await pool.query('DELETE FROM employee_schedule_assignments WHERE id = ?', [Number(id)]);
-  return result.affectedRows > 0;
-}
-
-module.exports = { findAll, findById, create, update, remove, findScheduleAssignments, addAssignment, deleteAssignment };
+module.exports = { findAll, findById, create, update, remove };

@@ -78,44 +78,6 @@ const EmployeeController = {
     res.redirect('/employees');
   },
 
-  async schedule(req, res, next) {
-    try {
-      const data = await EmployeeService.getSchedulePage(req.query.week);
-      const success = req.session.flash_success || null;
-      const error   = req.session.flash_error   || null;
-      delete req.session.flash_success;
-      delete req.session.flash_error;
-      res.render('employees-schedule', {
-        title: 'Phân ca làm việc',
-        ...data,
-        success,
-        error,
-        user: req.session.user,
-      });
-    } catch (err) { next(err); }
-  },
-
-  async assignShift(req, res) {
-    const { employeeId, shiftId, date, note, week } = req.body;
-    try {
-      if (!employeeId || !shiftId || !date) throw new Error('Thiếu thông tin phân ca.');
-      await EmployeeService.addShift({ employeeId, shiftId, date, note });
-      req.session.flash_success = 'Đã phân ca thành công.';
-    } catch (err) {
-      req.session.flash_error = err.message;
-    }
-    res.redirect(`/employees/schedule${week ? '?week=' + week : ''}`);
-  },
-
-  async deleteShift(req, res) {
-    const week = req.body.week || '';
-    try {
-      await EmployeeService.deleteShift(req.params.id);
-    } catch (err) {
-      req.session.flash_error = err.message;
-    }
-    res.redirect(`/employees/schedule${week ? '?week=' + week : ''}`);
-  },
 };
 
 module.exports = EmployeeController;
