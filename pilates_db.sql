@@ -160,6 +160,9 @@ CREATE INDEX idx_courses_trainer ON courses(trainer_id);
 
 -- =============================================
 -- 7. PACKAGES TABLE
+-- NOTE: bảng này không được module Gói tập của ứng dụng sử dụng
+-- (xem src/repositories/package.repository.js) — giữ lại để tương thích
+-- ngược, gói tập thực tế nằm ở bảng MEMBERSHIP_PACKAGES bên dưới.
 -- =============================================
 CREATE TABLE packages (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -173,6 +176,30 @@ CREATE TABLE packages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- =============================================
+-- 7b. MEMBERSHIP_PACKAGES TABLE (bảng thật được ứng dụng sử dụng)
+-- Được đọc/ghi bởi src/repositories/package.repository.js và hiển thị
+-- tại trang /packages (Quản lý Gói tập).
+-- =============================================
+CREATE TABLE membership_packages (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    category VARCHAR(50) DEFAULT 'Pilates',
+    price DECIMAL(12, 0) NOT NULL,
+    duration_days INT NOT NULL,
+    description TEXT,
+    features TEXT COMMENT 'Mỗi dòng 1 tính năng, phân tách bằng \n',
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO membership_packages (name, category, price, duration_days, description, features) VALUES
+('Gói tháng cơ bản',  'Pilates',      500000,  30,  'Tập không giới hạn trong 1 tháng', NULL),
+('Gói tháng Premium', 'PT Cá nhân',   800000,  30,  'Tập không giới hạn + 2 buổi PT hàng tuần', '10 buổi tập 1-1\nLịch tập linh hoạt\nTư vấn dinh dưỡng'),
+('Gói 3 tháng',       'Combo',        1350000, 90,  'Tiết kiệm 10% so với gói tháng', 'Tất cả lớp group\nĐánh giá thể lực định kỳ'),
+('Gói 6 tháng',       'Yoga',         2500000, 180, 'Tiết kiệm 17% so với gói tháng', 'Tất cả lớp Yoga\nThiền định & Thư giãn'),
+('Gói năm',           'Combo',        4500000, 365, 'Tiết kiệm 25% - ưu đãi tốt nhất', 'Vào tập tự do\nƯu tiên đặt lịch');
 
 -- =============================================
 -- 8. ROOMS TABLE
@@ -271,6 +298,7 @@ CREATE INDEX idx_payments_status ON payments(status);
 -- =============================================
 -- 12. MEMBER_PACKAGES TABLE (FIX: bảng mới)
 -- Theo dõi gói tập nào đang active/expired cho từng hội viên
+-- NOTE: bảng này không được ứng dụng sử dụng — xem MEMBER_MEMBERSHIPS bên dưới.
 -- =============================================
 CREATE TABLE member_packages (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -290,6 +318,27 @@ CREATE TABLE member_packages (
 
 CREATE INDEX idx_member_packages_member ON member_packages(member_id);
 CREATE INDEX idx_member_packages_status ON member_packages(status);
+
+-- =============================================
+-- 12b. MEMBER_MEMBERSHIPS TABLE (bảng thật được ứng dụng sử dụng)
+-- Ghi lại việc gán MEMBERSHIP_PACKAGES cho USERS (không phải MEMBERS),
+-- được tạo qua form "Gán gói cho hội viên" tại /packages/assign.
+-- =============================================
+CREATE TABLE member_memberships (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    package_id INT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status ENUM('active', 'expired', 'cancelled') NOT NULL DEFAULT 'active',
+    note TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (package_id) REFERENCES membership_packages(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_member_memberships_user ON member_memberships(user_id);
+CREATE INDEX idx_member_memberships_status ON member_memberships(status);
 CREATE INDEX idx_member_packages_end ON member_packages(end_date);
 
 -- =============================================
@@ -664,7 +713,7 @@ INSERT INTO staffs (full_name, email, phone, role, salary, user_id) VALUES
 -- =============================================
 CREATE TABLE IF NOT EXISTS simple_classes (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR NOT NULL(200),
+    name VARCHAR(200) NOT NULL,
     instructor VARCHAR(100) NOT NULL,
     day VARCHAR(50) NOT NULL,
     time VARCHAR(50) NOT NULL,

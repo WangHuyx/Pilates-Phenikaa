@@ -5,9 +5,16 @@
     <h1 class="page-title">Quản lý Gói tập</h1>
     <p class="lede"><%= packages.length %> gói đang hoạt động</p>
   </div>
-  <button onclick="openAddModal()" class="btn btn-primary">
-    <i class="ti ti-plus"></i> Thêm gói tập
-  </button>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <div class="view-toggle" role="tablist" aria-label="Chế độ xem gói tập">
+      <button type="button" class="view-toggle-btn active" data-view="packages" role="tab" aria-selected="true"><i class="ti ti-package"></i> Gói tập</button>
+      <button type="button" class="view-toggle-btn" data-view="list" role="tab" aria-selected="false"><i class="ti ti-list"></i> Danh sách</button>
+      <button type="button" class="view-toggle-btn" data-view="assign" role="tab" aria-selected="false"><i class="ti ti-user-check"></i> Gán gói</button>
+    </div>
+    <button onclick="openAddModal()" class="btn btn-primary">
+      <i class="ti ti-plus"></i> Thêm gói tập
+    </button>
+  </div>
 </div>
 
 <% if (success) { %>
@@ -31,6 +38,7 @@
 %>
 
 <!-- ───── Package Cards ───── -->
+<div id="packages-view">
 <div class="package-grid">
   <% if (!packages.length) { %>
     <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#6b7280;">
@@ -70,7 +78,7 @@
     <% } %>
 
     <div class="package-card-actions">
-      <button class="pkg-btn-edit" onclick="openEditModal(<%- JSON.stringify(pkg) %>)">
+      <button class="pkg-btn-edit" onclick="openEditModal(<%= JSON.stringify(pkg) %>)">
         <i class="ti ti-edit"></i> Sửa
       </button>
       <form method="POST" action="/packages/<%= pkg.id %>/delete" onsubmit="return confirm('Xóa gói tập «<%= pkg.name %>»?')" style="flex:1;display:flex;">
@@ -82,93 +90,96 @@
   </div>
   <% }) %>
 </div>
+</div>
 
-<!-- ───── Membership assignments ───── -->
-<div class="card" style="margin-bottom:24px;">
-  <div class="card-header">
-    <span class="card-title"><i class="ti ti-id-badge"></i> Đăng ký gói của hội viên</span>
-    <span style="font-size:0.8rem;color:#6b7280;"><%= memberships.length %> đăng ký</span>
-  </div>
-  <div style="overflow-x:auto;">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Hội viên</th>
-          <th>Gói tập</th>
-          <th>Bắt đầu</th>
-          <th>Hết hạn</th>
-          <th>Trạng thái</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (!memberships.length) { %>
-          <tr><td colspan="6" style="text-align:center;color:#6b7280;padding:28px;">Chưa có đăng ký nào.</td></tr>
-        <% } %>
-        <% memberships.forEach(m => { %>
+<div id="membership-list-view" style="display:none;">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="ti ti-id-badge"></i> Đăng ký gói của hội viên</span>
+      <span style="font-size:0.8rem;color:#6b7280;"><%= memberships.length %> đăng ký</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="table">
+        <thead>
           <tr>
-            <td>
-              <strong><%= m.full_name %></strong>
-              <span style="color:#9ca3af;font-size:0.8rem;margin-left:4px;">(<%= m.username %>)</span>
-            </td>
-            <td><%= m.package_name %></td>
-            <td style="font-size:0.85rem;"><%= m.start_date ? new Date(m.start_date).toLocaleDateString('vi-VN') : '—' %></td>
-            <td style="font-size:0.85rem;"><%= m.end_date   ? new Date(m.end_date).toLocaleDateString('vi-VN')   : '—' %></td>
-            <td>
-              <% const isExp = m.end_date && new Date(m.end_date) < new Date(); %>
-              <span class="badge" style="<%= isExp ? 'background:#fee2e2;color:#dc2626;border-color:#fca5a5' : 'background:#dcfce7;color:#15803d;border-color:#86efac' %>">
-                <%= isExp ? 'Hết hạn' : (m.status === 'active' ? 'Hoạt động' : m.status) %>
-              </span>
-            </td>
-            <td>
-              <form method="POST" action="/packages/membership/<%= m.id %>/delete" onsubmit="return confirm('Xóa đăng ký này?')">
-                <button class="btn-icon btn-danger" type="submit" title="Xóa"><i class="ti ti-trash"></i></button>
-              </form>
-            </td>
+            <th>Hội viên</th>
+            <th>Gói tập</th>
+            <th>Bắt đầu</th>
+            <th>Hết hạn</th>
+            <th>Trạng thái</th>
+            <th></th>
           </tr>
-        <% }) %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if (!memberships.length) { %>
+            <tr><td colspan="6" style="text-align:center;color:#6b7280;padding:28px;">Chưa có đăng ký nào.</td></tr>
+          <% } %>
+          <% memberships.forEach(m => { %>
+            <tr>
+              <td>
+                <strong><%= m.full_name %></strong>
+                <span style="color:#9ca3af;font-size:0.8rem;margin-left:4px;">(<%= m.username %>)</span>
+              </td>
+              <td><%= m.package_name %></td>
+              <td style="font-size:0.85rem;"><%= m.start_date ? new Date(m.start_date).toLocaleDateString('vi-VN') : '—' %></td>
+              <td style="font-size:0.85rem;"><%= m.end_date   ? new Date(m.end_date).toLocaleDateString('vi-VN')   : '—' %></td>
+              <td>
+                <% const isExp = m.end_date && new Date(m.end_date) < new Date(); %>
+                <span class="badge" style="<%= isExp ? 'background:#fee2e2;color:#dc2626;border-color:#fca5a5' : 'background:#dcfce7;color:#15803d;border-color:#86efac' %>">
+                  <%= isExp ? 'Hết hạn' : (m.status === 'active' ? 'Hoạt động' : m.status) %>
+                </span>
+              </td>
+              <td>
+                <form method="POST" action="/packages/membership/<%= m.id %>/delete" onsubmit="return confirm('Xóa đăng ký này?')">
+                  <button class="btn-icon btn-danger" type="submit" title="Xóa"><i class="ti ti-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
-<!-- ───── Gán gói cho hội viên ───── -->
-<div class="card">
-  <div class="card-header"><span class="card-title"><i class="ti ti-user-check"></i> Gán gói cho hội viên</span></div>
-  <div class="card-body">
-    <form method="POST" action="/packages/assign">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Hội viên <span class="req">*</span></label>
-          <select name="user_id" required>
-            <option value="">-- Chọn hội viên --</option>
-            <% members.forEach(m => { %>
-              <option value="<%= m.id %>"><%= m.full_name %> (<%= m.username %>)</option>
-            <% }) %>
-          </select>
+<div id="membership-assign-view" style="display:none;">
+  <div class="card">
+    <div class="card-header"><span class="card-title"><i class="ti ti-user-check"></i> Gán gói cho hội viên</span></div>
+    <div class="card-body">
+      <form method="POST" action="/packages/assign">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Hội viên <span class="req">*</span></label>
+            <select name="user_id" required>
+              <option value="">-- Chọn hội viên --</option>
+              <% members.forEach(m => { %>
+                <option value="<%= m.id %>"><%= m.full_name %> (<%= m.username %>)</option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Gói tập <span class="req">*</span></label>
+            <select name="package_id" required>
+              <option value="">-- Chọn gói tập --</option>
+              <% packages.forEach(pkg => { %>
+                <option value="<%= pkg.id %>"><%= pkg.name %> — <%= Number(pkg.price).toLocaleString('vi-VN') %>đ</option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Ngày bắt đầu <span class="req">*</span></label>
+            <input type="date" name="start_date" required value="<%= new Date().toISOString().split('T')[0] %>" />
+          </div>
+          <div class="form-group">
+            <label>Ghi chú</label>
+            <input type="text" name="note" placeholder="Ghi chú..." />
+          </div>
         </div>
-        <div class="form-group">
-          <label>Gói tập <span class="req">*</span></label>
-          <select name="package_id" required>
-            <option value="">-- Chọn gói tập --</option>
-            <% packages.forEach(pkg => { %>
-              <option value="<%= pkg.id %>"><%= pkg.name %> — <%= Number(pkg.price).toLocaleString('vi-VN') %>đ</option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Ngày bắt đầu <span class="req">*</span></label>
-          <input type="date" name="start_date" required value="<%= new Date().toISOString().split('T')[0] %>" />
-        </div>
-        <div class="form-group">
-          <label>Ghi chú</label>
-          <input type="text" name="note" placeholder="Ghi chú..." />
-        </div>
-      </div>
-      <button class="btn btn-primary" type="submit" style="margin-top:16px;">
-        <i class="ti ti-user-check"></i> Gán gói
-      </button>
-    </form>
+        <button class="btn btn-primary" type="submit" style="margin-top:16px;">
+          <i class="ti ti-user-check"></i> Gán gói
+        </button>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -290,6 +301,26 @@ function openEditModal(pkg) {
 function closeEditModal() {
   document.getElementById('edit-modal').style.display = 'none';
 }
+
+(function () {
+  var toggleBtns = document.querySelectorAll('.view-toggle-btn');
+  var views = {
+    packages: document.getElementById('packages-view'),
+    list: document.getElementById('membership-list-view'),
+    assign: document.getElementById('membership-assign-view'),
+  };
+  toggleBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      toggleBtns.forEach(function (b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      var target = btn.getAttribute('data-view');
+      Object.keys(views).forEach(function (key) {
+        views[key].style.display = key === target ? '' : 'none';
+      });
+    });
+  });
+})();
 </script>
 
 <%- include('partials/footer') %>
