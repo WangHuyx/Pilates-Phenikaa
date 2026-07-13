@@ -664,7 +664,7 @@ INSERT INTO staffs (full_name, email, phone, role, salary, user_id) VALUES
 -- =============================================
 CREATE TABLE IF NOT EXISTS simple_classes (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(200) NOT NULL,
+    name VARCHAR NOT NULL(200),
     instructor VARCHAR(100) NOT NULL,
     day VARCHAR(50) NOT NULL,
     time VARCHAR(50) NOT NULL,
