@@ -93,14 +93,6 @@ const AccountController = {
       const member = await AccountService.getUserById(id);
       if (!member) { req.session.flash_error = 'Không tìm thấy tài khoản.'; return res.redirect('/accounts'); }
 
-      const [[checkinStats]] = await pool.query(
-        'SELECT COUNT(*) AS total FROM checkins WHERE user_id=?', [id]
-      );
-      const [checkins] = await pool.query(
-        `SELECT c.*, DATE(c.check_in_time) AS day,
-          TIMESTAMPDIFF(MINUTE, c.check_in_time, IFNULL(c.check_out_time, NOW())) AS duration_min
-         FROM checkins c WHERE c.user_id=? ORDER BY c.check_in_time DESC LIMIT 50`, [id]
-      );
       const [bookings] = await pool.query(
         `SELECT sc.name, sc.instructor, sc.day, sc.time, sc.level
          FROM simple_class_enrollments e
@@ -120,7 +112,6 @@ const AccountController = {
       res.render('member-history', {
         title: `Lịch sử — ${member.fullName}`,
         user: req.session.user, member,
-        checkins, checkinStats,
         bookings, memberships, payments,
       });
     } catch (err) { next(err); }

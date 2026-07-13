@@ -11,7 +11,6 @@
     if (path === lp) link.classList.add('active');
     if (lp === '/employees' && path.startsWith('/employees')) link.classList.add('active');
     if (lp === '/packages'  && path.startsWith('/packages'))  link.classList.add('active');
-    if (lp === '/checkin'   && path.startsWith('/checkin'))   link.classList.add('active');
     if (lp === '/trainers'  && path.startsWith('/trainers'))  link.classList.add('active');
     if (lp === '/accounts'  && path.startsWith('/accounts'))  link.classList.add('active');
   });
@@ -22,14 +21,6 @@
     var chv = document.getElementById('chevron-nhansu');
     if (grp) grp.classList.add('expanded');
     if (chv) chv.style.transform = 'rotate(180deg)';
-  }
-
-  /* Auto-expand Check-in group */
-  if (path.startsWith('/checkin')) {
-    var grp2 = document.getElementById('group-checkin');
-    var chv2 = document.getElementById('chevron-checkin');
-    if (grp2) grp2.classList.add('expanded');
-    if (chv2) chv2.style.transform = 'rotate(180deg)';
   }
 }());
 

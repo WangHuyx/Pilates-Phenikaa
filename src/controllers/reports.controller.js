@@ -47,19 +47,12 @@ async function index(req, res, next) {
       GROUP BY c.id ORDER BY enrollments DESC
     `);
 
-    const [checkinStats] = await pool.query(`
-      SELECT DATE(check_in_time) AS day, COUNT(*) AS count
-      FROM checkins
-      WHERE check_in_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-      GROUP BY day ORDER BY day
-    `).catch(() => [[]]);
-
     res.render('reports', {
       title: 'Báo cáo', user: req.session.user,
       memberStats, classStats, staffStats,
       activePackages: activePackages.cnt,
       revenueAll: revenueAll.total,
-      revenueByMonth, popularClasses, checkinStats,
+      revenueByMonth, popularClasses,
     });
   } catch (err) { next(err); }
 }
@@ -68,7 +61,6 @@ async function exportExcel(req, res, next) {
   try {
     const [members] = await pool.query(`
       SELECT u.username, u.full_name, u.email, r.name AS role,
-        (SELECT COUNT(*) FROM checkins WHERE user_id=u.id) AS checkin_count,
         (SELECT COUNT(*) FROM simple_class_enrollments WHERE user_id=u.id) AS class_count
       FROM users u JOIN roles r ON u.role_id=r.id ORDER BY u.id
     `);
@@ -98,12 +90,10 @@ async function exportExcel(req, res, next) {
       { header: 'Họ tên', key: 'full_name', width: 22 },
       { header: 'Email', key: 'email', width: 26 },
       { header: 'Vai trò', key: 'role', width: 14 },
-      { header: 'Lượt check-in', key: 'checkin_count', width: 14 },
       { header: 'Lớp đăng ký', key: 'class_count', width: 14 },
     ];
     ws1.getRow(1).eachCell(c => { Object.assign(c, hStyle); });
     members.forEach(r => ws1.addRow(r));
-    ws1.getColumn('checkin_count').numFmt = '0';
     ws1.getColumn('class_count').numFmt = '0';
 
     // Sheet 2: Doanh thu

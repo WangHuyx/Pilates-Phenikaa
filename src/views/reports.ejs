@@ -38,47 +38,16 @@
   </div>
 </div>
 
-<div class="grid-2-cols mb-4">
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title"><i class="ti ti-chart-bar"></i> Biểu đồ Doanh thu 6 tháng gần nhất</span>
-    </div>
-    <div class="card-body">
-      <% if (revenueByMonth.length === 0) { %>
-        <p class="empty-state">Chưa có dữ liệu doanh thu.</p>
-      <% } else { %>
-        <canvas id="revenueChart" height="250"></canvas>
-      <% } %>
-    </div>
+<div class="card mb-4">
+  <div class="card-header">
+    <span class="card-title"><i class="ti ti-chart-bar"></i> Biểu đồ Doanh thu 6 tháng gần nhất</span>
   </div>
-
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title"><i class="ti ti-door-enter"></i> Check-in 7 ngày gần đây</span>
-    </div>
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr><th>Ngày</th><th>Lượt vào</th></tr>
-        </thead>
-        <tbody>
-          <% if (checkinStats.length === 0) { %>
-            <tr><td colspan="2" class="empty-state">Chưa có dữ liệu check-in.</td></tr>
-          <% } %>
-          <% checkinStats.forEach(d => { %>
-            <tr>
-              <td><%= new Date(d.day).toLocaleDateString('vi-VN') %></td>
-              <td>
-                <div class="progress-wrapper">
-                  <div class="progress-bar bg-moss" style="width: <%= Math.min(d.count*12, 100) %>px;"></div>
-                  <span><%= d.count %></span>
-                </div>
-              </td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
+  <div class="card-body">
+    <% if (revenueByMonth.length === 0) { %>
+      <p class="empty-state">Chưa có dữ liệu doanh thu.</p>
+    <% } else { %>
+      <canvas id="revenueChart" height="250"></canvas>
+    <% } %>
   </div>
 </div>
 

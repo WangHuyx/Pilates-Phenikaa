@@ -40,9 +40,8 @@ const PERMISSION_GROUPS = [
     ],
   },
   {
-    label: 'CHECK-IN & THIẾT BỊ',
+    label: 'THIẾT BỊ & BÁO CÁO',
     items: [
-      { key: 'checkin.manage',   label: 'Quản lý check-in' },
       { key: 'equipment.view',   label: 'Xem thiết bị' },
       { key: 'equipment.manage', label: 'Quản lý thiết bị' },
       { key: 'report.view',      label: 'Xem báo cáo thống kê' },

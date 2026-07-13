@@ -2542,19 +2542,3 @@ body {
   .finance-search-wrap { min-width: unset; }
 }
 
-/* ── Checkin history toolbar ── */
-.history-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 4px;
-}
-.history-table th {
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-ink-soft);
-}
-.history-table tbody tr:hover { background: rgba(46,125,82,0.04); }
-

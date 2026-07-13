@@ -109,25 +109,6 @@
     </a>
     <% } %>
 
-    <%# Admin + Staff: check-in group %>
-    <% if (user.role === 'admin' || user.role === 'staff') { %>
-    <button class="sidebar-link sidebar-group-toggle" onclick="toggleSidebarGroup('checkin')">
-      <i class="ti ti-qrcode sidebar-link-icon"></i>
-      <span>Check-in</span>
-      <i class="ti ti-chevron-down sidebar-link-chevron" id="chevron-checkin"></i>
-    </button>
-    <div class="sidebar-group-items" id="group-checkin">
-      <a href="/checkin" class="sidebar-link sidebar-sublink" data-path="/checkin">
-        <i class="ti ti-circle sidebar-sublink-dot"></i>
-        Check-in nhanh
-      </a>
-      <a href="/checkin" class="sidebar-link sidebar-sublink" data-path="/checkin-history">
-        <i class="ti ti-circle sidebar-sublink-dot"></i>
-        Lịch sử điểm danh
-      </a>
-    </div>
-    <% } %>
-
     <%# Admin: tài chính + thiết bị %>
     <% if (user.role === 'admin') { %>
     <a href="/finance" class="sidebar-link" data-path="/finance">

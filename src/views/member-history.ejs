@@ -12,11 +12,6 @@
 <!-- Stats -->
 <div class="stats-grid" style="margin-bottom:20px;">
   <div class="stat-card">
-    <p class="stat-card-label">Tổng lượt check-in</p>
-    <p class="stat-card-value"><%= checkinStats.total %></p>
-    <div class="stat-card-icon stat-icon-green"><i class="ti ti-door-enter"></i></div>
-  </div>
-  <div class="stat-card">
     <p class="stat-card-label">Lớp đã đăng ký</p>
     <p class="stat-card-value"><%= bookings.length %></p>
     <div class="stat-card-icon stat-icon-blue"><i class="ti ti-calendar"></i></div>
@@ -83,62 +78,31 @@
 
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-
-  <!-- Lịch sử check-in -->
-  <div class="card">
-    <div class="card-header"><span class="card-title"><i class="ti ti-door-enter"></i> Lịch sử check-in (50 gần nhất)</span></div>
-    <div style="overflow-x:auto;">
-      <table class="table">
-        <thead><tr><th>Ngày</th><th>Giờ vào</th><th>Giờ ra</th><th>Thời gian</th></tr></thead>
-        <tbody>
-          <% if (!checkins.length) { %>
-            <tr><td colspan="4" style="text-align:center;color:var(--color-ink-soft);padding:20px;">Chưa có check-in nào.</td></tr>
-          <% } %>
-          <% checkins.forEach(c => { %>
-          <tr>
-            <td style="font-size:0.88rem;"><%= new Date(c.check_in_time).toLocaleDateString('vi-VN') %></td>
-            <td><%= new Date(c.check_in_time).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}) %></td>
-            <td><%= c.check_out_time ? new Date(c.check_out_time).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}) : '—' %></td>
-            <td style="color:var(--color-ink-soft);font-size:0.88rem;">
-              <% if (c.duration_min && c.check_out_time) { const h=Math.floor(c.duration_min/60),m=c.duration_min%60; %>
-                <%= h>0?h+'g ':'' %><%= m %>ph
-              <% } else { %>—<% } %>
-            </td>
-          </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
+<!-- Lịch sử thanh toán -->
+<div class="card">
+  <div class="card-header"><span class="card-title"><i class="ti ti-receipt"></i> Lịch sử thanh toán</span></div>
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead><tr><th>Ngày</th><th>Số tiền</th><th>Phương thức</th><th>Trạng thái</th></tr></thead>
+      <tbody>
+        <% if (!payments.length) { %>
+          <tr><td colspan="4" style="text-align:center;color:var(--color-ink-soft);padding:20px;">Chưa có giao dịch.</td></tr>
+        <% } %>
+        <% payments.forEach(p => { %>
+        <tr>
+          <td style="font-size:0.88rem;"><%= new Date(p.payment_date).toLocaleDateString('vi-VN') %></td>
+          <td style="font-weight:600;color:var(--color-moss-dark);"><%= Number(p.amount).toLocaleString('vi-VN') %>đ</td>
+          <td><span class="badge"><%= p.payment_method==='cash'?'Tiền mặt':'Chuyển khoản' %></span></td>
+          <td>
+            <span class="badge" style="<%= p.status==='paid'?'background:#d8f3dc;color:#1b5e34;border-color:#74c693':'background:#fff3cd;color:#7c4700;border-color:#f0d06b' %>">
+              <%= p.status==='paid'?'Đã thanh toán':'Chờ TT' %>
+            </span>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
   </div>
-
-  <!-- Lịch sử thanh toán -->
-  <div class="card">
-    <div class="card-header"><span class="card-title"><i class="ti ti-receipt"></i> Lịch sử thanh toán</span></div>
-    <div style="overflow-x:auto;">
-      <table class="table">
-        <thead><tr><th>Ngày</th><th>Số tiền</th><th>Phương thức</th><th>Trạng thái</th></tr></thead>
-        <tbody>
-          <% if (!payments.length) { %>
-            <tr><td colspan="4" style="text-align:center;color:var(--color-ink-soft);padding:20px;">Chưa có giao dịch.</td></tr>
-          <% } %>
-          <% payments.forEach(p => { %>
-          <tr>
-            <td style="font-size:0.88rem;"><%= new Date(p.payment_date).toLocaleDateString('vi-VN') %></td>
-            <td style="font-weight:600;color:var(--color-moss-dark);"><%= Number(p.amount).toLocaleString('vi-VN') %>đ</td>
-            <td><span class="badge"><%= p.payment_method==='cash'?'Tiền mặt':'Chuyển khoản' %></span></td>
-            <td>
-              <span class="badge" style="<%= p.status==='paid'?'background:#d8f3dc;color:#1b5e34;border-color:#74c693':'background:#fff3cd;color:#7c4700;border-color:#f0d06b' %>">
-                <%= p.status==='paid'?'Đã thanh toán':'Chờ TT' %>
-              </span>
-            </td>
-          </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
 </div>
 
 <%- include('partials/footer') %>
