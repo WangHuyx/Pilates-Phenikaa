@@ -1,9 +1,16 @@
 <%/* views/employees.ejs */%>
 <%- include('partials/header') %>
 
-<div class="page-eyebrow">Quản trị hệ thống › Nhân viên</div>
-<h1 class="page-title">Quản lý nhân viên</h1>
-<p class="page-sub">Thêm, cập nhật, xóa nhân viên và xem lịch phân ca làm việc.</p>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+  <div>
+    <div class="page-eyebrow">Quản trị hệ thống › Nhân viên</div>
+    <h1 class="page-title">Quản lý nhân viên</h1>
+    <p class="page-sub">Thêm, cập nhật, xóa nhân viên và xem lịch phân ca làm việc.</p>
+  </div>
+  <button type="button" class="btn btn-primary" onclick="openAddModal()">
+    <i class="ti ti-user-plus"></i> Thêm nhân viên
+  </button>
+</div>
 
 <%/* Flash */%>
 <% if (success) { %><div class="alert alert-success"><span class="alert-icon">✓</span><%= success %></div><% } %>
@@ -22,56 +29,6 @@
   <div class="card" style="padding:18px 22px">
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-moss);margin-bottom:6px">Nghỉ việc / tạm nghỉ</div>
     <div style="font-size:28px;font-weight:700;color:#D97706"><%= totalInactive %></div>
-  </div>
-</div>
-
-<%/* ── FORM THÊM NHÂN VIÊN ── */%>
-<div class="card" style="margin-bottom:24px">
-  <div class="card-header">
-    <span class="card-title">Thêm nhân viên mới</span>
-  </div>
-  <div class="card-body">
-    <form action="/employees/create" method="POST">
-      <div class="form-grid" style="grid-template-columns:repeat(3,1fr)">
-        <div class="form-group">
-          <label class="field-label" for="fullName">Họ và tên <span class="req">*</span></label>
-          <input type="text" id="fullName" name="fullName" placeholder="Nguyễn Thị Lan" required>
-        </div>
-        <div class="form-group">
-          <label class="field-label" for="phone">Số điện thoại <span class="req">*</span></label>
-          <input type="text" id="phone" name="phone" placeholder="0912 345 678" required>
-        </div>
-        <div class="form-group">
-          <label class="field-label" for="email">Email</label>
-          <input type="email" id="email" name="email" placeholder="ten@pilatespka.vn">
-        </div>
-        <div class="form-group">
-          <label class="field-label" for="position">Chức vụ <span class="req">*</span></label>
-          <select id="position" name="position" required>
-            <option value="">-- Chọn chức vụ --</option>
-            <% constants.POSITIONS.forEach(p => { %>
-              <option value="<%= p %>"><%= p %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="field-label" for="department">Phòng ban <span class="req">*</span></label>
-          <select id="department" name="department" required>
-            <option value="">-- Chọn phòng ban --</option>
-            <% constants.DEPARTMENTS.forEach(d => { %>
-              <option value="<%= d %>"><%= d %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="field-label" for="startDate">Ngày bắt đầu <span class="req">*</span></label>
-          <input type="date" id="startDate" name="startDate" required>
-        </div>
-      </div>
-      <div style="margin-top:16px">
-        <button type="submit" class="btn btn-primary"> Thêm nhân viên</button>
-      </div>
-    </form>
   </div>
 </div>
 
@@ -164,6 +121,58 @@
   </div>
 </div>
 
+<%/* ── MODAL THÊM NHÂN VIÊN ── */%>
+<div id="add-modal" class="pkg-modal-overlay" onclick="if(event.target===this)closeAddModal()">
+  <div class="pkg-modal">
+    <div class="pkg-modal-header">
+      <h3><i class="ti ti-user-plus"></i> Thêm nhân viên mới</h3>
+      <button type="button" class="pkg-modal-close" onclick="closeAddModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <form action="/employees/create" method="POST">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="field-label" for="fullName">Họ và tên <span class="req">*</span></label>
+          <input type="text" id="fullName" name="fullName" placeholder="Nguyễn Thị Lan" required>
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="phone">Số điện thoại <span class="req">*</span></label>
+          <input type="text" id="phone" name="phone" placeholder="0912 345 678" required>
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="ten@pilatespka.vn">
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="position">Chức vụ <span class="req">*</span></label>
+          <select id="position" name="position" required>
+            <option value="">-- Chọn chức vụ --</option>
+            <% constants.POSITIONS.forEach(p => { %>
+              <option value="<%= p %>"><%= p %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="department">Phòng ban <span class="req">*</span></label>
+          <select id="department" name="department" required>
+            <option value="">-- Chọn phòng ban --</option>
+            <% constants.DEPARTMENTS.forEach(d => { %>
+              <option value="<%= d %>"><%= d %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="startDate">Ngày bắt đầu <span class="req">*</span></label>
+          <input type="date" id="startDate" name="startDate" required>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px;">
+        <button type="submit" class="btn btn-primary"><i class="ti ti-check"></i> Thêm nhân viên</button>
+        <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Hủy</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <style>
 .badge-position {
   display:inline-flex; padding:3px 10px; border-radius:20px;
@@ -180,6 +189,12 @@ function confirmDelete(id, name) {
 function closeModal() { document.getElementById('delete-modal').classList.remove('open'); }
 document.getElementById('delete-modal').addEventListener('click', e => { if(e.target===document.getElementById('delete-modal')) closeModal(); });
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+function openAddModal() { document.getElementById('add-modal').style.display = 'flex'; }
+function closeAddModal() { document.getElementById('add-modal').style.display = 'none'; }
+<% if (error) { %>
+openAddModal();
+<% } %>
 </script>
 
 <%- include('partials/footer') %>
