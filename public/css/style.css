@@ -2220,6 +2220,29 @@ body {
 .pkg-modal .form-grid { gap: 14px; }
 .pkg-modal textarea { resize: vertical; min-height: 80px; }
 
+/* ── Payment bill / receipt ── */
+.bill-card { width: 420px; }
+.bill-body { padding: 24px; }
+.bill-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.bill-brand-icon { font-size: 1.8rem; }
+.bill-brand-name { font-weight: 700; font-size: 1.05rem; color: var(--color-ink); }
+.bill-brand-sub { font-size: 0.8rem; color: var(--color-ink-soft); }
+.bill-invoice-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.bill-divider { border: none; border-top: 1px dashed var(--color-rail-strong); margin: 14px 0; }
+.bill-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; font-size: 0.88rem; color: var(--color-ink-soft); }
+.bill-row strong { color: var(--color-ink); font-weight: 600; }
+.bill-total-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; font-size: 1rem; font-weight: 600; color: var(--color-ink); }
+.bill-amount { font-size: 1.4rem; font-weight: 700; color: var(--color-moss-dark); }
+.bill-note { display: flex; align-items: flex-start; gap: 6px; margin: 14px 0 0; padding: 10px 12px; background: var(--color-bg); border-radius: var(--radius-md); font-size: 0.85rem; color: var(--color-ink-soft); }
+.bill-actions { display: flex; gap: 10px; padding: 0 24px 24px; }
+
+@media print {
+  body * { visibility: hidden; }
+  #bill-modal, #bill-modal * { visibility: visible; }
+  #bill-modal { position: fixed; inset: 0; background: #fff; display: flex !important; align-items: flex-start; justify-content: center; padding-top: 40px; }
+  .no-print { display: none !important; }
+}
+
 /* ==========================================================================
    Phân quyền — two-panel layout
    ========================================================================== */
@@ -2474,7 +2497,7 @@ body {
   width: 100%;
   outline: none;
 }
-.finance-select, .finance-month {
+.finance-select {
   padding: 9px 12px;
   border: 1px solid var(--color-rail);
   border-radius: var(--radius-md);
@@ -2484,39 +2507,7 @@ body {
   outline: none;
   cursor: pointer;
 }
-.finance-select:focus, .finance-month:focus { border-color: var(--color-moss); }
-
-/* ── Finance status tabs ── */
-.finance-status-tabs {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 10px 20px;
-  border-bottom: 1px solid var(--color-rail);
-  background: var(--color-bg);
-  flex-wrap: wrap;
-}
-.finance-tab {
-  padding: 5px 14px;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--color-ink-soft);
-  text-decoration: none;
-  border: 1px solid transparent;
-  transition: all 0.15s;
-}
-.finance-tab:hover { background: var(--color-rail); color: var(--color-ink); }
-.finance-tab.active { background: var(--color-mint); border-color: var(--color-rail-strong); color: var(--color-moss-dark); font-weight: 600; }
-.finance-tab-paid.active   { background: #d8f3dc; border-color: #74c693; color: #1b5e34; }
-.finance-tab-pending.active { background: #fff3cd; border-color: #f0d06b; color: #7c4700; }
-.finance-tab-cancelled.active { background: #fbeae8; border-color: #f0b8b4; color: #c0392b; }
-.finance-tab-count {
-  margin-left: auto;
-  font-size: 0.78rem;
-  color: var(--color-ink-soft);
-  font-family: var(--font-mono, monospace);
-}
+.finance-select:focus { border-color: var(--color-moss); }
 
 /* ── Invoice code ── */
 .invoice-code {
