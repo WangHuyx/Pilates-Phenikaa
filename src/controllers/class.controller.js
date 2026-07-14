@@ -83,7 +83,11 @@ async function showMyBookings(req, res, next) {
   try {
     const userId = req.session.user.id;
     const myClasses = await classService.myClasses(userId);
-    res.render('my-bookings', { title: 'My bookings', user: req.session.user, myClasses });
+    const success = req.session.flash_success || null;
+    const error   = req.session.flash_error   || null;
+    delete req.session.flash_success;
+    delete req.session.flash_error;
+    res.render('my-bookings', { title: 'My bookings', user: req.session.user, myClasses, success, error });
   } catch (err) {
     next(err);
   }

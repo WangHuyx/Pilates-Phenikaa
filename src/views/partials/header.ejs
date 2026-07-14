@@ -97,13 +97,11 @@
       Lớp học
     </a>
 
-    <%# Trainer + Member: lớp đã đăng ký %>
-    <% if (user.role === 'trainer' || user.role === 'member') { %>
+    <%# All: lớp đã đăng ký %>
     <a href="/my-bookings" class="sidebar-link" data-path="/my-bookings">
       <i class="ti ti-bookmark sidebar-link-icon"></i>
       Lớp của tôi
     </a>
-    <% } %>
 
     <%# Admin: tài chính + thiết bị %>
     <% if (user.role === 'admin') { %>
