@@ -18,7 +18,6 @@ const PERMISSION_GROUPS = [
     items: [
       { key: 'staff.view',     label: 'Xem danh sách nhân sự' },
       { key: 'staff.manage',   label: 'Quản lý nhân sự' },
-      { key: 'staff.salary',   label: 'Xem bảng lương' },
     ],
   },
   {

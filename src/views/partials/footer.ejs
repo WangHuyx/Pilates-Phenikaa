@@ -18,7 +18,7 @@ function applySidebarState() {
 
   /* Nhân sự group: mở khi đang ở trang con của nó, đóng lại ở mọi trang khác */
   var shouldExpandNhanSu = path.startsWith('/employees') || path.startsWith('/trainers') ||
-    path === '/payroll' || path === '/permissions';
+    path === '/permissions';
   var grp = document.getElementById('group-nhansu');
   var chv = document.getElementById('chevron-nhansu');
   if (grp) grp.classList.toggle('expanded', shouldExpandNhanSu);

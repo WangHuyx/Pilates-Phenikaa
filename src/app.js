@@ -22,7 +22,6 @@ const financeRoutes   = require('./routes/finance.routes');
 const reportsRoutes   = require('./routes/reports.routes');
 const trainerRoutes     = require('./routes/trainer.routes');
 const equipmentRoutes   = require('./routes/equipment.routes');
-const payrollRoutes     = require('./routes/payroll.routes');
 const permissionsRoutes = require('./routes/permissions.routes');
 const { notFoundHandler, errorHandler } = require('./middleware/error.middleware');
 
@@ -62,7 +61,6 @@ app.use('/finance',   financeRoutes);
 app.use('/reports',   reportsRoutes);
 app.use('/trainers',     trainerRoutes);
 app.use('/equipment',   equipmentRoutes);
-app.use('/payroll',     payrollRoutes);
 app.use('/permissions', permissionsRoutes);
 
 // --- Catch-alls (must be registered last) -------------------------------
