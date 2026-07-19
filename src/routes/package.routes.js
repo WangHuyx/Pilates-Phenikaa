@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const ctrl = require('../controllers/package.controller');
-const { requireAdminOrStaff } = require('../middleware/admin.middleware');
+const Auth = require('../middleware/auth.middleware');
 
-router.get('/', requireAdminOrStaff, ctrl.index);
-router.post('/', requireAdminOrStaff, ctrl.createPackage);
-router.post('/:id/update', requireAdminOrStaff, ctrl.updatePackage);
-router.post('/:id/delete', requireAdminOrStaff, ctrl.deletePackage);
-router.post('/assign', requireAdminOrStaff, ctrl.assignPackage);
-router.post('/membership/:id/delete', requireAdminOrStaff, ctrl.deleteMembership);
+router.get('/', Auth.role('admin', 'member'), ctrl.index);
+router.post('/buy', Auth.role('member'), ctrl.buyPackage);
+router.post('/', Auth.role('admin'), ctrl.createPackage);
+router.post('/:id/update', Auth.role('admin'), ctrl.updatePackage);
+router.post('/:id/delete', Auth.role('admin'), ctrl.deletePackage);
+router.post('/assign', Auth.role('admin'), ctrl.assignPackage);
+router.post('/membership/:id/delete', Auth.role('admin'), ctrl.deleteMembership);
 
 module.exports = router;
