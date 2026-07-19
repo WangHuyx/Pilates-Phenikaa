@@ -37,7 +37,7 @@ async function remove(id) {
 
 async function getSchedule(trainerId) {
   const [rows] = await pool.query(
-    'SELECT * FROM simple_classes WHERE instructor=(SELECT full_name FROM trainers WHERE id=?) ORDER BY day, time',
+    'SELECT * FROM classes WHERE instructor=(SELECT full_name FROM trainers WHERE id=?) ORDER BY day, time',
     [trainerId]
   );
   return rows;

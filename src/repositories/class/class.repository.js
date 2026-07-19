@@ -1,0 +1,136 @@
+/**
+ * class.repository.js
+ * ------------------------------------------------------------------
+ * Lớp thực hiện truy vấn dữ liệu lớp học từ MySQL
+ * ------------------------------------------------------------------
+ */
+
+const pool = require('../../config/database');
+
+// --- THỐNG KÊ (DASHBOARD) ---
+async function countMembers() {
+  const [[row]] = await pool.query(`SELECT COUNT(*) AS cnt FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = 'member'`);
+  return row.cnt;
+}
+async function countStaff() {
+  const [[row]] = await pool.query(`SELECT COUNT(*) AS cnt FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name IN ('staff', 'admin')`).catch(() => [[{ cnt: 0 }]]);
+  return row.cnt;
+}
+async function countBookingsByUser(userId) {
+  const [[row]] = await pool.query(`SELECT COUNT(*) AS cnt FROM class_enrollments WHERE user_id = ?`, [userId]);
+  return row.cnt;
+}
+async function countClasses() {
+  const [[row]] = await pool.query(`SELECT COUNT(*) AS cnt FROM classes`);
+  return row.cnt;
+}
+// --- TRUY VẤN LỚP HỌC ---
+async function findAllClasses() {
+  const [classes] = await pool.query(`
+    SELECT c.*, 
+      (SELECT COUNT(*) FROM class_enrollments WHERE class_id = c.id AND status IN ('approved', 'pending')) AS registeredCount,
+      (SELECT COUNT(*) FROM class_enrollments WHERE class_id = c.id AND status = 'approved') AS enrolledCount
+    FROM classes c 
+  `);
+  return classes;
+}
+
+async function findEnrollmentsByClassId(classId) {
+  const [enrollments] = await pool.query(`
+    SELECT ce.status, ce.booking_type, u.id AS user_id, u.full_name AS name
+    FROM class_enrollments ce
+    JOIN users u ON ce.user_id = u.id
+    WHERE ce.class_id = ? AND ce.status IN ('pending', 'approved')
+  `, [classId]);
+  return enrollments;
+}
+
+async function findClassById(id) {
+  const [[cls]] = await pool.query('SELECT * FROM classes WHERE id = ?', [id]);
+  return cls || null;
+}
+
+// --- TRUY VẤN ĐẶT CHỖ (ENROLLMENT) ---
+async function checkExistingEnrollment(classId, userId) {
+  const [[existing]] = await pool.query(
+    `SELECT id FROM class_enrollments WHERE class_id = ? AND user_id = ? AND status IN ('pending', 'approved')`,
+    [classId, userId]
+  );
+  return existing || null;
+}
+
+async function createEnrollment(classId, userId) {
+  const [result] = await pool.query(`INSERT INTO class_enrollments (class_id, user_id) VALUES (?, ?)`, [classId, userId]);
+  return result.insertId;
+}
+
+async function findBookingsByUserId(userId) {
+  const [rows] = await pool.query(`
+    SELECT ce.id AS enrollment_id, ce.status, ce.booking_type, ce.payment_status, ce.created_at,
+           c.name, c.instructor, c.day, c.time, c.level, c.capacity
+    FROM class_enrollments ce
+    JOIN classes c ON ce.class_id = c.id
+    WHERE ce.user_id = ?
+    ORDER BY ce.created_at DESC
+  `, [userId]);
+  return rows;
+}
+
+async function updateEnrollmentStatus(enrollmentId, userId, status) {
+  await pool.query(`UPDATE class_enrollments SET status = ? WHERE id = ? AND user_id = ?`, [status, enrollmentId, userId]);
+}
+
+// --- TRUY VẤN ADMIN APPROVALS ---
+async function findPendingEnrollments() {
+  const [rows] = await pool.query(`
+    SELECT ce.id AS enrollment_id, ce.created_at, ce.booking_type, ce.payment_status,
+           u.full_name AS user_fullname, u.username,
+           c.name AS class_name, c.instructor, c.day AS class_day, c.time AS class_time
+    FROM class_enrollments ce
+    JOIN users u ON ce.user_id = u.id
+    JOIN classes c ON ce.class_id = c.id
+    WHERE ce.status = 'pending'
+    ORDER BY ce.created_at ASC
+  `);
+  return rows;
+}
+
+async function approveEnrollment(enrollmentId, adminId) {
+  await pool.query(`UPDATE class_enrollments SET status = 'approved', approved_by = ?, approved_at = NOW() WHERE id = ?`, [adminId, enrollmentId]);
+}
+
+async function rejectEnrollment(enrollmentId, adminId, note) {
+  await pool.query(`UPDATE class_enrollments SET status = 'rejected', admin_note = ?, approved_by = ?, approved_at = NOW() WHERE id = ?`, [note || null, adminId, enrollmentId]);
+}
+
+// --- TRUY VẤN ADMIN CRUD CLASS ---
+async function createClass(data) {
+  const { name, instructor, day, time, level, capacity } = data;
+  await pool.query(
+    'INSERT INTO classes (name, instructor, day, time, level, capacity) VALUES (?,?,?,?,?,?)',
+    [name, instructor || null, day, time, level, parseInt(capacity) || 10]
+  );
+}
+
+async function updateClass(id, data) {
+  const { name, instructor, day, time, level, capacity } = data;
+  await pool.query(
+    'UPDATE classes SET name=?, instructor=?, day=?, time=?, level=?, capacity=? WHERE id=?',
+    [name, instructor || null, day, time, level, parseInt(capacity) || 10, id]
+  );
+}
+
+async function deleteClass(id) {
+  // Bắt buộc xóa ở bảng con (class_enrollments) trước để tránh lỗi Khóa ngoại (Foreign Key)
+  await pool.query('DELETE FROM class_enrollments WHERE class_id=?', [id]);
+  // Sau đó mới xóa lớp ở bảng cha
+  await pool.query('DELETE FROM classes WHERE id=?', [id]);
+}
+
+module.exports = {
+  countMembers, countStaff, countBookingsByUser, countClasses,
+  findAllClasses, findEnrollmentsByClassId, findClassById,
+  checkExistingEnrollment, createEnrollment, findBookingsByUserId, updateEnrollmentStatus,
+  findPendingEnrollments, approveEnrollment, rejectEnrollment,
+  createClass, updateClass, deleteClass
+};

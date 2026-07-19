@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const ctrl = require('../controllers/equipment.controller');
-const { requireAdminOrStaff } = require('../middleware/admin.middleware');
+const Auth = require('../middleware/auth.middleware');
 
-router.get('/', requireAdminOrStaff, ctrl.index);
-router.post('/create', requireAdminOrStaff, ctrl.create);
-router.post('/:id/update', requireAdminOrStaff, ctrl.update);
-router.post('/:id/delete', requireAdminOrStaff, ctrl.remove);
+router.get('/', Auth.role('admin', 'staff'), ctrl.index);
+router.post('/create', Auth.role('admin', 'staff'), ctrl.create);
+router.post('/:id/update', Auth.role('admin', 'staff'), ctrl.update);
+router.post('/:id/delete', Auth.role('admin', 'staff'), ctrl.remove);
 
 module.exports = router;

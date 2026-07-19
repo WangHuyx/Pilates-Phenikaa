@@ -1,0 +1,132 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div>
+    <h1 class="page-title">Quản lý Gói tập</h1>
+    <p class="lede">Đăng ký và theo dõi lịch sử tập luyện của bạn</p>
+  </div>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <div class="view-toggle" role="tablist" aria-label="Chế độ xem gói tập">
+      <button type="button" class="view-toggle-btn active" data-view="buy-view" role="tab" aria-selected="true"><i class="ti ti-shopping-cart"></i> Mua gói mới</button>
+      <button type="button" class="view-toggle-btn" data-view="history-view" role="tab" aria-selected="false"><i class="ti ti-history"></i> Gói của tôi</button>
+    </div>
+  </div>
+</div>
+
+<% if (success) { %>
+  <div class="alert alert-success"><i class="ti ti-circle-check"></i> <%= success %></div>
+<% } %>
+<% if (error) { %>
+  <div class="alert alert-error"><i class="ti ti-alert-circle"></i> <%= error %></div>
+<% } %>
+
+<!-- ───── Tab: Mua Gói Mới ───── -->
+<div id="buy-view">
+  <div class="package-grid">
+    <% if (!packages.length) { %>
+      <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#6b7280;">
+        <i class="ti ti-package" style="font-size:2.5rem;opacity:.35;"></i>
+        <p style="margin-top:12px;">Hiện tại chưa có gói tập nào mở bán.</p>
+      </div>
+    <% } %>
+    
+    <% packages.forEach(pkg => { %>
+    <div class="package-card">
+      <div class="package-card-top">
+        <span class="pkg-status-badge" style="background:#dbeafe;color:#1e40af;">
+          <%= pkg.duration_days %> Ngày
+        </span>
+      </div>
+
+      <h3 class="package-card-name"><%= pkg.name %></h3>
+      <p class="package-card-price"><%= Number(pkg.price).toLocaleString('vi-VN') %>đ</p>
+      
+      <% if (pkg.description) { %>
+      <p class="package-card-desc"><%= pkg.description %></p>
+      <% } %>
+
+      <div class="package-card-actions" style="margin-top: 20px;">
+        <form method="POST" action="/packages/buy" onsubmit="return confirm('Xác nhận đăng ký và thanh toán gói «<%= pkg.name %>»?')" style="width:100%;">
+          <input type="hidden" name="package_id" value="<%= pkg.id %>">
+          <button class="btn btn-primary" type="submit" style="width:100%;">
+            <i class="ti ti-shopping-cart"></i> Đăng ký
+          </button>
+        </form>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+</div>
+
+<!-- ───── Tab: Gói Của Tôi (Lịch Sử) ───── -->
+<div id="history-view" style="display:none;">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="ti ti-history"></i> Lịch sử đăng ký</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Gói tập</th>
+            <th>Thanh toán</th>
+            <th>Kích hoạt</th>
+            <th>Hết hạn</th>
+            <th>Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!myMemberships || !myMemberships.length) { %>
+            <tr><td colspan="5" style="text-align:center;color:#6b7280;padding:28px;">Bạn chưa đăng ký gói tập nào.</td></tr>
+          <% } %>
+          <% (myMemberships || []).forEach(m => { %>
+            <tr>
+              <td><strong><%= m.package_name %></strong></td>
+              <td><%= Number(m.price_paid).toLocaleString('vi-VN') %>đ</td>
+              <td style="font-size:0.85rem;"><%= m.activated_at ? new Date(m.activated_at).toLocaleDateString('vi-VN') : '—' %></td>
+              <td style="font-size:0.85rem;"><%= m.expired_at ? new Date(m.expired_at).toLocaleDateString('vi-VN') : '—' %></td>
+              <td>
+                <% 
+                  const isExp = m.expired_at && new Date(m.expired_at) < new Date(); 
+                  const isCancelled = m.payment_status === 'cancelled';
+                %>
+                <% if (isCancelled) { %>
+                  <span class="badge" style="background:#f3f4f6;color:#374151;border-color:#d1d5db">Đã hủy</span>
+                <% } else if (isExp) { %>
+                  <span class="badge" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5">Hết hạn</span>
+                <% } else { %>
+                  <span class="badge" style="background:#dcfce7;color:#15803d;border-color:#86efac">Đang dùng</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// Logic xử lý chuyển Tab
+(function () {
+  var toggleBtns = document.querySelectorAll('.view-toggle-btn');
+  var views = {
+    'buy-view': document.getElementById('buy-view'),
+    'history-view': document.getElementById('history-view')
+  };
+  
+  toggleBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      toggleBtns.forEach(function (b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      var target = btn.getAttribute('data-view');
+      Object.keys(views).forEach(function (key) {
+        if(views[key]) views[key].style.display = key === target ? '' : 'none';
+      });
+    });
+  });
+})();
+</script>
+
+<%- include('../partials/footer') %>

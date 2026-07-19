@@ -1,5 +1,5 @@
-const pkgRepo  = require('../repositories/package.repository');
-const userRepo = require('../repositories/user.repository');
+const pkgRepo  = require('../../repositories/package/package.repository');
+const userRepo = require('../../repositories/user.repository');
 
 function flash(req, key, msg) { req.session[key] = msg; }
 function popFlash(req) {
@@ -21,7 +21,7 @@ async function index(req, res, next) {
         userRepo.findAll(),
         pkgRepo.countActive(),
       ]);
-      res.render('packages', { // Render file packages.ejs (Của Admin)
+      res.render('package/packages', { // Render file packages.ejs (Của Admin)
         title: 'Quản lý Gói tập', user: req.session.user,
         packages, memberships, members: users,
         activeCount, ...popFlash(req),
@@ -36,7 +36,7 @@ async function index(req, res, next) {
       
       const activePackages = allPackages.filter(p => p.is_active === 1);
       
-      res.render('member-packages', { 
+      res.render('package/member-packages', { 
         title: 'Gói tập của tôi', user: req.session.user,
         packages: activePackages,
         myMemberships, // Truyền dữ liệu ra View

@@ -162,7 +162,7 @@ CREATE INDEX idx_courses_trainer ON courses(trainer_id);
 -- 7. PACKAGES TABLE
 -- NOTE: bảng này không được module Gói tập của ứng dụng sử dụng
 -- (xem src/repositories/package.repository.js) — giữ lại để tương thích
--- ngược, gói tập thực tế nằm ở bảng MEMBERSHIP_PACKAGES bên dưới.
+-- ngược, gói tập thực tế nằm ở bảng membership_packages bên dưới.
 -- =============================================
 CREATE TABLE packages (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -177,68 +177,71 @@ CREATE TABLE packages (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- =============================================
--- 7b. MEMBERSHIP_PACKAGES TABLE (bảng thật được ứng dụng sử dụng)
--- Được đọc/ghi bởi src/repositories/package.repository.js và hiển thị
--- tại trang /packages (Quản lý Gói tập).
--- =============================================
+-- NOTE:AI không sửa hàm này.Đây là bảng cố định chung
 CREATE TABLE membership_packages (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
-    category VARCHAR(50) DEFAULT 'Pilates',
-    price DECIMAL(12, 0) NOT NULL,
-    duration_days INT NOT NULL,
-    description TEXT,
-    features TEXT COMMENT 'Mỗi dòng 1 tính năng, phân tách bằng \n',
+id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    price INT NOT NULL,                          -- Lưu số nguyên, tương ứng với parseInt ở Backend
+    duration_days INT NOT NULL,                  -- Lưu số nguyên, tương ứng với parseInt ở Backend
+    description TEXT DEFAULT NULL,             -- Mặc định là NULL nếu không truyền vào
     is_active TINYINT(1) NOT NULL DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-INSERT INTO membership_packages (name, category, price, duration_days, description, features) VALUES
-('Gói tháng cơ bản',  'Pilates',      500000,  30,  'Tập không giới hạn trong 1 tháng', NULL),
-('Gói tháng Premium', 'PT Cá nhân',   800000,  30,  'Tập không giới hạn + 2 buổi PT hàng tuần', '10 buổi tập 1-1\nLịch tập linh hoạt\nTư vấn dinh dưỡng'),
-('Gói 3 tháng',       'Combo',        1350000, 90,  'Tiết kiệm 10% so với gói tháng', 'Tất cả lớp group\nĐánh giá thể lực định kỳ'),
-('Gói 6 tháng',       'Yoga',         2500000, 180, 'Tiết kiệm 17% so với gói tháng', 'Tất cả lớp Yoga\nThiền định & Thư giãn'),
-('Gói năm',           'Combo',        4500000, 365, 'Tiết kiệm 25% - ưu đãi tốt nhất', 'Vào tập tự do\nƯu tiên đặt lịch');
-
--- =============================================
--- 8. ROOMS TABLE
--- =============================================
-CREATE TABLE rooms (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    room_code VARCHAR(20) NOT NULL UNIQUE,
-    name VARCHAR(100) NOT NULL,
-    capacity INT DEFAULT 10,
-    status ENUM('available', 'maintenance', 'closed') DEFAULT 'available',
-    description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- NOTE:AI không sửa hàm này.Đây là bảng cố định chung
+CREATE TABLE user_subscriptions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    package_id INT NOT NULL,
+    price_paid INT NOT NULL,                    -- Giá thực tế user trả (để làm báo cáo doanh thu)
+    activated_at DATETIME NOT NULL,             -- Thời điểm gói bắt đầu kích hoạt
+    expired_at DATETIME NOT NULL,               -- Thời điểm gói hết hạn
+    payment_status VARCHAR(50) DEFAULT 'completed', -- Trạng thái: 'pending', 'completed', 'failed'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Khai báo khóa ngoại (Foreign Key) để ràng buộc dữ liệu
+    FOREIGN KEY (package_id) REFERENCES membership_packages(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+-- =============================================
+-- 8. BỎ KHÔNG DÙNG
+-- =============================================
+-- CREATE TABLE rooms (
+--     id INT PRIMARY KEY AUTO_INCREMENT,
+--     room_code VARCHAR(20) NOT NULL UNIQUE,
+--     name VARCHAR(100) NOT NULL,
+--     capacity INT DEFAULT 10,
+--     status ENUM('available', 'maintenance', 'closed') DEFAULT 'available',
+--     description TEXT,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- );
+
 CREATE INDEX idx_rooms_code ON rooms(room_code);
 
 -- =============================================
--- 9. SCHEDULES TABLE
+-- 9. Bỏ không dùng
 -- =============================================
-CREATE TABLE schedules (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    schedule_code VARCHAR(20) NOT NULL UNIQUE,
-    date DATE NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL,
-    room_id INT,
-    trainer_id INT,
-    course_id INT,
-    max_students INT DEFAULT 10,
-    current_students INT DEFAULT 0,
-    status ENUM('scheduled', 'completed', 'cancelled') DEFAULT 'scheduled',
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL ON UPDATE CASCADE
-);
+-- CREATE TABLE schedules (
+--     id INT PRIMARY KEY AUTO_INCREMENT,
+--     schedule_code VARCHAR(20) NOT NULL UNIQUE,
+--     date DATE NOT NULL,
+--     start_time TIME NOT NULL,
+--     end_time TIME NOT NULL,
+--     room_id INT,
+--     trainer_id INT,
+--     course_id INT,
+--     max_students INT DEFAULT 10,
+--     current_students INT DEFAULT 0,
+--     status ENUM('scheduled', 'completed', 'cancelled') DEFAULT 'scheduled',
+--     notes TEXT,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE SET NULL ON UPDATE CASCADE,
+--     FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE SET NULL ON UPDATE CASCADE,
+--     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL ON UPDATE CASCADE
+-- );
 
 CREATE INDEX idx_schedules_date ON schedules(date);
 CREATE INDEX idx_schedules_room ON schedules(room_id);
@@ -296,33 +299,27 @@ CREATE INDEX idx_payments_date ON payments(payment_date);
 CREATE INDEX idx_payments_status ON payments(status);
 
 -- =============================================
--- 12. MEMBER_PACKAGES TABLE (FIX: bảng mới)
--- Theo dõi gói tập nào đang active/expired cho từng hội viên
--- NOTE: bảng này không được ứng dụng sử dụng — xem MEMBER_MEMBERSHIPS bên dưới.
+-- 12. Bỏ không dùng
 -- =============================================
-CREATE TABLE member_packages (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    member_id INT NOT NULL,
-    package_id INT NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    status ENUM('active', 'expired', 'cancelled') DEFAULT 'active',
-    payment_id INT,
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE SET NULL ON UPDATE CASCADE
-);
+-- CREATE TABLE member_packages (
+--     id INT PRIMARY KEY AUTO_INCREMENT,
+--     member_id INT NOT NULL,
+--     package_id INT NOT NULL,
+--     start_date DATE NOT NULL,
+--     end_date DATE NOT NULL,
+--     status ENUM('active', 'expired', 'cancelled') DEFAULT 'active',
+--     payment_id INT,
+--     notes TEXT,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE ON UPDATE CASCADE,
+--     FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+--     FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE SET NULL ON UPDATE CASCADE
+-- );
 
-CREATE INDEX idx_member_packages_member ON member_packages(member_id);
-CREATE INDEX idx_member_packages_status ON member_packages(status);
 
 -- =============================================
--- 12b. MEMBER_MEMBERSHIPS TABLE (bảng thật được ứng dụng sử dụng)
--- Ghi lại việc gán MEMBERSHIP_PACKAGES cho USERS (không phải MEMBERS),
--- được tạo qua form "Gán gói cho hội viên" tại /packages/assign.
+-- 12b.
 -- =============================================
 CREATE TABLE member_memberships (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -400,6 +397,35 @@ CREATE INDEX idx_employee_schedule_assignments_employee ON employee_schedule_ass
 -- =============================================
 
 DELIMITER //
+
+-- NOTE:AI không sửa hàm này.Đây là bảng cố định chung
+CREATE TRIGGER before_class_enrollments_insert
+BEFORE INSERT ON class_enrollments
+FOR EACH ROW
+BEGIN
+    -- Biến tạm để lưu ID của gói (nếu có)
+    DECLARE active_sub_id INT DEFAULT NULL;
+
+    -- Kiểm tra xem user có gói tập nào đang hoạt động không
+    -- Điều kiện: payment_status là completed VÀ expired_at phải lớn hơn hoặc bằng hiện tại
+    SELECT id INTO active_sub_id
+    FROM user_subscriptions
+    WHERE user_id = NEW.user_id 
+      AND payment_status = 'completed' 
+      AND expired_at >= NOW()
+    ORDER BY expired_at DESC 
+    LIMIT 1; -- Lấy gói có hạn sử dụng xa nhất nếu có nhiều gói
+
+    -- Logic gán giá trị tự động
+    IF active_sub_id IS NOT NULL THEN
+        -- TH1: Đang có vé tháng
+        SET NEW.booking_type = 1;
+        SET NEW.subscription_id = active_sub_id; -- Tự động link luôn ID của gói vào để đối soát
+    ELSE
+        -- TH2: Không có vé tháng (mua lẻ)
+        SET NEW.booking_type = 0;
+    END IF;
+END //
 
 -- Auto generate member_code
 CREATE TRIGGER trg_member_code BEFORE INSERT ON members
@@ -706,12 +732,8 @@ INSERT INTO attendances (member_id, schedule_id, status) VALUES
 INSERT INTO staffs (full_name, email, phone, role, salary, user_id) VALUES
 ('Nguyễn Văn A', 'staff1@pilates.com', '0901234568', 'Lễ tân', 8000000, 2);
 
--- =============================================
--- SIMPLE CLASSES SCHEMA (Tương thích với app Node.js hiện tại)
--- NOTE: Đây là giải pháp tạm thời. Hai bảng này sẽ được xóa khi app
--- được kết nối đầy đủ với schema chính (courses / schedules).
--- =============================================
-CREATE TABLE IF NOT EXISTS simple_classes (
+-- NOTE:AI không sửa hàm này.Đây là bảng cố định chung
+CREATE TABLE IF NOT EXISTS classes (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(200) NOT NULL,
     instructor VARCHAR(100) NOT NULL,
@@ -721,16 +743,28 @@ CREATE TABLE IF NOT EXISTS simple_classes (
     capacity INT DEFAULT 10
 );
 
-CREATE TABLE IF NOT EXISTS simple_class_enrollments (
+-- NOTE:AI không sửa hàm này.Đây là bảng cố định chung
+CREATE TABLE class_enrollments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     class_id INT NOT NULL,
     user_id INT NOT NULL,
-    PRIMARY KEY (class_id, user_id),
-    FOREIGN KEY (class_id) REFERENCES simple_classes(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+    
+    status VARCHAR(50) DEFAULT 'pending', 
+    
+    -- booking_type: 1 (Có vé tháng - TH1), 0 (Mua lẻ/Không vé - TH2)
+    booking_type TINYINT(1) NOT NULL DEFAULT 0,    
+    payment_status VARCHAR(50) DEFAULT 'completed', 
+    subscription_id INT DEFAULT NULL,     
 
-INSERT INTO simple_classes (id, name, instructor, day, time, level, capacity) VALUES
-(1, 'Beginner Mat Pilates',   'Jenny Tran',  'Mon & Wed', '07:00 - 08:00', 'Beginner',    12),
-(2, 'Reformer Pilates Flow',  'Mark Nguyen', 'Tue & Thu', '18:00 - 19:00', 'Intermediate', 8),
-(3, 'Advanced Power Pilates', 'Linh Pham',   'Friday',    '17:30 - 18:45', 'Advanced',    10),
-(4, 'Prenatal Pilates',       'Hoa Le',      'Saturday',  '09:00 - 10:00', 'All levels',  10);
+    approved_by INT DEFAULT NULL,         
+    approved_at DATETIME DEFAULT NULL,    
+    admin_note TEXT,                      
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (subscription_id) REFERENCES user_subscriptions(id) ON DELETE SET NULL,
+    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL
+);

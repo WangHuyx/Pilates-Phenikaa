@@ -10,14 +10,14 @@
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
-const config = require('./config/config');
+require('dotenv').config();
 
 const indexRoutes = require('./routes/index.routes');
 const authRoutes = require('./routes/auth.routes');
-const classRoutes = require('./routes/class.routes');
+const classRoutes = require('./routes/class/class.routes');
 const accountRoutes  = require('./routes/account.routes');
 const employeeRoutes = require('./routes/employee.routes');
-const packageRoutes   = require('./routes/package.routes');
+const packageRoutes   = require('./routes/package/package.routes');
 const financeRoutes   = require('./routes/finance.routes');
 const reportsRoutes   = require('./routes/reports.routes');
 const trainerRoutes     = require('./routes/trainer.routes');
@@ -41,9 +41,10 @@ app.use(express.static(path.join(__dirname, '..', 'public'))); // CSS/images
 // only — it leaks memory and won't scale across multiple server
 // instances. When you add a real database, swap in a matching session
 // store, e.g. `connect-mongo` (MongoDB) or `connect-pg-simple` (Postgres).
+const sessionSecret = process.env.SESSION_SECRET || 'Huynguyen_726';
 app.use(
   session({
-    secret: config.sessionSecret,
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 1000 * 60 * 60 * 2 }, // 2 hours

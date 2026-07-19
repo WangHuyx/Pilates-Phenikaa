@@ -1,4 +1,4 @@
-<%- include('partials/header') %>
+<%- include('../partials/header') %>
 
 <div class="page-head">
   <div>
@@ -9,7 +9,7 @@
     <div class="view-toggle" role="tablist" aria-label="Chế độ xem gói tập">
       <button type="button" class="view-toggle-btn active" data-view="packages" role="tab" aria-selected="true"><i class="ti ti-package"></i> Gói tập</button>
       <button type="button" class="view-toggle-btn" data-view="list" role="tab" aria-selected="false"><i class="ti ti-list"></i> Danh sách</button>
-      <button type="button" class="view-toggle-btn" data-view="assign" role="tab" aria-selected="false"><i class="ti ti-user-check"></i> Gán gói</button>
+      <!-- <button type="button" class="view-toggle-btn" data-view="assign" role="tab" aria-selected="false"><i class="ti ti-user-check"></i> Gán gói</button> -->
     </div>
     <button onclick="openAddModal()" class="btn btn-primary">
       <i class="ti ti-plus"></i> Thêm gói tập
@@ -53,11 +53,13 @@
   %>
   <div class="package-card" data-cat="<%= (pkg.category||'').toLowerCase().replace(/\s+/g,'-') %>">
     <div class="package-card-top">
-      <span class="pkg-cat-badge" style="background:<%= cs.bg %>;color:<%= cs.color %>;">
-        <%= pkg.category || 'Gói tập' %>
-      </span>
-      <span class="pkg-status-badge">
-        <i class="ti ti-circle-check-filled"></i> Active
+      <!-- Xóa bỏ phần category badge vì bạn đã bỏ trường này trong database -->
+      <span class="pkg-status-badge" style="<%= pkg.is_active === 0 ? 'background:#fee2e2;color:#dc2626;border-color:#fca5a5' : '' %>">
+        <% if (pkg.is_active === 0) { %>
+          <i class="ti ti-circle-x-filled"></i> Đã ẩn
+        <% } else { %>
+          <i class="ti ti-circle-check-filled"></i> Active
+        <% } %>
       </span>
     </div>
 
@@ -121,64 +123,36 @@
                 <span style="color:#9ca3af;font-size:0.8rem;margin-left:4px;">(<%= m.username %>)</span>
               </td>
               <td><%= m.package_name %></td>
-              <td style="font-size:0.85rem;"><%= m.start_date ? new Date(m.start_date).toLocaleDateString('vi-VN') : '—' %></td>
-              <td style="font-size:0.85rem;"><%= m.end_date   ? new Date(m.end_date).toLocaleDateString('vi-VN')   : '—' %></td>
+              
+              <!-- Cập nhật start_date thành activated_at -->
+              <td style="font-size:0.85rem;"><%= m.activated_at ? new Date(m.activated_at).toLocaleDateString('vi-VN') : '—' %></td>
+              
+              <!-- Cập nhật end_date thành expired_at -->
+              <td style="font-size:0.85rem;"><%= m.expired_at   ? new Date(m.expired_at).toLocaleDateString('vi-VN')   : '—' %></td>
+              
               <td>
-                <% const isExp = m.end_date && new Date(m.end_date) < new Date(); %>
-                <span class="badge" style="<%= isExp ? 'background:#fee2e2;color:#dc2626;border-color:#fca5a5' : 'background:#dcfce7;color:#15803d;border-color:#86efac' %>">
-                  <%= isExp ? 'Hết hạn' : (m.status === 'active' ? 'Hoạt động' : m.status) %>
-                </span>
+                <% 
+                  // Logic trạng thái mới dựa trên expired_at và payment_status
+                  const isExp = m.expired_at && new Date(m.expired_at) < new Date(); 
+                  const isCancelled = m.payment_status === 'cancelled';
+                %>
+                <% if (isCancelled) { %>
+                  <span class="badge" style="background:#f3f4f6;color:#374151;border-color:#d1d5db">Đã hủy</span>
+                <% } else if (isExp) { %>
+                  <span class="badge" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5">Hết hạn</span>
+                <% } else { %>
+                  <span class="badge" style="background:#dcfce7;color:#15803d;border-color:#86efac">Hoạt động</span>
+                <% } %>
               </td>
               <td>
-                <form method="POST" action="/packages/membership/<%= m.id %>/delete" onsubmit="return confirm('Xóa đăng ký này?')">
-                  <button class="btn-icon btn-danger" type="submit" title="Xóa"><i class="ti ti-trash"></i></button>
+                <form method="POST" action="/packages/membership/<%= m.id %>/delete" onsubmit="return confirm('Hủy đăng ký này?')">
+                  <button class="btn-icon btn-danger" type="submit" title="Hủy đăng ký"><i class="ti ti-trash"></i></button>
                 </form>
               </td>
             </tr>
           <% }) %>
         </tbody>
       </table>
-    </div>
-  </div>
-</div>
-
-<div id="membership-assign-view" style="display:none;">
-  <div class="card">
-    <div class="card-header"><span class="card-title"><i class="ti ti-user-check"></i> Gán gói cho hội viên</span></div>
-    <div class="card-body">
-      <form method="POST" action="/packages/assign">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Hội viên <span class="req">*</span></label>
-            <select name="user_id" required>
-              <option value="">-- Chọn hội viên --</option>
-              <% members.forEach(m => { %>
-                <option value="<%= m.id %>"><%= m.full_name %> (<%= m.username %>)</option>
-              <% }) %>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Gói tập <span class="req">*</span></label>
-            <select name="package_id" required>
-              <option value="">-- Chọn gói tập --</option>
-              <% packages.forEach(pkg => { %>
-                <option value="<%= pkg.id %>"><%= pkg.name %> — <%= Number(pkg.price).toLocaleString('vi-VN') %>đ</option>
-              <% }) %>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Ngày bắt đầu <span class="req">*</span></label>
-            <input type="date" name="start_date" required value="<%= new Date().toISOString().split('T')[0] %>" />
-          </div>
-          <div class="form-group">
-            <label>Ghi chú</label>
-            <input type="text" name="note" placeholder="Ghi chú..." />
-          </div>
-        </div>
-        <button class="btn btn-primary" type="submit" style="margin-top:16px;">
-          <i class="ti ti-user-check"></i> Gán gói
-        </button>
-      </form>
     </div>
   </div>
 </div>
@@ -192,19 +166,11 @@
     </div>
     <form method="POST" action="/packages">
       <div class="form-grid">
-        <div class="form-group">
+        <div class="form-group full">
           <label>Tên gói <span class="req">*</span></label>
-          <input type="text" name="name" placeholder="VD: Gói Pilates 1 tháng" required />
+          <input type="text" name="name" placeholder="VD: Gói Gym 1 tháng" required />
         </div>
-        <div class="form-group">
-          <label>Danh mục</label>
-          <select name="category">
-            <option value="Pilates">Pilates</option>
-            <option value="Yoga">Yoga</option>
-            <option value="PT Cá nhân">PT Cá nhân</option>
-            <option value="Combo">Combo</option>
-          </select>
-        </div>
+        
         <div class="form-group">
           <label>Giá (VNĐ) <span class="req">*</span></label>
           <input type="number" name="price" placeholder="VD: 1500000" min="0" required />
@@ -216,10 +182,6 @@
         <div class="form-group full">
           <label>Mô tả</label>
           <input type="text" name="description" placeholder="Mô tả ngắn về gói..." />
-        </div>
-        <div class="form-group full">
-          <label>Tính năng <span style="color:#9ca3af;font-weight:400;">(mỗi dòng 1 tính năng)</span></label>
-          <textarea name="features" rows="4" placeholder="Vào tập tự do&#10;Tham gia tất cả lớp Pilates&#10;..."></textarea>
         </div>
       </div>
       <div style="display:flex;gap:10px;margin-top:18px;">
@@ -239,19 +201,11 @@
     </div>
     <form id="edit-form" method="POST" action="">
       <div class="form-grid">
-        <div class="form-group">
+        <div class="form-group full">
           <label>Tên gói <span class="req">*</span></label>
           <input type="text" id="edit-name" name="name" required />
         </div>
-        <div class="form-group">
-          <label>Danh mục</label>
-          <select id="edit-category" name="category">
-            <option value="Pilates">Pilates</option>
-            <option value="Yoga">Yoga</option>
-            <option value="PT Cá nhân">PT Cá nhân</option>
-            <option value="Combo">Combo</option>
-          </select>
-        </div>
+        
         <div class="form-group">
           <label>Giá (VNĐ) <span class="req">*</span></label>
           <input type="number" id="edit-price" name="price" min="0" required />
@@ -265,8 +219,11 @@
           <input type="text" id="edit-description" name="description" />
         </div>
         <div class="form-group full">
-          <label>Tính năng <span style="color:#9ca3af;font-weight:400;">(mỗi dòng 1 tính năng)</span></label>
-          <textarea id="edit-features" name="features" rows="4"></textarea>
+          <label>Trạng thái</label>
+          <select id="edit-is-active" name="is_active">
+            <option value="1">Hoạt động (Active)</option>
+            <option value="0">Đã ẩn / Ngừng hoạt động</option>
+          </select>
         </div>
       </div>
       <div style="display:flex;gap:10px;margin-top:18px;">
@@ -290,11 +247,14 @@ function openEditModal(pkg) {
   document.getElementById('edit-price').value       = pkg.price || '';
   document.getElementById('edit-duration').value    = pkg.duration_days || '';
   document.getElementById('edit-description').value = pkg.description || '';
-  document.getElementById('edit-features').value    = pkg.features || '';
-  var sel = document.getElementById('edit-category');
-  for (var i=0; i<sel.options.length; i++) {
-    sel.options[i].selected = sel.options[i].value === (pkg.category || 'Pilates');
+  
+  // Bind trạng thái is_active
+  var selStatus = document.getElementById('edit-is-active');
+  if (selStatus) {
+    // Nếu gói đang bị ẩn (is_active = 0), chọn option 0. Ngược lại mặc định là 1.
+    selStatus.value = (pkg.is_active === 0) ? "0" : "1";
   }
+
   document.getElementById('edit-form').action = '/packages/' + pkg.id + '/update';
   document.getElementById('edit-modal').style.display = 'flex';
 }
@@ -323,4 +283,4 @@ function closeEditModal() {
 })();
 </script>
 
-<%- include('partials/footer') %>
+<%- include('../partials/footer') %>

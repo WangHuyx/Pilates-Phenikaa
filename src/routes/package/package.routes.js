@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const ctrl = require('../controllers/package.controller');
-const Auth = require('../middleware/auth.middleware');
+const ctrl = require('../../controllers/package/package.controller');
+const Auth = require('../../middleware/auth.middleware');
 
 router.get('/', Auth.role('admin', 'member'), ctrl.index);
 router.post('/buy', Auth.role('member'), ctrl.buyPackage);

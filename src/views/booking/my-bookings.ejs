@@ -1,0 +1,83 @@
+<%- include('../partials/header', { title, user }) %>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Lớp đã đặt</p>
+    <h1>Lớp học đã đăng ký </h1>
+    <p class="lede">Danh sách các lớp bạn đã đặt chỗ.</p>
+  </div>
+</div>
+
+<% if (success) { %>
+  <div class="alert alert-success"><i class="ti ti-circle-check"></i> <%= success %></div>
+<% } %>
+<% if (error) { %>
+  <div class="alert alert-error"><i class="ti ti-alert-circle"></i> <%= error %></div>
+<% } %>
+
+<% if (myClasses.length === 0) { %>
+  <div class="empty-state">
+    <h1>Chưa có lớp nào</h1>
+    <p>Bạn chưa đăng ký lớp học nào. Khám phá lịch học và đặt chỗ ngay!</p>
+    <a class="btn btn-primary" href="/classes">Xem lịch học</a>
+  </div>
+<% } else { %>
+  <div class="card">
+    <div class="card-header"><span class="card-title"><i class="ti ti-bookmark"></i> Lớp học đã đặt (<%= myClasses.length %>)</span></div>
+    <div style="overflow-x:auto;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Tên lớp</th>
+            <th>HLV</th>
+            <th>Thứ</th>
+            <th>Giờ</th>
+            <th>Loại vé</th>
+            <th>Trạng thái</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% myClasses.forEach(function (c) { %>
+          <tr>
+            <td><strong><%= c.name %></strong></td>
+            <td style="font-size:0.88rem;"><%= c.instructor || 'Tự tập (Không PT)' %></td>
+            <td><%= c.day %></td>
+            <td><%= c.time %></td>
+            <td>
+              <!-- Xử lý hiển thị Loại vé -->
+              <% if (c.booking_type === 1) { %>
+                <span class="badge" style="background:#dbeafe;color:#1e40af">Vé tháng</span>
+              <% } else { %>
+                <span class="badge" style="background:#fef3c7;color:#b45309">Mua lẻ (<%= c.payment_status === 'completed' ? 'Đã TT' : 'Chưa TT' %>)</span>
+              <% } %>
+            </td>
+            <td>
+              <!-- Xử lý hiển thị Trạng thái duyệt -->
+              <% if (c.status === 'pending') { %>
+                <span class="badge" style="background:#fef08a;color:#854d0e;border-color:#fde047">⏳ Chờ duyệt</span>
+              <% } else if (c.status === 'approved') { %>
+                <span class="badge" style="background:#dcfce7;color:#15803d;border-color:#86efac">✓ Đã duyệt</span>
+              <% } else if (c.status === 'rejected') { %>
+                <span class="badge" style="background:#fee2e2;color:#dc2626;border-color:#fca5a5">✕ Từ chối</span>
+              <% } else { %>
+                <span class="badge" style="background:#f3f4f6;color:#374151">Đã hủy</span>
+              <% } %>
+            </td>
+            <td>
+              <!-- Chỉ cho phép hủy nếu chưa bị từ chối/hủy -->
+              <% if (c.status === 'pending' || c.status === 'approved') { %>
+                <form method="POST" action="/classes/<%= c.enrollment_id %>/cancel" onsubmit="return confirm('Hủy đặt chỗ lớp «<%= c.name %>»?')">
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="ti ti-x"></i> Hủy</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% } %>
+
+<%- include('../partials/footer') %>

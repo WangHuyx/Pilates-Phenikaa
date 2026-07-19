@@ -1,11 +1,11 @@
 const express = require('express');
 const router  = express.Router();
 const ctrl    = require('../controllers/employee.controller');
-const { requireAdmin } = require('../middleware/admin.middleware');
+const Auth = require('../middleware/auth.middleware');
 
 router.get('/:id/edit',               ctrl.showEdit);
 
-router.use(requireAdmin);
+router.use(Auth.role('admin'));
 
 router.get('/',                        ctrl.index);
 router.post('/create',                 ctrl.create);

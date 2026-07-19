@@ -1,6 +1,6 @@
 const paymentRepo = require('../repositories/payment.repository');
 const userRepo    = require('../repositories/user.repository');
-const packageRepo = require('../repositories/package.repository');
+const packageRepo = require('../repositories/package/package.repository');
 
 function flash(req, key, msg) { req.session[key] = msg; }
 function popFlash(req) {

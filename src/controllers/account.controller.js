@@ -95,8 +95,8 @@ const AccountController = {
 
       const [bookings] = await pool.query(
         `SELECT sc.name, sc.instructor, sc.day, sc.time, sc.level
-         FROM simple_class_enrollments e
-         JOIN simple_classes sc ON e.class_id = sc.id
+         FROM class_enrollments e
+         JOIN classes sc ON e.class_id = sc.id
          WHERE e.user_id=? ORDER BY sc.day, sc.time`, [id]
       );
       const [memberships] = await pool.query(

@@ -7,9 +7,10 @@
  */
 
 const app = require('./app');
-const config = require('./config/config');
+// require('dotenv').config();
+const port = process.env.PORT || 3000;
 
-app.listen(config.port, () => {
-  console.log(`Pilates Phenikaa app running at http://localhost:${config.port}`);
+app.listen(port, () => {
+  console.log(`Pilates Phenikaa app running at http://localhost:${port}`);
   console.log('username: admin | password: Pilates@123');
 });

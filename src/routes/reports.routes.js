@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const ctrl = require('../controllers/reports.controller');
-const { requireAdmin } = require('../middleware/admin.middleware');
+const Auth = require('../middleware/auth.middleware');
 
-router.get('/', requireAdmin, ctrl.index);
-router.get('/export/finance', requireAdmin, ctrl.exportFinanceExcel);
+router.get('/', Auth.role('admin'), ctrl.index);
+router.get('/export/finance', Auth.role('admin'), ctrl.exportFinanceExcel);
 
 module.exports = router;

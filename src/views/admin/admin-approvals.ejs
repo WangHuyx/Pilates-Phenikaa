@@ -1,0 +1,128 @@
+<%- include('../partials/header') %>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Quản lý Đặt chỗ</p>
+    <h1 class="page-title">Kiểm duyệt yêu cầu</h1>
+    <p class="lede">Danh sách các hội viên đang chờ Admin xét duyệt vào lớp học.</p>
+  </div>
+  <div>
+    <a href="/classes/manage" class="btn btn-secondary"><i class="ti ti-settings"></i> Quản lý lớp học</a>
+  </div>
+</div>
+
+<% if (success) { %>
+  <div class="alert alert-success"><i class="ti ti-circle-check"></i> <%= success %></div>
+<% } %>
+<% if (error) { %>
+  <div class="alert alert-error"><i class="ti ti-alert-circle"></i> <%= error %></div>
+<% } %>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title"><i class="ti ti-list-check"></i> Yêu cầu chờ duyệt (<%= pendingEnrollments.length %>)</span>
+  </div>
+  
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Thời gian gửi</th>
+          <th>Hội viên</th>
+          <th>Lớp học</th>
+          <th>Lịch học</th>
+          <th>Loại vé & Thanh toán</th>
+          <th style="text-align: right;">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (pendingEnrollments.length === 0) { %>
+          <tr>
+            <td colspan="6" style="text-align:center; padding:40px; color:#6b7280;">
+              <i class="ti ti-check" style="font-size:2rem; color:#10b981; margin-bottom:10px; display:block;"></i>
+              Tuyệt vời! Không có yêu cầu nào đang chờ xử lý.
+            </td>
+          </tr>
+        <% } else { %>
+          <% pendingEnrollments.forEach(function(req) { %>
+            <tr>
+              <!-- Thời gian gửi yêu cầu -->
+              <td style="font-size:0.85rem; color:#6b7280;">
+                <%= new Date(req.created_at).toLocaleString('vi-VN') %>
+              </td>
+              
+              <!-- Thông tin hội viên -->
+              <td>
+                <strong><%= req.user_fullname %></strong>
+                <div style="font-size:0.8rem; color:#6b7280;">@<%= req.username %></div>
+              </td>
+              
+              <!-- Thông tin lớp -->
+              <td>
+                <span style="font-weight:600; color:#111827;"><%= req.class_name %></span>
+                <div style="font-size:0.8rem; color:#6b7280;">HLV: <%= req.instructor || 'Không PT' %></div>
+              </td>
+              
+              <!-- Lịch học -->
+              <td style="font-size:0.85rem;">
+                <span style="display:inline-block; background:#f3f4f6; padding:2px 6px; border-radius:4px; border:1px solid #e5e7eb;">
+                  <%= req.class_day %> | <%= req.class_time %>
+                </span>
+              </td>
+              
+              <!-- Loại vé & Trạng thái thanh toán -->
+              <td>
+                <% if (req.booking_type === 1) { %>
+                  <span class="badge" style="background:#dbeafe;color:#1e40af;border-color:#bfdbfe">🎟️ Vé tháng</span>
+                <% } else { %>
+                  <span class="badge" style="background:#fef3c7;color:#b45309;border-color:#fde68a">💳 Mua lẻ</span>
+                  <div style="font-size:0.75rem; margin-top:4px; font-weight:600; color: <%= req.payment_status === 'completed' ? '#15803d' : '#dc2626' %>;">
+                    <%= req.payment_status === 'completed' ? '✓ Đã TT' : '⚠ Chưa TT' %>
+                  </div>
+                <% } %>
+              </td>
+              
+              <!-- Nút Thao tác -->
+              <td style="text-align: right;">
+                <div style="display:flex; gap:8px; justify-content: flex-end;">
+                  <!-- Nút Duyệt -->
+                  <form method="POST" action="/classes/enrollments/<%= req.enrollment_id %>/approve">
+                    <button type="submit" class="btn btn-sm btn-primary" style="background:#10b981; border-color:#10b981;">
+                      <i class="ti ti-check"></i> Duyệt
+                    </button>
+                  </form>
+                  
+                  <!-- Nút Từ chối -->
+                  <form method="POST" action="/classes/enrollments/<%= req.enrollment_id %>/reject" onsubmit="return handleReject(this, '<%= req.user_fullname %>', '<%= req.class_name %>')">
+                    <input type="hidden" name="admin_note" class="reject-note">
+                    <button type="submit" class="btn btn-sm btn-danger">
+                      <i class="ti ti-x"></i> Từ chối
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// Xử lý popup nhập lý do khi Admin bấm Từ chối
+function handleReject(form, userName, className) {
+  var reason = prompt('Nhập lý do từ chối hội viên ' + userName + ' vào lớp ' + className + ' (có thể bỏ trống):');
+  
+  // Nếu Admin bấm "Cancel" trên popup, ngừng submit form
+  if (reason === null) {
+    return false; 
+  }
+  
+  // Lưu lý do vào thẻ input hidden để gửi lên backend
+  form.querySelector('.reject-note').value = reason;
+  return true;
+}
+</script>
+
+<%- include('../partials/footer') %>

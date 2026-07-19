@@ -15,8 +15,8 @@ async function index(req, res, next) {
     const [[classStats]] = await pool.query(`
       SELECT COUNT(*) AS total,
         COALESCE(SUM(capacity),0) AS total_capacity,
-        (SELECT COUNT(user_id) FROM simple_class_enrollments) AS total_enrollments
-      FROM simple_classes
+        (SELECT COUNT(user_id) FROM class_enrollments) AS total_enrollments
+      FROM classes
     `);
 
     const [[staffStats]] = await pool.query(
@@ -42,8 +42,8 @@ async function index(req, res, next) {
       SELECT c.name, c.instructor, c.capacity,
              COUNT(e.user_id) AS enrollments,
              ROUND(COUNT(e.user_id)/c.capacity*100) AS fill_pct
-      FROM simple_classes c
-      LEFT JOIN simple_class_enrollments e ON c.id = e.class_id
+      FROM classes c
+      LEFT JOIN class_enrollments e ON c.id = e.class_id
       GROUP BY c.id ORDER BY enrollments DESC
     `);
 

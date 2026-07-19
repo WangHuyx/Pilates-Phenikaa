@@ -1,4 +1,4 @@
-<%- include('partials/header') %>
+<%- include('../partials/header') %>
 
 <div class="page-head">
   <div>
@@ -55,15 +55,11 @@
       <form method="POST" action="/classes/create">
         <div class="form-group">
           <label>Tên lớp <span class="req">*</span></label>
-          <select name="name" required>
-            <option value="">-- Chọn lớp --</option>
-            <option value="Mat">Tập thảm(Mat Pilates)</option>
-            <option value="Reformer">Tập máy(Reformer Pilates)</option>
-          </select>
+          <input type="text" name="name" placeholder="Tên lớp" required />
         </div>
         <div class="form-group" style="margin-top:12px;">
           <label>Huấn luyện viên <span class="req">*</span></label>
-          <input type="text" name="instructor" placeholder="Tên HLV" required />
+          <input type="text" name="instructor" placeholder="Tên HLV"/>
         </div>
         <div class="form-group" style="margin-top:12px;">
           <label>Thứ <span class="req">*</span></label>
@@ -101,4 +97,4 @@
 
 </div>
 
-<%- include('partials/footer') %>
+<%- include('../partials/footer') %>

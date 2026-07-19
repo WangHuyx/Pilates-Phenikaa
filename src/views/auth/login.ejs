@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng nhập — Pilates Phenikaa</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div id="page">
+
+  <!-- ===== BÊN TRÁI ===== -->
+  <div id="left-panel">
+
+    <div class="left-content">
+
+      <div class="left-eyebrow">Pilates Phenikaa</div>
+
+      <h1 class="left-title">
+        Quản lý phòng tập<br>
+        Pilates của bạn
+      </h1>
+
+      <p class="left-sub">QUÀ TẶNG CỘT SỐNG</p>
+      <p class="left-sub">Phần mềm quản lý phòng tập Pilates số 1 Việt Nam</p>
+      <p class="left-sub">
+        Hội viên, lớp học, huấn luyện viên, thanh toán và thiết bị —
+        tất cả trong một nơi duy nhất.
+      </p>
+
+      <ul class="left-features">
+        <li><i class="ti ti-circle-check"></i> Quản lý hội viên &amp; gói tập chuyên nghiệp</li>
+        <li><i class="ti ti-circle-check"></i> Điểm danh, check-in chặt chẽ, báo cáo minh bạch</li>
+        <li><i class="ti ti-circle-check"></i> Lịch lớp học và huấn luyện viên đồng bộ</li>
+        <li><i class="ti ti-circle-check"></i> Dễ dàng mở rộng và quản lý đồng bộ chuỗi nhiều chi nhánh</li>
+        <li><i class="ti ti-circle-check"></i> Tích hợp mượt mà thiết bị kiểm soát ra vào</li>
+      </ul>
+
+      <a href="#" class="left-cta">Đặt lịch demo miễn phí</a>
+      <a href="#" class="left-cta">Nhận tư vấn nhanh, gọn và lẹ</a>
+
+      <!-- Liên hệ -->
+      <div class="left-contact">
+
+        <h3>Liên hệ với chúng tôi</h3>
+
+        <p>
+          <i class="ti ti-phone"></i>
+          1900 0009
+        </p>
+
+        <p>
+          <i class="ti ti-mail"></i>
+          phuonganhhd6789@gmail.com
+        </p>
+
+        <p>
+          <i class="ti ti-map-pin"></i>
+          Đại học Phenikaa, Hà Nội
+        </p>
+
+        <div class="social-icons">
+
+          <a href="https://www.facebook.com/phuonganhkhongnguu"
+             target="_blank"
+             title="Facebook">
+            <i class="ti ti-brand-facebook"></i>
+          </a>
+
+          <a href="https://www.tiktok.com/@anhlephuong236"
+             target="_blank"
+             title="TikTok">
+            <i class="ti ti-brand-tiktok"></i>
+          </a>
+
+          <a href="https://www.instagram.com/phuonganhkhongnguu/"
+             target="_blank"
+             title="Instagram">
+            <i class="ti ti-brand-instagram"></i>
+          </a>
+
+        </div>
+
+      </div>
+      <!-- Kết thúc left-contact -->
+
+    </div>
+    <!-- Kết thúc left-content -->
+
+  </div>
+  <!-- Kết thúc left-panel -->
+
+  <!-- ===== BÊN PHẢI ===== -->
+
+  <div id="right-panel">
+
+    <!-- Banner -->
+    <div class="top-banner">
+      <div class="banner-brand">
+        <div class="icon">🌿</div>
+        <span class="name">Pilates Phenikaa</span>
+      </div>
+      <div class="banner-pill">Hướng dẫn truy cập tài khoản</div>
+    </div>
+
+    <!-- Card đăng nhập -->
+    <div id="login-card">
+      <div class="card-logo">
+        <div class="icon">🌿</div>
+        <span class="name">Pilates Phenikaa</span>
+      </div>
+      <div class="card-title">Đăng nhập</div>
+      <p class="card-subtitle">Chào mừng trở lại — vui lòng nhập thông tin của bạn</p>
+
+      <form id="login-form" method="POST" action="/login" novalidate>
+
+        <div id="form-error" class="form-error" <%= error ? '' : 'hidden' %>>
+          <i class="ti ti-alert-circle"></i>
+          <span id="form-error-text"><%= error %></span>
+        </div>
+
+        <div class="field-group">
+          <label for="username">Tên đăng nhập <span class="req">*</span></label>
+          <div class="input-wrap">
+            <i class="ti ti-user field-icon"></i>
+            <input type="text" id="username" name="username" placeholder="Nhập tên đăng nhập" autocomplete="username" required>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="password">Mật khẩu <span class="req">*</span></label>
+          <div class="input-wrap">
+            <i class="ti ti-lock field-icon"></i>
+            <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" autocomplete="current-password" required>
+            <button type="button" class="toggle-pw" id="toggle-pw" aria-label="Hiện mật khẩu">
+              <i class="ti ti-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="options-row">
+          <label class="checkbox-row">
+            <input type="checkbox" id="remember" name="remember">
+            <span>Ghi nhớ đăng nhập</span>
+          </label>
+          <a href="#" class="link-sm" id="forgot-link">Quên mật khẩu?</a>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">
+          <span class="btn-text">Đăng nhập</span>
+          <span class="btn-spinner" hidden><i class="ti ti-loader-2"></i></span>
+        </button>
+      </form>
+
+      <div class="card-divider"></div>
+
+      <div class="card-footer-note">
+        © 2026 Pilates Phenikaa. Mọi quyền được bảo lưu.<br>
+        Hotline hỗ trợ: 1900 0009 — hỗ trợ kỹ thuật 24/7.
+      </div>
+      <div class="contact-icons">
+        <a href="tel:19000009" title="Gọi điện"><i class="ti ti-phone"></i></a>
+        <a href="https://www.facebook.com/phuonganhkhongnguu" target="_blank" title="Facebook"><i class="ti ti-brand-facebook"></i></a>
+        <a href="mailto:phuonganhhd6789@gmail.com" title="Email hỗ trợ"><i class="ti ti-mail"></i></a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal quên mật khẩu -->
+<div class="modal-overlay" id="forgot-modal">
+  <div class="modal" style="max-width:380px">
+    <h3 style="margin:0 0 10px;font-size:1rem;display:flex;align-items:center;gap:8px">
+      <i class="ti ti-lock-question" style="color:#2D6A4F"></i> Quên mật khẩu?
+    </h3>
+    <p style="color:#6B6B68;font-size:13px;margin:0 0 18px;line-height:1.65">
+      Hệ thống chưa hỗ trợ đặt lại mật khẩu tự động.<br>
+      Vui lòng liên hệ quản trị viên để được cấp lại mật khẩu:
+    </p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+      <a href="tel:19000009" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1A1A1A;font-size:13.5px;font-weight:500">
+        <span style="width:32px;height:32px;border-radius:8px;background:#D8F3DC;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-phone" style="color:#1B4332;font-size:15px"></i>
+        </span>
+        1900 0009
+      </a>
+      <a href="mailto:phuonganhhd6789@gmail.com" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1A1A1A;font-size:13.5px;font-weight:500">
+        <span style="width:32px;height:32px;border-radius:8px;background:#D8F3DC;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-mail" style="color:#1B4332;font-size:15px"></i>
+        </span>
+        phuonganhhd6789@gmail.com
+      </a>
+      <a href="https://www.facebook.com/phuonganhkhongnguu" target="_blank" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1A1A1A;font-size:13.5px;font-weight:500">
+        <span style="width:32px;height:32px;border-radius:8px;background:#D8F3DC;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ti-brand-facebook" style="color:#1B4332;font-size:15px"></i>
+        </span>
+        Facebook Pilates Phenikaa
+      </a>
+    </div>
+    <div class="modal-actions">
+      <button id="forgot-modal-close" class="btn btn-secondary btn-sm">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden>
+  <i class="ti ti-check"></i>
+  <span id="toast-text">Đăng nhập thành công</span>
+</div>
+
+<script>
+(function () {
+  const pwInput     = document.getElementById('password');
+  const toggleBtn   = document.getElementById('toggle-pw');
+  const toggleIcon  = toggleBtn.querySelector('i');
+  const usernameEl  = document.getElementById('username');
+  const rememberEl  = document.getElementById('remember');
+  const form        = document.getElementById('login-form');
+  const submitBtn   = document.getElementById('submit-btn');
+  const forgotModal = document.getElementById('forgot-modal');
+
+  /* ── 1. Xem / ẩn mật khẩu ── */
+  toggleBtn.addEventListener('click', function () {
+    const show = pwInput.type === 'password';
+    pwInput.type = show ? 'text' : 'password';
+    toggleIcon.className = show ? 'ti ti-eye-off' : 'ti ti-eye';
+    toggleBtn.setAttribute('aria-label', show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+    pwInput.focus();
+  });
+
+  /* ── 2. Ghi nhớ đăng nhập (lưu username vào localStorage) ── */
+  var saved = localStorage.getItem('pilates_saved_user');
+  if (saved) {
+    usernameEl.value  = saved;
+    rememberEl.checked = true;
+    console.log('Saved username to localStorage:', saved);
+  }
+
+  /* ── 3. Submit: validate + spinner + lưu/xóa remember ── */
+  form.addEventListener('submit', function (e) {
+    var un = usernameEl.value.trim();
+    var pw = pwInput.value.trim();
+    var ok = true;
+
+    //FIXME: Sửa lỗi không ghi nhớ tài khoản đăng nhập
+    // if (!un) {
+    //   document.getElementById('username-hint').removeAttribute('hidden');
+    //   usernameEl.classList.add('field-invalid');
+    //   ok = false;
+    // } else {
+    //   document.getElementById('username-hint').setAttribute('hidden', '');
+    //   usernameEl.classList.remove('field-invalid');
+    // }
+
+    // if (!pw) {
+    //   document.getElementById('password-hint').removeAttribute('hidden');
+    //   pwInput.classList.add('field-invalid');
+    //   ok = false;
+    // } else {
+    //   document.getElementById('password-hint').setAttribute('hidden', '');
+    //   pwInput.classList.remove('field-invalid');
+    // }
+
+    if (!ok) { e.preventDefault(); return; }
+
+    /* Lưu hoặc xóa username đã ghi nhớ */
+    if (rememberEl.checked) {
+      localStorage.setItem('pilates_saved_user', un);
+      console.log('Saved username to localStorage:', un);
+    } 
+    // else {
+    //   localStorage.removeItem('pilates_saved_user');
+    // }
+
+    /* Hiện spinner */
+    submitBtn.disabled = true;
+    submitBtn.querySelector('.btn-text').setAttribute('hidden', '');
+    submitBtn.querySelector('.btn-spinner').removeAttribute('hidden');
+  });
+
+  /* ── 4. Modal quên mật khẩu ── */
+  document.getElementById('forgot-link').addEventListener('click', function (e) {
+    e.preventDefault();
+    forgotModal.classList.add('open');
+  });
+
+  document.getElementById('forgot-modal-close').addEventListener('click', function () {
+    forgotModal.classList.remove('open');
+  });
+
+  forgotModal.addEventListener('click', function (e) {
+    if (e.target === forgotModal) forgotModal.classList.remove('open');
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') forgotModal.classList.remove('open');
+  });
+}());
+</script>
+</body>
+</html>

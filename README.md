@@ -18,54 +18,15 @@ npm run dev # or: npm start
 
 Mở trình duyệt và gõ `http://localhost:3000`.
 
-## Một số trang:
+## Cấu trúc thư mục
 
-- `/login` — Đăng nhập
-- `/dashboard` — Trang chính
-- `/classes` — Đăng kí lớp học
-- `/my-bookings` — Quản lí lớp học người dùng đã đăng kí
-- `/logout` — clears the session
-
-## Project layout
-
-```
-src/
-  config/         Nơi cấu hình môi trường kết nối (port,sessionSecret,database)
-  data/           Dữ liệu giả định, có thể bỏ sau khi có CSDL
-  repositories/   Nơi thực hiện truy vấn dữ liệu từ CSDL
-  services/       Xử lí các logic nghiệp vụ thông qua việc gọi các function trong `repositories/`.
-  controllers/    Xử lý việc điều phối yêu cầu/phản hồi.
-  routes/         ánh xạ các URL và phương thức HTTP tới các hàm của controller
-  middleware/     Xử lí UX (requireLogin guard, 404 + error handlers)
-  views/          Giao diện tương tác
-  public/css/     Thiết kế, định dạng và trang ttự rí giao diện(views/)
-```
 
 Các tầng phụ thuộc:
 
 ```
-routes -> controllers -> services -> repositories -> data
+routes -> controllers -> services -> repositories
 ```
 
-Vai trò và vị trí sửa đổi:
-```
-(FE):
-   src/
-    view/
-   public/
-    assets/
-    css/
-(BE):
-   controllers/
-   middleware/
-   routes/
-   services/
-(Database):
-   repositories/
-Dùng chung:
-   config/
-   app.js
-```
 ## Hướng dẫn kết nối MySQL Database
 
 Dự án hiện tại đã được cấu hình để kết nối với cơ sở dữ liệu MySQL bằng thư viện `mysql2`.
@@ -74,7 +35,7 @@ Các bước thiết lập:
 
 1. **Import Database:**
    - Tạo một cơ sở dữ liệu tên là `pilates_db` trong MySQL của bạn (thông qua phpMyAdmin, XAMPP, DBeaver, v.v.).
-   - Import file `pilates_db.sql` vào cơ sở dữ liệu vừa tạo. File này chứa toàn bộ cấu trúc bảng và một số dữ liệu mẫu (đã bao gồm các bảng `simple_classes` tương thích với cấu trúc của ứng dụng).
+   - Import file `pilates_db.sql` vào cơ sở dữ liệu vừa tạo. File này chứa toàn bộ cấu trúc bảng và một số dữ liệu mẫu (đã bao gồm các bảng `classes` tương thích với cấu trúc của ứng dụng).
 2. **Cấu hình môi trường (.env):**
    - Đảm bảo dự án có file `.env` ở thư mục gốc. Nếu chưa có, hãy tạo mới dựa trên nội dung sau:
      ```env

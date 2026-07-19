@@ -79,8 +79,8 @@
     </div>
     <% } %>
 
-    <%# Admin + Staff: gói tập %>
-    <% if (user.role === 'admin' || user.role === 'staff') { %>
+    <%# Admin + member: gói tập %>
+    <% if (user.role === 'admin' || user.role === 'member') { %>
     <a href="/packages" class="sidebar-link" data-path="/packages">
       <i class="ti ti-package sidebar-link-icon"></i>
       Gói tập
@@ -99,6 +99,15 @@
       Lớp của tôi
     </a>
 
+    <%# Admin: duyệt yêu cầu đăng ký lớp học %>
+    <%# Admin%>
+    <% if (user.role === 'admin') { %>
+    <a href="/classes/approvals" class="sidebar-link" data-path="/classes/approvals">
+      <i class="ti ti-check-circle sidebar-link-icon"></i>
+      Duyệt đặt chỗ
+    </a>
+    <% } %>
+    
     <%# Admin: tài chính + thiết bị %>
     <% if (user.role === 'admin') { %>
     <a href="/finance" class="sidebar-link" data-path="/finance">

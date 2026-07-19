@@ -1,4 +1,4 @@
-const pool = require('../config/database');
+const pool = require('../../config/database');
 
 async function findAllPackages() {
   const [rows] = await pool.query('SELECT * FROM membership_packages ORDER BY price');

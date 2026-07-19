@@ -1,6 +1,6 @@
 const express  = require('express');
 const router   = express.Router();
-const { requireAdmin } = require('../middleware/admin.middleware');
+const Auth = require('../middleware/auth.middleware');
 const pool     = require('../config/database');
 
 const PERMISSION_GROUPS = [
@@ -70,7 +70,7 @@ async function getPermissionsForRole(role) {
 }
 
 /* GET /permissions?role=staff */
-router.get('/', requireAdmin, async (req, res, next) => {
+router.get('/', Auth.role('admin'), async (req, res, next) => {
   try {
     const selectedRole = ROLES.find(r => r.key === req.query.role) ? req.query.role : 'staff';
     const [counts, activePerms] = await Promise.all([
@@ -95,7 +95,7 @@ router.get('/', requireAdmin, async (req, res, next) => {
 });
 
 /* POST /permissions/save */
-router.post('/save', requireAdmin, async (req, res, next) => {
+router.post('/save', Auth.role('admin'), async (req, res, next) => {
   try {
     const role = req.body.role;
     if (!ROLES.find(r => r.key === role)) {
