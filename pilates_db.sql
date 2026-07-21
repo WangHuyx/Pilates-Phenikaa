@@ -218,7 +218,7 @@ CREATE TABLE user_subscriptions (
 --     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 -- );
 
-CREATE INDEX idx_rooms_code ON rooms(room_code);
+-- CREATE INDEX idx_rooms_code ON rooms(room_code); -- FIX: bảng rooms đã bị bỏ, comment nốt index này
 
 -- =============================================
 -- 9. Bỏ không dùng
@@ -243,10 +243,11 @@ CREATE INDEX idx_rooms_code ON rooms(room_code);
 --     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL ON UPDATE CASCADE
 -- );
 
-CREATE INDEX idx_schedules_date ON schedules(date);
-CREATE INDEX idx_schedules_room ON schedules(room_id);
-CREATE INDEX idx_schedules_trainer ON schedules(trainer_id);
-CREATE INDEX idx_schedules_course ON schedules(course_id);
+-- FIX: bảng schedules đã bị bỏ, comment nốt các index này
+-- CREATE INDEX idx_schedules_date ON schedules(date);
+-- CREATE INDEX idx_schedules_room ON schedules(room_id);
+-- CREATE INDEX idx_schedules_trainer ON schedules(trainer_id);
+-- CREATE INDEX idx_schedules_course ON schedules(course_id);
 
 -- =============================================
 -- 10. COURSE REGISTRATIONS TABLE
@@ -336,27 +337,28 @@ CREATE TABLE member_memberships (
 
 CREATE INDEX idx_member_memberships_user ON member_memberships(user_id);
 CREATE INDEX idx_member_memberships_status ON member_memberships(status);
-CREATE INDEX idx_member_packages_end ON member_packages(end_date);
+-- CREATE INDEX idx_member_packages_end ON member_packages(end_date); -- FIX: bảng member_packages đã bị bỏ
 
 -- =============================================
 -- 13. ATTENDANCES TABLE
+-- FIX: bảng này phụ thuộc schedules (đã bị bỏ ở mục 9) nên không thể tạo được nữa
 -- =============================================
-CREATE TABLE attendances (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    member_id INT NOT NULL,
-    schedule_id INT NOT NULL,
-    check_in_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-    status ENUM('present', 'absent', 'late', 'excused') DEFAULT 'present',
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE ON UPDATE CASCADE
-);
+-- CREATE TABLE attendances (
+--     id INT PRIMARY KEY AUTO_INCREMENT,
+--     member_id INT NOT NULL,
+--     schedule_id INT NOT NULL,
+--     check_in_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+--     status ENUM('present', 'absent', 'late', 'excused') DEFAULT 'present',
+--     notes TEXT,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE ON UPDATE CASCADE,
+--     FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE ON UPDATE CASCADE
+-- );
 
-CREATE INDEX idx_attendances_member ON attendances(member_id);
-CREATE INDEX idx_attendances_schedule ON attendances(schedule_id);
-CREATE UNIQUE INDEX idx_attendances_unique ON attendances(member_id, schedule_id);
+-- CREATE INDEX idx_attendances_member ON attendances(member_id);
+-- CREATE INDEX idx_attendances_schedule ON attendances(schedule_id);
+-- CREATE UNIQUE INDEX idx_attendances_unique ON attendances(member_id, schedule_id);
 
 -- =============================================
 -- 14. NOTIFICATIONS TABLE
@@ -393,39 +395,34 @@ CREATE INDEX idx_employee_schedule_assignments_date ON employee_schedule_assignm
 CREATE INDEX idx_employee_schedule_assignments_employee ON employee_schedule_assignments(employee_id);
 
 -- =============================================
+-- EQUIPMENT TABLE
+-- Dùng bởi src/repositories/equipment.repository.js (trang /equipment)
+-- =============================================
+CREATE TABLE equipment (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(200) NOT NULL,
+    type ENUM('reformer', 'cadillac', 'chair', 'barrel', 'tower', 'other') NOT NULL DEFAULT 'reformer',
+    serial_number VARCHAR(100),
+    status ENUM('active', 'maintenance', 'retired') NOT NULL DEFAULT 'active',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_equipment_status ON equipment(status);
+
+INSERT INTO equipment (name, type, serial_number, status, notes) VALUES
+('Reformer #1',     'reformer', 'RF-001', 'active',      'Phòng Reformer, tầng 2'),
+('Reformer #2',     'reformer', 'RF-002', 'active',      'Phòng Reformer, tầng 2'),
+('Cadillac #1',     'cadillac', 'CD-001', 'active',      'Phòng VIP, tầng 3'),
+('Wunda Chair #1',  'chair',    'CH-001', 'maintenance', 'Đang chờ thay lò xo'),
+('Barrel #1',       'barrel',   'BR-001', 'active',      'Phòng Barre, tầng 1'),
+('Tower #1',        'tower',    'TW-001', 'retired',     'Đã ngưng sử dụng, chờ thanh lý');
+
+-- =============================================
 -- TRIGGERS
 -- =============================================
 
-DELIMITER //
-
--- NOTE:AI không sửa hàm này.Đây là bảng cố định chung
-CREATE TRIGGER before_class_enrollments_insert
-BEFORE INSERT ON class_enrollments
-FOR EACH ROW
-BEGIN
-    -- Biến tạm để lưu ID của gói (nếu có)
-    DECLARE active_sub_id INT DEFAULT NULL;
-
-    -- Kiểm tra xem user có gói tập nào đang hoạt động không
-    -- Điều kiện: payment_status là completed VÀ expired_at phải lớn hơn hoặc bằng hiện tại
-    SELECT id INTO active_sub_id
-    FROM user_subscriptions
-    WHERE user_id = NEW.user_id 
-      AND payment_status = 'completed' 
-      AND expired_at >= NOW()
-    ORDER BY expired_at DESC 
-    LIMIT 1; -- Lấy gói có hạn sử dụng xa nhất nếu có nhiều gói
-
-    -- Logic gán giá trị tự động
-    IF active_sub_id IS NOT NULL THEN
-        -- TH1: Đang có vé tháng
-        SET NEW.booking_type = 1;
-        SET NEW.subscription_id = active_sub_id; -- Tự động link luôn ID của gói vào để đối soát
-    ELSE
-        -- TH2: Không có vé tháng (mua lẻ)
-        SET NEW.booking_type = 0;
-    END IF;
-END //
 
 -- Auto generate member_code
 CREATE TRIGGER trg_member_code BEFORE INSERT ON members
@@ -436,7 +433,7 @@ BEGIN
     IF NEW.member_code IS NULL OR NEW.member_code = '' THEN
         SET NEW.member_code = CONCAT('MEM', LPAD(next_id, 5, '0'));
     END IF;
-END//
+END;
 
 -- Auto generate trainer_code
 CREATE TRIGGER trg_trainer_code BEFORE INSERT ON trainers
@@ -447,7 +444,7 @@ BEGIN
     IF NEW.trainer_code IS NULL OR NEW.trainer_code = '' THEN
         SET NEW.trainer_code = CONCAT('TRN', LPAD(next_id, 5, '0'));
     END IF;
-END//
+END;
 
 -- Auto generate staff_code
 CREATE TRIGGER trg_staff_code BEFORE INSERT ON staffs
@@ -458,7 +455,7 @@ BEGIN
     IF NEW.staff_code IS NULL OR NEW.staff_code = '' THEN
         SET NEW.staff_code = CONCAT('STF', LPAD(next_id, 5, '0'));
     END IF;
-END//
+END;
 
 -- Auto generate course_code
 CREATE TRIGGER trg_course_code BEFORE INSERT ON courses
@@ -469,29 +466,29 @@ BEGIN
     IF NEW.course_code IS NULL OR NEW.course_code = '' THEN
         SET NEW.course_code = CONCAT('CRS', LPAD(next_id, 5, '0'));
     END IF;
-END//
+END;
 
--- Auto generate room_code
-CREATE TRIGGER trg_room_code BEFORE INSERT ON rooms
-FOR EACH ROW
-BEGIN
-    DECLARE next_id INT;
-    SELECT IFNULL(MAX(id), 0) + 1 INTO next_id FROM rooms;
-    IF NEW.room_code IS NULL OR NEW.room_code = '' THEN
-        SET NEW.room_code = CONCAT('ROM', LPAD(next_id, 5, '0'));
-    END IF;
-END//
+-- FIX: bảng rooms đã bị bỏ (mục 8) nên bỏ luôn trigger sinh mã cho nó
+-- CREATE TRIGGER trg_room_code BEFORE INSERT ON rooms
+-- FOR EACH ROW
+-- BEGIN
+--     DECLARE next_id INT;
+--     SELECT IFNULL(MAX(id), 0) + 1 INTO next_id FROM rooms;
+--     IF NEW.room_code IS NULL OR NEW.room_code = '' THEN
+--         SET NEW.room_code = CONCAT('ROM', LPAD(next_id, 5, '0'));
+--     END IF;
+-- END;
 
--- Auto generate schedule_code
-CREATE TRIGGER trg_schedule_code BEFORE INSERT ON schedules
-FOR EACH ROW
-BEGIN
-    DECLARE next_id INT;
-    SELECT IFNULL(MAX(id), 0) + 1 INTO next_id FROM schedules;
-    IF NEW.schedule_code IS NULL OR NEW.schedule_code = '' THEN
-        SET NEW.schedule_code = CONCAT('SCH', LPAD(next_id, 5, '0'));
-    END IF;
-END//
+-- FIX: bảng schedules đã bị bỏ (mục 9) nên bỏ luôn trigger sinh mã cho nó
+-- CREATE TRIGGER trg_schedule_code BEFORE INSERT ON schedules
+-- FOR EACH ROW
+-- BEGIN
+--     DECLARE next_id INT;
+--     SELECT IFNULL(MAX(id), 0) + 1 INTO next_id FROM schedules;
+--     IF NEW.schedule_code IS NULL OR NEW.schedule_code = '' THEN
+--         SET NEW.schedule_code = CONCAT('SCH', LPAD(next_id, 5, '0'));
+--     END IF;
+-- END;
 
 -- Auto generate payment_code
 CREATE TRIGGER trg_payment_code BEFORE INSERT ON payments
@@ -502,65 +499,61 @@ BEGIN
     IF NEW.payment_code IS NULL OR NEW.payment_code = '' THEN
         SET NEW.payment_code = CONCAT('PAY', LPAD(next_id, 5, '0'));
     END IF;
-END//
+END;
 
--- Cập nhật current_students khi thêm attendance mới
-CREATE TRIGGER trg_attendance_insert AFTER INSERT ON attendances
-FOR EACH ROW
-BEGIN
-    UPDATE schedules SET current_students = (
-        SELECT COUNT(*) FROM attendances
-        WHERE schedule_id = NEW.schedule_id AND status = 'present'
-    ) WHERE id = NEW.schedule_id;
-END//
+-- FIX: 4 trigger dưới đây thao tác trên bảng attendances/schedules, cả hai đều đã bị bỏ
+-- (mục 9 và 13) nên comment lại toàn bộ để tránh lỗi "table doesn't exist".
+-- CREATE TRIGGER trg_attendance_insert AFTER INSERT ON attendances
+-- FOR EACH ROW
+-- BEGIN
+--     UPDATE schedules SET current_students = (
+--         SELECT COUNT(*) FROM attendances
+--         WHERE schedule_id = NEW.schedule_id AND status = 'present'
+--     ) WHERE id = NEW.schedule_id;
+-- END;
 
--- FIX: Cập nhật current_students khi sửa trạng thái attendance (trước chỉ có INSERT)
-CREATE TRIGGER trg_attendance_update AFTER UPDATE ON attendances
-FOR EACH ROW
-BEGIN
-    UPDATE schedules SET current_students = (
-        SELECT COUNT(*) FROM attendances
-        WHERE schedule_id = NEW.schedule_id AND status = 'present'
-    ) WHERE id = NEW.schedule_id;
-END//
+-- CREATE TRIGGER trg_attendance_update AFTER UPDATE ON attendances
+-- FOR EACH ROW
+-- BEGIN
+--     UPDATE schedules SET current_students = (
+--         SELECT COUNT(*) FROM attendances
+--         WHERE schedule_id = NEW.schedule_id AND status = 'present'
+--     ) WHERE id = NEW.schedule_id;
+-- END;
 
--- Cộng completed_sessions khi điểm danh present/late (INSERT)
-CREATE TRIGGER trg_update_completed_sessions AFTER INSERT ON attendances
-FOR EACH ROW
-BEGIN
-    IF NEW.status = 'present' OR NEW.status = 'late' THEN
-        UPDATE course_registrations cr
-        JOIN schedules s ON s.course_id = cr.course_id
-        SET cr.completed_sessions = cr.completed_sessions + 1
-        WHERE cr.member_id = NEW.member_id
-          AND s.id = NEW.schedule_id
-          AND cr.status = 'active';
-    END IF;
-END//
+-- CREATE TRIGGER trg_update_completed_sessions AFTER INSERT ON attendances
+-- FOR EACH ROW
+-- BEGIN
+--     IF NEW.status = 'present' OR NEW.status = 'late' THEN
+--         UPDATE course_registrations cr
+--         JOIN schedules s ON s.course_id = cr.course_id
+--         SET cr.completed_sessions = cr.completed_sessions + 1
+--         WHERE cr.member_id = NEW.member_id
+--           AND s.id = NEW.schedule_id
+--           AND cr.status = 'active';
+--     END IF;
+-- END;
 
--- FIX: Điều chỉnh completed_sessions khi sửa trạng thái attendance (UPDATE)
-CREATE TRIGGER trg_update_completed_sessions_update AFTER UPDATE ON attendances
-FOR EACH ROW
-BEGIN
-    -- absent/excused → present/late: cộng 1
-    IF (OLD.status NOT IN ('present', 'late')) AND (NEW.status IN ('present', 'late')) THEN
-        UPDATE course_registrations cr
-        JOIN schedules s ON s.course_id = cr.course_id
-        SET cr.completed_sessions = cr.completed_sessions + 1
-        WHERE cr.member_id = NEW.member_id
-          AND s.id = NEW.schedule_id
-          AND cr.status = 'active';
-    END IF;
-    -- present/late → absent/excused: trừ 1 (không xuống dưới 0)
-    IF (OLD.status IN ('present', 'late')) AND (NEW.status NOT IN ('present', 'late')) THEN
-        UPDATE course_registrations cr
-        JOIN schedules s ON s.course_id = cr.course_id
-        SET cr.completed_sessions = GREATEST(0, cr.completed_sessions - 1)
-        WHERE cr.member_id = NEW.member_id
-          AND s.id = NEW.schedule_id
-          AND cr.status = 'active';
-    END IF;
-END//
+-- CREATE TRIGGER trg_update_completed_sessions_update AFTER UPDATE ON attendances
+-- FOR EACH ROW
+-- BEGIN
+--     IF (OLD.status NOT IN ('present', 'late')) AND (NEW.status IN ('present', 'late')) THEN
+--         UPDATE course_registrations cr
+--         JOIN schedules s ON s.course_id = cr.course_id
+--         SET cr.completed_sessions = cr.completed_sessions + 1
+--         WHERE cr.member_id = NEW.member_id
+--           AND s.id = NEW.schedule_id
+--           AND cr.status = 'active';
+--     END IF;
+--     IF (OLD.status IN ('present', 'late')) AND (NEW.status NOT IN ('present', 'late')) THEN
+--         UPDATE course_registrations cr
+--         JOIN schedules s ON s.course_id = cr.course_id
+--         SET cr.completed_sessions = GREATEST(0, cr.completed_sessions - 1)
+--         WHERE cr.member_id = NEW.member_id
+--           AND s.id = NEW.schedule_id
+--           AND cr.status = 'active';
+--     END IF;
+-- END;
 
 -- =============================================
 -- STORED PROCEDURES
@@ -580,7 +573,7 @@ BEGIN
       AND status = 'paid'
     GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
     ORDER BY month;
-END//
+END;
 
 -- Monthly Member Statistics
 CREATE PROCEDURE sp_member_stats()
@@ -592,7 +585,7 @@ BEGIN
         SUM(CASE WHEN status = 'expired' THEN 1 ELSE 0 END) AS expired_members,
         SUM(CASE WHEN MONTH(join_date) = MONTH(CURRENT_DATE) AND YEAR(join_date) = YEAR(CURRENT_DATE) THEN 1 ELSE 0 END) AS new_this_month
     FROM members;
-END//
+END;
 
 -- Top Selling Courses
 CREATE PROCEDURE sp_top_courses(IN p_limit INT)
@@ -609,7 +602,7 @@ BEGIN
     GROUP BY c.id
     ORDER BY total_registrations DESC
     LIMIT p_limit;
-END//
+END;
 
 -- Dashboard Summary
 CREATE PROCEDURE sp_dashboard_summary()
@@ -620,7 +613,7 @@ BEGIN
         (SELECT COUNT(*) FROM courses WHERE status = 'active') AS total_courses,
         (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'paid') AS total_revenue,
         (SELECT COUNT(*) FROM members WHERE MONTH(join_date) = MONTH(CURRENT_DATE) AND YEAR(join_date) = YEAR(CURRENT_DATE)) AS new_members_this_month;
-END//
+END;
 
 -- Attendance Report
 CREATE PROCEDURE sp_attendance_report(IN p_member_id INT)
@@ -636,9 +629,8 @@ BEGIN
     LEFT JOIN attendances a ON m.id = a.member_id
     WHERE (p_member_id IS NULL OR m.id = p_member_id)
     GROUP BY m.id;
-END//
+END;
 
-DELIMITER ;
 
 -- =============================================
 -- SEED DATA
@@ -658,12 +650,12 @@ INSERT INTO members (full_name, date_of_birth, gender, phone, email, address, us
 ('Phạm Văn Phúc',    '1988-05-25', 'male',   '0987654004', 'phuc.pham@email.com',    '321 Võ Văn Tần, Q3, TP.HCM',          9),
 ('Hoàng Thị Quỳnh',  '2000-01-30', 'female', '0987654005', 'quynh.hoang@email.com',  '654 Nguyễn Đình Chiểu, Q3, TP.HCM',  10);
 
--- Rooms
-INSERT INTO rooms (name, capacity, description) VALUES
-('Phòng Mat Pilates', 15, 'Phòng tập Pilates trên thảm, tầng 1'),
-('Phòng Reformer',     8, 'Phòng tập với máy Reformer, tầng 2'),
-('Phòng Barre',       12, 'Phòng tập Barre Pilates, tầng 1'),
-('Phòng VIP',          5, 'Phòng tập cá nhân VIP, tầng 3');
+-- FIX: bảng rooms đã bị bỏ, comment nốt seed data
+-- INSERT INTO rooms (name, capacity, description) VALUES
+-- ('Phòng Mat Pilates', 15, 'Phòng tập Pilates trên thảm, tầng 1'),
+-- ('Phòng Reformer',     8, 'Phòng tập với máy Reformer, tầng 2'),
+-- ('Phòng Barre',       12, 'Phòng tập Barre Pilates, tầng 1'),
+-- ('Phòng VIP',          5, 'Phòng tập cá nhân VIP, tầng 3');
 
 -- Courses
 INSERT INTO courses (name, description, duration, price, total_sessions, trainer_id) VALUES
@@ -679,15 +671,15 @@ INSERT INTO packages (name, type, price, duration_days, discount, description) V
 ('Gói Quý Tiết Kiệm', 'quarterly', 3800000,  90, 15, 'Tiết kiệm 15% so với gói tháng'),
 ('Gói Năm VIP',       'yearly',   12000000, 365, 30, 'Ưu đãi 30%, bao gồm PT cá nhân 2 buổi/tháng');
 
--- Schedules
-INSERT INTO schedules (date, start_time, end_time, room_id, trainer_id, course_id, max_students) VALUES
-('2026-06-18', '08:00', '09:00', 1, 1, 1, 15),
-('2026-06-18', '09:30', '10:15', 2, 2, 2,  8),
-('2026-06-18', '10:30', '11:20', 3, 3, 3, 12),
-('2026-06-19', '08:00', '09:00', 1, 1, 1, 15),
-('2026-06-19', '14:00', '15:00', 4, 3, 4,  5),
-('2026-06-20', '08:00', '08:45', 1, 1, 5, 10),
-('2026-06-20', '09:00', '09:45', 2, 2, 2,  8);
+-- FIX: bảng schedules đã bị bỏ, comment nốt seed data
+-- INSERT INTO schedules (date, start_time, end_time, room_id, trainer_id, course_id, max_students) VALUES
+-- ('2026-06-18', '08:00', '09:00', 1, 1, 1, 15),
+-- ('2026-06-18', '09:30', '10:15', 2, 2, 2,  8),
+-- ('2026-06-18', '10:30', '11:20', 3, 3, 3, 12),
+-- ('2026-06-19', '08:00', '09:00', 1, 1, 1, 15),
+-- ('2026-06-19', '14:00', '15:00', 4, 3, 4,  5),
+-- ('2026-06-20', '08:00', '08:45', 1, 1, 5, 10),
+-- ('2026-06-20', '09:00', '09:45', 2, 2, 2,  8);
 
 -- Course Registrations
 INSERT INTO course_registrations (member_id, course_id, registration_date, end_date, completed_sessions, status) VALUES
@@ -710,23 +702,21 @@ INSERT INTO payments (member_id, package_id, course_id, amount, payment_method, 
 (2,    3, NULL, 12000000, 'card',     '2026-04-10 09:00:00', 'paid'),
 (3, NULL,    3, 3000000,  'cash',     '2026-03-20 15:30:00', 'paid');
 
--- Member Packages (FIX: bảng mới theo dõi gói tập của hội viên)
--- payment.id: 1=member1+pkg1+course1, 3=member3+pkg2+course3, 5=member5+pkg1+course5
---             6=member1+pkg1(gia hạn), 7=member2+pkg3
-INSERT INTO member_packages (member_id, package_id, start_date, end_date, status, payment_id) VALUES
-(1, 1, '2026-05-01', '2026-05-31', 'expired', 6),
-(1, 1, '2026-06-01', '2026-07-01', 'active',  1),
-(2, 3, '2026-04-10', '2027-04-10', 'active',  7),
-(3, 2, '2026-06-10', '2026-09-07', 'active',  3),
-(5, 1, '2026-06-15', '2026-07-15', 'active',  5);
+-- FIX: bảng member_packages đã bị bỏ, comment nốt seed data
+-- INSERT INTO member_packages (member_id, package_id, start_date, end_date, status, payment_id) VALUES
+-- (1, 1, '2026-05-01', '2026-05-31', 'expired', 6),
+-- (1, 1, '2026-06-01', '2026-07-01', 'active',  1),
+-- (2, 3, '2026-04-10', '2027-04-10', 'active',  7),
+-- (3, 2, '2026-06-10', '2026-09-07', 'active',  3),
+-- (5, 1, '2026-06-15', '2026-07-15', 'active',  5);
 
--- Attendances
-INSERT INTO attendances (member_id, schedule_id, status) VALUES
-(1, 1, 'present'),
-(2, 2, 'present'),
-(3, 3, 'present'),
-(4, 1, 'absent'),
-(5, 1, 'late');
+-- FIX: bảng attendances đã bị bỏ, comment nốt seed data
+-- INSERT INTO attendances (member_id, schedule_id, status) VALUES
+-- (1, 1, 'present'),
+-- (2, 2, 'present'),
+-- (3, 3, 'present'),
+-- (4, 1, 'absent'),
+-- (5, 1, 'late');
 
 -- Staffs
 INSERT INTO staffs (full_name, email, phone, role, salary, user_id) VALUES

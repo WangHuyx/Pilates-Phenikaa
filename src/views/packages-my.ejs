@@ -1,0 +1,90 @@
+<%- include('partials/header') %>
+
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Hội viên</p>
+    <h1 class="page-title">Gói tập của tôi</h1>
+    <p class="lede">Đăng ký gói tập — yêu cầu sẽ được quản lý duyệt trước khi kích hoạt</p>
+  </div>
+</div>
+
+<% if (success) { %><div class="alert alert-success"><i class="ti ti-circle-check"></i> <%= success %></div><% } %>
+<% if (error) { %><div class="alert alert-error"><i class="ti ti-alert-circle"></i> <%= error %></div><% } %>
+
+<%
+  const CATEGORY_STYLES = {
+    'Pilates':     { bg: '#dcfce7', color: '#15803d' },
+    'PT Cá nhân':  { bg: '#fed7aa', color: '#c2410c' },
+    'Yoga':        { bg: '#dbeafe', color: '#1e40af' },
+    'Combo':       { bg: '#f3f4f6', color: '#374151' },
+    'default':     { bg: '#ede9fe', color: '#5b21b6' },
+  };
+  function catStyle(cat) { return CATEGORY_STYLES[cat] || CATEGORY_STYLES['default']; }
+
+  const STATUS_META = {
+    pending:   { label: 'Chờ duyệt',    bg: '#fff3cd', color: '#7c4700', border: '#f0d06b' },
+    active:    { label: 'Đang hoạt động', bg: '#dcfce7', color: '#15803d', border: '#86efac' },
+    expired:   { label: 'Hết hạn',      bg: '#fee2e2', color: '#dc2626', border: '#fca5a5' },
+    cancelled: { label: 'Đã từ chối',   bg: '#f3f4f6', color: '#6b7280', border: '#d1d5db' },
+  };
+%>
+
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header"><span class="card-title"><i class="ti ti-id-badge"></i> Đăng ký của tôi</span></div>
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead>
+        <tr><th>Gói tập</th><th>Bắt đầu</th><th>Hết hạn</th><th>Trạng thái</th></tr>
+      </thead>
+      <tbody>
+        <% if (!memberships.length) { %>
+          <tr><td colspan="4" style="text-align:center;color:var(--color-ink-soft);padding:28px;">Bạn chưa đăng ký gói tập nào.</td></tr>
+        <% } %>
+        <% memberships.forEach(m => { %>
+          <% const meta = STATUS_META[m.status] || STATUS_META.cancelled; %>
+          <tr>
+            <td><strong><%= m.package_name %></strong></td>
+            <td style="font-size:0.85rem;"><%= new Date(m.start_date).toLocaleDateString('vi-VN') %></td>
+            <td style="font-size:0.85rem;"><%= new Date(m.end_date).toLocaleDateString('vi-VN') %></td>
+            <td><span class="badge" style="background:<%= meta.bg %>;color:<%= meta.color %>;border-color:<%= meta.border %>"><%= meta.label %></span></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="package-grid">
+  <% packages.forEach(pkg => { %>
+  <%
+    const cs = catStyle(pkg.category);
+    const featureLines = pkg.features ? pkg.features.split('\n').filter(f => f.trim()) : [];
+    const alreadyPending = memberships.some(m => m.package_id === pkg.id && m.status === 'pending');
+  %>
+  <div class="package-card">
+    <div class="package-card-top">
+      <span class="pkg-cat-badge" style="background:<%= cs.bg %>;color:<%= cs.color %>;"><%= pkg.category || 'Gói tập' %></span>
+    </div>
+    <h3 class="package-card-name"><%= pkg.name %></h3>
+    <p class="package-card-price"><%= Number(pkg.price).toLocaleString('vi-VN') %>đ</p>
+    <p class="package-card-meta"><%= pkg.duration_days %> ngày</p>
+    <% if (pkg.description) { %><p class="package-card-desc"><%= pkg.description %></p><% } %>
+    <% if (featureLines.length) { %>
+    <ul class="pkg-features">
+      <% featureLines.forEach(f => { %><li><i class="ti ti-circle-check"></i> <%= f.trim() %></li><% }) %>
+    </ul>
+    <% } %>
+    <div class="package-card-actions">
+      <% if (alreadyPending) { %>
+        <button class="btn btn-secondary" type="button" disabled style="width:100%;opacity:0.7;cursor:not-allowed">Đang chờ duyệt</button>
+      <% } else { %>
+        <form method="POST" action="/packages/my/<%= pkg.id %>/register" style="width:100%;" onsubmit="return confirm('Đăng ký gói «<%= pkg.name %>»? Yêu cầu sẽ được gửi tới quản lý để duyệt.')">
+          <button class="btn btn-primary" type="submit" style="width:100%;"><i class="ti ti-user-check"></i> Đăng ký</button>
+        </form>
+      <% } %>
+    </div>
+  </div>
+  <% }) %>
+</div>
+
+<%- include('partials/footer') %>
