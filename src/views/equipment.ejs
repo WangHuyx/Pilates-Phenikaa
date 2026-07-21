@@ -34,14 +34,13 @@
   </div>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
-
-  <div class="card">
+<div class="card">
     <div class="card-header">
       <span class="card-title"><i class="ti ti-list"></i> Danh sách thiết bị</span>
       <div style="display:flex;gap:8px;">
         <a href="/equipment" class="btn btn-sm <%= (!typeof filterStatus || filterStatus === 'all') ? 'btn-primary' : 'btn-secondary' %>">Tất cả</a>
         <a href="/equipment?status=active" class="btn btn-sm <%= (typeof filterStatus !== 'undefined' && filterStatus === 'active') ? 'btn-primary' : 'btn-secondary' %>">Hoạt động</a>
+        <button type="button" class="btn btn-sm btn-primary" onclick="openAddModal()"><i class="ti ti-plus"></i> Thêm thiết bị</button>
       </div>
     </div>
     
@@ -88,46 +87,47 @@
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header"><span class="card-title"><i class="ti ti-plus"></i> Thêm thiết bị</span></div>
-    <div class="card-body">
-      <form method="POST" action="/equipment/create">
-        <div class="form-group">
-          <label>Tên thiết bị <span class="req">*</span></label>
-          <input type="text" name="name" placeholder="Ví dụ: Reformer #4" required />
-        </div>
-        <div class="form-group" style="margin-top:12px;">
-          <label>Loại máy</label>
-          <select name="type">
-            <option value="reformer">Reformer</option>
-            <option value="cadillac">Cadillac</option>
-            <option value="chair">Wunda Chair</option>
-            <option value="barrel">Barrel</option>
-            <option value="tower">Tower</option>
-            <option value="other">Khác</option>
-          </select>
-        </div>
-        <div class="form-group" style="margin-top:12px;">
-          <label>Số hiệu (S/N)</label>
-          <input type="text" name="serial_number" placeholder="RF-004" />
-        </div>
-        <div class="form-group" style="margin-top:12px;">
-          <label>Trạng thái</label>
-          <select name="status">
-            <option value="active">Hoạt động</option>
-            <option value="maintenance">Đang bảo trì</option>
-            <option value="retired">Ngưng hoạt động</option>
-          </select>
-        </div>
-        <div class="form-group" style="margin-top:12px;">
-          <label>Ghi chú thêm</label>
-          <input type="text" name="notes" placeholder="Tình trạng, vị trí..." />
-        </div>
-        <button class="btn btn-primary" type="submit" style="margin-top:16px;width:100%;"><i class="ti ti-plus"></i> Lưu thiết bị</button>
-      </form>
-    </div>
+<div id="add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:28px;width:400px;max-width:90vw;">
+    <h3 style="margin:0 0 16px;font-size:1rem;"><i class="ti ti-plus"></i> Thêm thiết bị</h3>
+    <form method="POST" action="/equipment/create">
+      <div class="form-group">
+        <label>Tên thiết bị <span class="req">*</span></label>
+        <input type="text" name="name" placeholder="Ví dụ: Reformer #4" required />
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>Loại máy</label>
+        <select name="type">
+          <option value="reformer">Reformer</option>
+          <option value="cadillac">Cadillac</option>
+          <option value="chair">Wunda Chair</option>
+          <option value="barrel">Barrel</option>
+          <option value="tower">Tower</option>
+          <option value="other">Khác</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>Số hiệu (S/N)</label>
+        <input type="text" name="serial_number" placeholder="RF-004" />
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>Trạng thái</label>
+        <select name="status">
+          <option value="active">Hoạt động</option>
+          <option value="maintenance">Đang bảo trì</option>
+          <option value="retired">Ngưng hoạt động</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>Ghi chú thêm</label>
+        <input type="text" name="notes" placeholder="Tình trạng, vị trí..." />
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px;">
+        <button class="btn btn-primary" type="submit"><i class="ti ti-plus"></i> Lưu thiết bị</button>
+        <button class="btn btn-secondary" type="button" onclick="closeAddModal()">Hủy</button>
+      </div>
+    </form>
   </div>
-
 </div>
 
 <div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;">
@@ -183,6 +183,13 @@ function openEditModal(eq) {
 }
 function closeEditModal() { document.getElementById('edit-modal').style.display = 'none'; }
 document.getElementById('edit-modal').addEventListener('click', function(e){ if(e.target===this) closeEditModal(); });
+
+function openAddModal() { document.getElementById('add-modal').style.display = 'flex'; }
+function closeAddModal() { document.getElementById('add-modal').style.display = 'none'; }
+document.getElementById('add-modal').addEventListener('click', function(e){ if(e.target===this) closeAddModal(); });
+<% if (typeof error !== 'undefined' && error) { %>
+openAddModal();
+<% } %>
 </script>
 
 <%- include('partials/footer') %>
