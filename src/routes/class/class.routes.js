@@ -26,8 +26,8 @@ router.post('/classes/enrollments/:id/approve', Auth.role('admin', 'staff'), cla
 router.post('/classes/enrollments/:id/reject', Auth.role('admin', 'staff'), classController.rejectEnrollment);
 
 // --- Tương tác của Hội viên (Member) ---
-router.post('/classes/:id/register', Auth.requiredlogin, classController.registerClass);
-router.post('/classes/:id/cancel', Auth.requiredlogin, classController.cancelBooking);
+router.post('/classes/:id/register', Auth.role('member'), classController.registerClass);
+router.post('/classes/:id/cancel', Auth.role('member'), classController.cancelBooking);
 router.get('/my-bookings', Auth.requiredlogin, classController.showMyBookings);
 
 module.exports = router;

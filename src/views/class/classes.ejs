@@ -55,7 +55,7 @@
 
   <div id="list-view" class="class-grid" style="display:none;">
     <% classes.forEach(function (classItem) { %>
-      <%- include('../partials/class-card', { classItem, user, showRegister: true, hasActiveVip }) %>
+      <%- include('../partials/class-card', { classItem, user, showRegister: user.role === 'member', hasActiveVip }) %>
     <% }); %>
   </div>
 
@@ -295,17 +295,20 @@
 
     var actionBtn = '';
     var feeHtml = '';
-    if (c.enrollmentStatus === 'pending') {
-      actionBtn = '<button type="button" class="btn btn-warning" disabled style="opacity:0.9;cursor:not-allowed">⏳ Đang chờ duyệt</button>';
-    } else if (c.enrollmentStatus === 'approved' || c.isRegistered) {
-      actionBtn = '<button type="button" class="btn btn-success" disabled style="opacity:0.9;cursor:not-allowed">✓ Đã đặt chỗ</button>';
-    } else if (c.isFull) {
-      actionBtn = '<button type="button" class="btn btn-secondary" disabled style="opacity:0.6;cursor:not-allowed">Hết chỗ</button>';
-    } else {
-      feeHtml = '<p class="cal-popover-meta"><i class="ti ti-receipt"></i> ' + feeText + '</p>';
-      actionBtn = '<form method="POST" action="/classes/' + c.id + '/register">' +
-        (CSRF_TOKEN ? '<input type="hidden" name="_csrf" value="' + CSRF_TOKEN + '">' : '') +
-        '<button type="submit" class="btn btn-primary">Đặt chỗ ngay</button></form>';
+    // Chỉ hội viên mới được đặt/hủy chỗ — admin, lễ tân, HLV chỉ xem lịch.
+    if (USER_ROLE === 'member') {
+      if (c.enrollmentStatus === 'pending') {
+        actionBtn = '<button type="button" class="btn btn-warning" disabled style="opacity:0.9;cursor:not-allowed">⏳ Đang chờ duyệt</button>';
+      } else if (c.enrollmentStatus === 'approved' || c.isRegistered) {
+        actionBtn = '<button type="button" class="btn btn-success" disabled style="opacity:0.9;cursor:not-allowed">✓ Đã đặt chỗ</button>';
+      } else if (c.isFull) {
+        actionBtn = '<button type="button" class="btn btn-secondary" disabled style="opacity:0.6;cursor:not-allowed">Hết chỗ</button>';
+      } else {
+        feeHtml = '<p class="cal-popover-meta"><i class="ti ti-receipt"></i> ' + feeText + '</p>';
+        actionBtn = '<form method="POST" action="/classes/' + c.id + '/register">' +
+          (CSRF_TOKEN ? '<input type="hidden" name="_csrf" value="' + CSRF_TOKEN + '">' : '') +
+          '<button type="submit" class="btn btn-primary">Đặt chỗ ngay</button></form>';
+      }
     }
 
     var adminViewHtml = '';
