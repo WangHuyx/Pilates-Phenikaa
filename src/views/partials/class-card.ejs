@@ -2,7 +2,9 @@
   const spotsTaken = classItem.enrolledUserIds.length;
   const spotsLeft = classItem.capacity - spotsTaken;
   const isFull = spotsLeft <= 0;
-  const isBooked = typeof user !== 'undefined' && user && classItem.enrolledUserIds.includes(user.id);
+  const enrollmentStatus = classItem.enrollmentStatus || null;
+  const isPending = enrollmentStatus === 'pending';
+  const isBooked = enrollmentStatus === 'approved' || (typeof user !== 'undefined' && user && classItem.enrolledUserIds.includes(user.id) && !isPending);
 
   const levelToSpring = {
     'Beginner':     'spring-light',
@@ -36,8 +38,20 @@
       <span class="capacity-label"><%= spotsTaken %>/<%= classItem.capacity %> chỗ</span>
     </div>
 
+    <% if (classItem.price) { %>
+      <p style="font-size:0.82rem;color:var(--color-ink-soft);margin:4px 0 0;">
+        <% if (typeof hasActiveVip !== 'undefined' && hasActiveVip) { %>
+          <span style="color:#15803d;">Miễn phí — đang dùng gói VIP</span>
+        <% } else { %>
+          Vé lượt: <strong><%= Number(classItem.price).toLocaleString('vi-VN') %>đ</strong>
+        <% } %>
+      </p>
+    <% } %>
+
     <% if (typeof showRegister !== 'undefined' && showRegister) { %>
-      <% if (isBooked) { %>
+      <% if (isPending) { %>
+        <button class="btn btn-warning" type="button" disabled style="opacity:0.9;cursor:not-allowed">⏳ Đang chờ duyệt</button>
+      <% } else if (isBooked) { %>
         <button class="btn btn-secondary" type="button" disabled style="opacity:0.7;cursor:not-allowed">✓ Đã đặt chỗ</button>
       <% } else if (isFull) { %>
         <button class="btn btn-secondary" type="button" disabled style="opacity:0.6;cursor:not-allowed">Hết chỗ</button>

@@ -74,11 +74,27 @@ async function deleteMembership(id) {
 // Sửa để xem có bao nhiêu gói đang còn hạn
 async function countActive() {
   const [[row]] = await pool.query(
-    `SELECT COUNT(*) AS cnt 
-     FROM user_subscriptions 
+    `SELECT COUNT(*) AS cnt
+     FROM user_subscriptions
      WHERE payment_status = 'completed' AND expired_at >= NOW()`
   );
   return row.cnt;
 }
 
-module.exports = { findAllPackages, findPackageById, createPackage, updatePackage, deletePackage, findAllMemberships, findMembershipsByUserId, createMembership, deleteMembership, countActive };
+// Dùng để kiểm tra hội viên có đang là VIP (gói tháng còn hiệu lực) hay không
+// khi đặt chỗ lớp học — quyết định có phải thu vé lượt + gửi duyệt hay không.
+async function findActiveSubscription(userId) {
+  const [[row]] = await pool.query(
+    `SELECT * FROM user_subscriptions
+     WHERE user_id = ? AND payment_status = 'completed' AND expired_at >= NOW()
+     ORDER BY expired_at DESC LIMIT 1`,
+    [userId]
+  );
+  return row || null;
+}
+
+module.exports = {
+  findAllPackages, findPackageById, createPackage, updatePackage, deletePackage,
+  findAllMemberships, findMembershipsByUserId, createMembership, deleteMembership, countActive,
+  findActiveSubscription,
+};

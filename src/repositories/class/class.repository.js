@@ -35,14 +35,29 @@ async function findAllClasses() {
   return classes;
 }
 
+// FIX: chỉ lấy các đăng ký đã được admin duyệt — người đang "chờ duyệt" (vé lượt
+// chưa xử lý) không được tính vào sĩ số / danh sách học viên hiển thị trên lịch.
 async function findEnrollmentsByClassId(classId) {
   const [enrollments] = await pool.query(`
     SELECT ce.status, ce.booking_type, u.id AS user_id, u.full_name AS name
     FROM class_enrollments ce
     JOIN users u ON ce.user_id = u.id
-    WHERE ce.class_id = ? AND ce.status IN ('pending', 'approved')
+    WHERE ce.class_id = ? AND ce.status = 'approved'
   `, [classId]);
   return enrollments;
+}
+
+// Lấy đăng ký (pending/approved) của CHÍNH người dùng hiện tại cho 1 lớp cụ thể —
+// dùng để hiển thị đúng trạng thái "Đang chờ duyệt" của riêng họ, tách biệt khỏi
+// danh sách học viên đã duyệt ở trên (vốn không còn chứa người đang chờ duyệt).
+async function findEnrollmentForUser(classId, userId) {
+  const [[row]] = await pool.query(
+    `SELECT * FROM class_enrollments
+     WHERE class_id = ? AND user_id = ? AND status IN ('pending', 'approved')
+     ORDER BY created_at DESC LIMIT 1`,
+    [classId, userId]
+  );
+  return row || null;
 }
 
 async function findClassById(id) {
@@ -59,8 +74,17 @@ async function checkExistingEnrollment(classId, userId) {
   return existing || null;
 }
 
-async function createEnrollment(classId, userId) {
-  const [result] = await pool.query(`INSERT INTO class_enrollments (class_id, user_id) VALUES (?, ?)`, [classId, userId]);
+async function createEnrollment(classId, userId, {
+  status = 'pending',
+  bookingType = 0,
+  paymentStatus = 'completed',
+  subscriptionId = null,
+} = {}) {
+  const [result] = await pool.query(
+    `INSERT INTO class_enrollments (class_id, user_id, status, booking_type, payment_status, subscription_id)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [classId, userId, status, bookingType ? 1 : 0, paymentStatus, subscriptionId]
+  );
   return result.insertId;
 }
 
@@ -96,27 +120,33 @@ async function findPendingEnrollments() {
 }
 
 async function approveEnrollment(enrollmentId, adminId) {
-  await pool.query(`UPDATE class_enrollments SET status = 'approved', approved_by = ?, approved_at = NOW() WHERE id = ?`, [adminId, enrollmentId]);
+  await pool.query(
+    `UPDATE class_enrollments SET status = 'approved', payment_status = 'completed', approved_by = ?, approved_at = NOW() WHERE id = ?`,
+    [adminId, enrollmentId]
+  );
 }
 
 async function rejectEnrollment(enrollmentId, adminId, note) {
-  await pool.query(`UPDATE class_enrollments SET status = 'rejected', admin_note = ?, approved_by = ?, approved_at = NOW() WHERE id = ?`, [note || null, adminId, enrollmentId]);
+  await pool.query(
+    `UPDATE class_enrollments SET status = 'rejected', payment_status = 'cancelled', admin_note = ?, approved_by = ?, approved_at = NOW() WHERE id = ?`,
+    [note || null, adminId, enrollmentId]
+  );
 }
 
 // --- TRUY VẤN ADMIN CRUD CLASS ---
 async function createClass(data) {
-  const { name, instructor, day, time, level, capacity } = data;
+  const { name, instructor, day, time, level, capacity, price } = data;
   await pool.query(
-    'INSERT INTO classes (name, instructor, day, time, level, capacity) VALUES (?,?,?,?,?,?)',
-    [name, instructor || null, day, time, level, parseInt(capacity) || 10]
+    'INSERT INTO classes (name, instructor, day, time, level, capacity, price) VALUES (?,?,?,?,?,?,?)',
+    [name, instructor || null, day, time, level, parseInt(capacity) || 10, parseInt(price) || 0]
   );
 }
 
 async function updateClass(id, data) {
-  const { name, instructor, day, time, level, capacity } = data;
+  const { name, instructor, day, time, level, capacity, price } = data;
   await pool.query(
-    'UPDATE classes SET name=?, instructor=?, day=?, time=?, level=?, capacity=? WHERE id=?',
-    [name, instructor || null, day, time, level, parseInt(capacity) || 10, id]
+    'UPDATE classes SET name=?, instructor=?, day=?, time=?, level=?, capacity=?, price=? WHERE id=?',
+    [name, instructor || null, day, time, level, parseInt(capacity) || 10, parseInt(price) || 0, id]
   );
 }
 
@@ -129,7 +159,7 @@ async function deleteClass(id) {
 
 module.exports = {
   countMembers, countStaff, countBookingsByUser, countClasses,
-  findAllClasses, findEnrollmentsByClassId, findClassById,
+  findAllClasses, findEnrollmentsByClassId, findEnrollmentForUser, findClassById,
   checkExistingEnrollment, createEnrollment, findBookingsByUserId, updateEnrollmentStatus,
   findPendingEnrollments, approveEnrollment, rejectEnrollment,
   createClass, updateClass, deleteClass

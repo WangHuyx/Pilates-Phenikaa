@@ -286,13 +286,16 @@ CREATE TABLE payments (
     user_id INT NOT NULL,
     membership_id INT,
     package_id INT,
-    type VARCHAR(30) NOT NULL DEFAULT 'registration' COMMENT 'registration, pt, other',
+    type VARCHAR(30) NOT NULL DEFAULT 'registration' COMMENT 'registration, pt, class, other',
     amount DECIMAL(12, 2) NOT NULL,
     payment_method ENUM('cash', 'card', 'transfer', 'momo', 'zalopay') DEFAULT 'cash',
     payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     status ENUM('paid', 'pending', 'refunded', 'cancelled') DEFAULT 'paid',
     note TEXT,
     created_by INT,
+    -- Liên kết mềm tới class_enrollments(id) khi type='class' (vé lượt đặt lớp).
+    -- Không đặt FOREIGN KEY vì class_enrollments được tạo sau payments trong file này.
+    class_enrollment_id INT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -300,6 +303,8 @@ CREATE TABLE payments (
     FOREIGN KEY (package_id) REFERENCES membership_packages(id) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
+
+CREATE INDEX idx_payments_class_enrollment ON payments(class_enrollment_id);
 
 CREATE INDEX idx_payments_user ON payments(user_id);
 CREATE INDEX idx_payments_date ON payments(payment_date);
@@ -754,7 +759,8 @@ CREATE TABLE IF NOT EXISTS classes (
     day VARCHAR(50) NOT NULL,
     time VARCHAR(50) NOT NULL,
     level VARCHAR(50) NOT NULL,
-    capacity INT DEFAULT 10
+    capacity INT DEFAULT 10,
+    price DECIMAL(12, 0) NOT NULL DEFAULT 0 COMMENT 'Giá vé lượt (VNĐ) — thu khi hội viên chưa có gói VIP active'
 );
 
 -- NOTE:AI không sửa hàm này.Đây là bảng cố định chung

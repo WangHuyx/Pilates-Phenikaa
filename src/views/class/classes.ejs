@@ -11,11 +11,7 @@
       <button type="button" class="view-toggle-btn active" data-view="calendar" role="tab" aria-selected="true"><i class="ti ti-calendar-week"></i> Lịch tuần</button>
       <button type="button" class="view-toggle-btn" data-view="list" role="tab" aria-selected="false"><i class="ti ti-list"></i> Danh sách</button>
     </div>
-    <!-- Thêm cụm nút Zoom -->
-    <div class="zoom-controls" style="display:flex; gap:4px; margin-left: 12px;" id="zoom-controls">
-      <button type="button" class="btn btn-sm btn-secondary" id="btn-zoom-out" title="Thu nhỏ"><i class="ti ti-zoom-out"></i></button>
-      <button type="button" class="btn btn-sm btn-secondary" id="btn-zoom-in" title="Phóng to"><i class="ti ti-zoom-in"></i></button>
-    </div>
+   
     <% if (user.role === 'admin' || user.role === 'staff') { %>
     <a href="/classes/manage" class="btn btn-secondary"><i class="ti ti-settings"></i> Quản lý lớp học</a>
     <% } %>
@@ -59,7 +55,7 @@
 
   <div id="list-view" class="class-grid" style="display:none;">
     <% classes.forEach(function (classItem) { %>
-      <%- include('../partials/class-card', { classItem, user, showRegister: true }) %>
+      <%- include('../partials/class-card', { classItem, user, showRegister: true, hasActiveVip }) %>
     <% }); %>
   </div>
 
@@ -76,6 +72,7 @@
   var CSRF_TOKEN = <%- typeof csrfToken !== 'undefined' ? JSON.stringify(csrfToken) : 'null' %>;
   var CURRENT_USER_ID = <%- (user && (user.id || user._id)) ? JSON.stringify(user.id || user._id) : 'null' %>;
   var USER_ROLE = '<%- user ? user.role : "" %>'; // Thêm lấy Role để xét hiển thị Admin View
+  var HAS_ACTIVE_VIP = <%- typeof hasActiveVip !== 'undefined' && hasActiveVip ? 'true' : 'false' %>; // Hội viên đang có gói VIP hiệu lực?
 
   var HOUR_H = 56;
   var DAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
@@ -118,6 +115,7 @@
       levelKey: normalizeLevel(classItem),
       instructor: classItem.instructor || classItem.trainer || '',
       capacity: classItem.capacity,
+      price: Number(classItem.price) || 0,
       registeredCount: (classItem.enrolledUserIds || []).length,
       isFull: (classItem.enrolledUserIds || []).length >= classItem.capacity,
       isRegistered: !!(CURRENT_USER_ID && (classItem.enrolledUserIds || []).indexOf(CURRENT_USER_ID) > -1),
@@ -288,8 +286,15 @@
     if (!c) return;
     var meta = LEVEL_META[c.levelKey];
     var seatsText = c.capacity != null ? (c.registeredCount + '/' + c.capacity + ' chỗ') : '';
-    
+
+    var feeText = HAS_ACTIVE_VIP
+      ? '<span style="color:#15803d">Miễn phí — đang dùng gói VIP</span>'
+      : (c.price > 0
+          ? 'Vé lượt: <strong>' + c.price.toLocaleString('vi-VN') + 'đ</strong> (chưa có gói VIP)'
+          : '<span style="color:#15803d">Miễn phí</span>');
+
     var actionBtn = '';
+    var feeHtml = '';
     if (c.enrollmentStatus === 'pending') {
       actionBtn = '<button type="button" class="btn btn-warning" disabled style="opacity:0.9;cursor:not-allowed">⏳ Đang chờ duyệt</button>';
     } else if (c.enrollmentStatus === 'approved' || c.isRegistered) {
@@ -297,6 +302,7 @@
     } else if (c.isFull) {
       actionBtn = '<button type="button" class="btn btn-secondary" disabled style="opacity:0.6;cursor:not-allowed">Hết chỗ</button>';
     } else {
+      feeHtml = '<p class="cal-popover-meta"><i class="ti ti-receipt"></i> ' + feeText + '</p>';
       actionBtn = '<form method="POST" action="/classes/' + c.id + '/register">' +
         (CSRF_TOKEN ? '<input type="hidden" name="_csrf" value="' + CSRF_TOKEN + '">' : '') +
         '<button type="submit" class="btn btn-primary">Đặt chỗ ngay</button></form>';
@@ -327,6 +333,7 @@
       '<h3 class="cal-popover-title">' + c.name + '</h3>' +
       '<p class="cal-popover-meta"><i class="ti ti-user"></i> HLV ' + (c.instructor || 'Tự tập') + '</p>' +
       (seatsText ? '<p class="cal-popover-meta"><i class="ti ti-users"></i> ' + seatsText + '</p>' : '') +
+      feeHtml +
       '<div class="cal-popover-action">' + actionBtn + '</div>' +
       adminViewHtml +
       '</div></div>';

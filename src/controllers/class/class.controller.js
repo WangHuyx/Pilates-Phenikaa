@@ -7,6 +7,8 @@
  */
 const classService = require('../../services/class.service');
 const classRepo = require('../../repositories/class/class.repository'); // Cho các thao tác đơn giản không cần logic
+const paymentRepo = require('../../repositories/payment.repository');
+const packageRepo = require('../../repositories/package/package.repository');
 
 /** GET /dashboard */
 async function showDashboard(req, res, next) {
@@ -23,11 +25,12 @@ async function showClasses(req, res, next) {
   try {
     const userId = req.session.user.id;
     const classes = await classService.getClassesForDisplay(userId);
-    
+    const activeSub = await packageRepo.findActiveSubscription(userId);
+
     const message = req.session.flash_success || req.session.flash_error || null;
     delete req.session.flash_success; delete req.session.flash_error;
 
-    res.render('class/classes', { title: 'Lịch học', user: req.session.user, classes, message });
+    res.render('class/classes', { title: 'Lịch học', user: req.session.user, classes, message, hasActiveVip: !!activeSub });
   } catch (err) { next(err); }
 }
 
@@ -76,6 +79,8 @@ async function showApprovals(req, res, next) {
 async function approveEnrollment(req, res, next) {
   try {
     await classRepo.approveEnrollment(req.params.id, req.session.user.id);
+    // Vé lượt đã thu (nếu có) coi như xác nhận thu tiền thành công khi admin duyệt
+    await paymentRepo.markStatusByEnrollmentId(req.params.id, 'paid');
     req.session.flash_success = 'Đã duyệt yêu cầu đặt chỗ.';
     res.redirect('/classes/approvals');
   } catch (err) { next(err); }
@@ -84,6 +89,8 @@ async function approveEnrollment(req, res, next) {
 async function rejectEnrollment(req, res, next) {
   try {
     await classRepo.rejectEnrollment(req.params.id, req.session.user.id, req.body.admin_note);
+    // Từ chối đặt chỗ -> hủy luôn giao dịch vé lượt liên quan (nếu có)
+    await paymentRepo.markStatusByEnrollmentId(req.params.id, 'cancelled');
     req.session.flash_success = 'Đã từ chối yêu cầu đặt chỗ.';
     res.redirect('/classes/approvals');
   } catch (err) { next(err); }

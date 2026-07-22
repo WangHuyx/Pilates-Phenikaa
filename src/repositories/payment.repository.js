@@ -26,11 +26,11 @@ async function statsOverall() {
   return row;
 }
 
-async function create({ user_id, membership_id, package_id, type, amount, payment_date, payment_method, status, note, created_by }) {
+async function create({ user_id, membership_id, package_id, type, amount, payment_date, payment_method, status, note, created_by, class_enrollment_id }) {
   const [r] = await pool.query(
-    `INSERT INTO payments (user_id, membership_id, package_id, type, amount, payment_date, payment_method, status, note, created_by)
-     VALUES (?,?,?,?,?,?,?,?,?,?)`,
-    [user_id, membership_id || null, package_id || null, type || 'registration', amount, payment_date, payment_method || 'cash', status || 'paid', note || null, created_by || null]
+    `INSERT INTO payments (user_id, membership_id, package_id, type, amount, payment_date, payment_method, status, note, created_by, class_enrollment_id)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+    [user_id, membership_id || null, package_id || null, type || 'registration', amount, payment_date, payment_method || 'cash', status || 'paid', note || null, created_by || null, class_enrollment_id || null]
   );
   const ym = String(payment_date).slice(0, 7).replace('-', '');
   const code = `HD${ym}-${String(r.insertId).padStart(4, '0')}`;
@@ -42,4 +42,9 @@ async function remove(id) {
   await pool.query('DELETE FROM payments WHERE id=?', [id]);
 }
 
-module.exports = { findAll, statsOverall, create, remove };
+// Đồng bộ trạng thái thanh toán vé lượt khi admin duyệt/từ chối đặt chỗ lớp học
+async function markStatusByEnrollmentId(enrollmentId, status) {
+  await pool.query('UPDATE payments SET status=? WHERE class_enrollment_id=?', [status, enrollmentId]);
+}
+
+module.exports = { findAll, statsOverall, create, remove, markStatusByEnrollmentId };
