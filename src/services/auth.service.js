@@ -42,4 +42,30 @@ async function login(username, plainPassword) {
   return { success: true, user: safeUser };
 }
 
-module.exports = { login };
+/**
+ * Tự đăng ký tài khoản hội viên (role luôn ép cứng là 'member' — không cho
+ * phép người dùng chọn vai trò khác qua form đăng ký công khai).
+ * @returns {Promise<{success: boolean, user?: object, message?: string}>}
+ */
+async function register({ username, fullName, email, phone, password, confirmPassword }) {
+  if (!username || !fullName || !email || !password) {
+    return { success: false, message: 'Vui lòng điền đầy đủ thông tin bắt buộc.' };
+  }
+  if (password.length < 6) {
+    return { success: false, message: 'Mật khẩu phải có ít nhất 6 ký tự.' };
+  }
+  if (password !== confirmPassword) {
+    return { success: false, message: 'Mật khẩu nhập lại không khớp.' };
+  }
+
+  const existing = await userRepository.findByUsername(username);
+  if (existing) {
+    return { success: false, message: `Tên đăng nhập "${username}" đã tồn tại.` };
+  }
+
+  const user = await userRepository.create({ username, fullName, email, phone, password, role: 'member' });
+  const { passwordHash, ...safeUser } = user;
+  return { success: true, user: safeUser };
+}
+
+module.exports = { login, register };

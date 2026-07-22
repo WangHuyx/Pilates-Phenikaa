@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng ký hội viên — Pilates Phenikaa</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div id="page">
+
+  <!-- ===== BÊN TRÁI ===== -->
+  <div id="left-panel">
+
+    <div class="left-content">
+
+      <div class="left-eyebrow">Pilates Phenikaa</div>
+
+      <h1 class="left-title">
+        Trở thành hội viên<br>
+        Pilates Phenikaa
+      </h1>
+
+      <p class="left-sub">QUÀ TẶNG CỘT SỐNG</p>
+      <p class="left-sub">Phần mềm quản lý phòng tập Pilates số 1 Việt Nam</p>
+      <p class="left-sub">
+        Đăng ký tài khoản để đặt lớp, mua gói tập và theo dõi lịch sử
+        tập luyện của bạn.
+      </p>
+
+      <ul class="left-features">
+        <li><i class="ti ti-circle-check"></i> Đặt chỗ lớp học mọi lúc, mọi nơi</li>
+        <li><i class="ti ti-circle-check"></i> Mua gói tập tháng, thanh toán trực tuyến</li>
+        <li><i class="ti ti-circle-check"></i> Theo dõi trạng thái đặt chỗ và lịch sử tập luyện</li>
+      </ul>
+
+      <!-- Liên hệ -->
+      <div class="left-contact">
+
+        <h3>Liên hệ với chúng tôi</h3>
+
+        <p>
+          <i class="ti ti-phone"></i>
+          1900 0009
+        </p>
+
+        <p>
+          <i class="ti ti-mail"></i>
+          phuonganhhd6789@gmail.com
+        </p>
+
+        <p>
+          <i class="ti ti-map-pin"></i>
+          Đại học Phenikaa, Hà Nội
+        </p>
+
+      </div>
+      <!-- Kết thúc left-contact -->
+
+    </div>
+    <!-- Kết thúc left-content -->
+
+  </div>
+  <!-- Kết thúc left-panel -->
+
+  <!-- ===== BÊN PHẢI ===== -->
+
+  <div id="right-panel">
+
+    <!-- Banner -->
+    <div class="top-banner">
+      <div class="banner-brand">
+        <div class="icon">🌿</div>
+        <span class="name">Pilates Phenikaa</span>
+      </div>
+      <div class="banner-pill">Đăng ký hội viên</div>
+    </div>
+
+    <!-- Card đăng ký -->
+    <div id="login-card">
+      <div class="card-logo">
+        <div class="icon">🌿</div>
+        <span class="name">Pilates Phenikaa</span>
+      </div>
+      <div class="card-title">Đăng ký tài khoản hội viên</div>
+      <p class="card-subtitle">Tạo tài khoản để bắt đầu đặt lớp và mua gói tập</p>
+
+      <form id="register-form" method="POST" action="/register" novalidate>
+
+        <div id="form-error" class="form-error" <%= error ? '' : 'hidden' %>>
+          <i class="ti ti-alert-circle"></i>
+          <span id="form-error-text"><%= error %></span>
+        </div>
+
+        <div class="field-group">
+          <label for="fullName">Họ và tên <span class="req">*</span></label>
+          <div class="input-wrap">
+            <i class="ti ti-id-badge-2 field-icon"></i>
+            <input type="text" id="fullName" name="fullName" placeholder="Nguyễn Văn A" value="<%= old.fullName || '' %>" required>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="username">Tên đăng nhập <span class="req">*</span></label>
+          <div class="input-wrap">
+            <i class="ti ti-user field-icon"></i>
+            <input type="text" id="username" name="username" placeholder="Nhập tên đăng nhập" autocomplete="username" value="<%= old.username || '' %>" required>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="email">Email <span class="req">*</span></label>
+          <div class="input-wrap">
+            <i class="ti ti-mail field-icon"></i>
+            <input type="email" id="email" name="email" placeholder="ban@email.com" value="<%= old.email || '' %>" required>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="phone">Số điện thoại</label>
+          <div class="input-wrap">
+            <i class="ti ti-phone field-icon"></i>
+            <input type="text" id="phone" name="phone" placeholder="09xxxxxxxx" value="<%= old.phone || '' %>">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="password">Mật khẩu <span class="req">*</span></label>
+          <div class="input-wrap">
+            <i class="ti ti-lock field-icon"></i>
+            <input type="password" id="password" name="password" placeholder="Ít nhất 6 ký tự" autocomplete="new-password" required>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="confirmPassword">Nhập lại mật khẩu <span class="req">*</span></label>
+          <div class="input-wrap">
+            <i class="ti ti-lock field-icon"></i>
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Nhập lại mật khẩu" autocomplete="new-password" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">
+          <span class="btn-text">Đăng ký</span>
+          <span class="btn-spinner" hidden><i class="ti ti-loader-2"></i></span>
+        </button>
+      </form>
+
+      <div class="card-divider"></div>
+
+      <div class="card-footer-note">
+        Đã có tài khoản? <a href="/login" class="link-sm">Đăng nhập ngay</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  var form      = document.getElementById('register-form');
+  var submitBtn = document.getElementById('submit-btn');
+
+  form.addEventListener('submit', function () {
+    submitBtn.disabled = true;
+    submitBtn.querySelector('.btn-text').setAttribute('hidden', '');
+    submitBtn.querySelector('.btn-spinner').removeAttribute('hidden');
+  });
+}());
+</script>
+</body>
+</html>

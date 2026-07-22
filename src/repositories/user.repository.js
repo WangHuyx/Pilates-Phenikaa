@@ -41,13 +41,13 @@ async function findByUsername(username) {
   return formatUser(rows[0]);
 }
 
-async function create({ username, fullName, email, password, role }) {
+async function create({ username, fullName, email, password, role, phone }) {
   const [roleRows] = await pool.query('SELECT id FROM roles WHERE name = ?', [role]);
   if (!roleRows.length) throw new Error('Role không hợp lệ.');
   const passwordHash = bcrypt.hashSync(password, 10);
   const [result] = await pool.query(
-    'INSERT INTO users (username, password, email, full_name, role_id) VALUES (?, ?, ?, ?, ?)',
-    [username, passwordHash, email || null, fullName, roleRows[0].id]
+    'INSERT INTO users (username, password, email, full_name, phone, role_id) VALUES (?, ?, ?, ?, ?, ?)',
+    [username, passwordHash, email || null, fullName, phone || null, roleRows[0].id]
   );
   return findById(result.insertId);
 }

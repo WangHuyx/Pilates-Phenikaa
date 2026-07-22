@@ -24,7 +24,7 @@ async function index(req, res, next) {
     ).catch(() => [[{ total: 0, active: 0 }]]);
 
     const [[activePackages]] = await pool.query(
-      `SELECT COUNT(*) AS cnt FROM member_memberships WHERE status='active' AND end_date >= CURDATE()`
+      `SELECT COUNT(*) AS cnt FROM user_subscriptions WHERE payment_status='completed' AND expired_at >= NOW()`
     ).catch(() => [[{ cnt: 0 }]]);
 
     const [[revenueAll]] = await pool.query(

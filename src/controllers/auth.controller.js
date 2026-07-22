@@ -47,4 +47,29 @@ function handleLogout(req, res, next) {
   });
 }
 
-module.exports = { showLoginForm, handleLogin, handleLogout };
+/** GET /register — hiển thị biểu mẫu tự đăng ký tài khoản hội viên */
+function showRegisterForm(req, res) {
+  if (req.session.user) {
+    return res.redirect('/dashboard');
+  }
+  res.render('register', { title: 'Đăng ký', error: null, old: {} });
+}
+
+/** POST /register — tạo tài khoản hội viên (role luôn là 'member') và tự đăng nhập */
+async function handleRegister(req, res, next) {
+  try {
+    const { username, fullName, email, phone, password, confirmPassword } = req.body;
+    const result = await authService.register({ username, fullName, email, phone, password, confirmPassword });
+
+    if (!result.success) {
+      return res.status(400).render('register', { title: 'Đăng ký', error: result.message, old: req.body });
+    }
+
+    req.session.user = result.user;
+    res.redirect('/dashboard');
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { showLoginForm, handleLogin, handleLogout, showRegisterForm, handleRegister };

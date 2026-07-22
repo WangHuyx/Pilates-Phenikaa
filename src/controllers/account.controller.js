@@ -100,16 +100,17 @@ const AccountController = {
          WHERE e.user_id=? ORDER BY sc.day, sc.time`, [id]
       );
       const [memberships] = await pool.query(
-        `SELECT mm.*, mp.name AS package_name, mp.price, mp.duration_days
-         FROM member_memberships mm
-         JOIN membership_packages mp ON mm.package_id = mp.id
-         WHERE mm.user_id=? ORDER BY mm.created_at DESC`, [id]
+        `SELECT us.*, mp.name AS package_name, mp.price, mp.duration_days,
+                us.activated_at AS start_date, us.expired_at AS end_date
+         FROM user_subscriptions us
+         JOIN membership_packages mp ON us.package_id = mp.id
+         WHERE us.user_id=? ORDER BY us.created_at DESC`, [id]
       );
       const [payments] = await pool.query(
         `SELECT * FROM payments WHERE user_id=? ORDER BY payment_date DESC LIMIT 20`, [id]
       );
 
-      res.render('member-history', {
+      res.render('package/member-history', {
         title: `Lịch sử — ${member.fullName}`,
         user: req.session.user, member,
         bookings, memberships, payments,

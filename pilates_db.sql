@@ -274,28 +274,34 @@ CREATE INDEX idx_registrations_member_course ON course_registrations(member_id, 
 
 -- =============================================
 -- 11. PAYMENTS TABLE
+-- FIX: khớp lại với src/repositories/payment.repository.js + finance.controller.js
+-- (đọc/ghi user_id, invoice_code, membership_id, type, note, created_by).
+-- membership_id trỏ tới user_subscriptions vì đó là bảng thật đang được
+-- src/repositories/package/package.repository.js dùng để lưu gói đã mua/gán
+-- (member_memberships hiện không còn được luồng mua/gán gói nào ghi vào nữa).
 -- =============================================
 CREATE TABLE payments (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    payment_code VARCHAR(20) NOT NULL UNIQUE,
-    member_id INT NOT NULL,
+    invoice_code VARCHAR(20) UNIQUE,
+    user_id INT NOT NULL,
+    membership_id INT,
     package_id INT,
-    course_id INT,
+    type VARCHAR(30) NOT NULL DEFAULT 'registration' COMMENT 'registration, pt, other',
     amount DECIMAL(12, 2) NOT NULL,
     payment_method ENUM('cash', 'card', 'transfer', 'momo', 'zalopay') DEFAULT 'cash',
     payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     status ENUM('paid', 'pending', 'refunded', 'cancelled') DEFAULT 'paid',
-    notes TEXT,
+    note TEXT,
+    created_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL ON UPDATE CASCADE
-    -- FIX: Đã xóa constraint chk_payment_ref do MySQL báo lỗi xung đột giữa CHECK constraint và ON DELETE SET NULL ở khóa ngoại
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (membership_id) REFERENCES user_subscriptions(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (package_id) REFERENCES membership_packages(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
-CREATE INDEX idx_payments_code ON payments(payment_code);
-CREATE INDEX idx_payments_member ON payments(member_id);
+CREATE INDEX idx_payments_user ON payments(user_id);
 CREATE INDEX idx_payments_date ON payments(payment_date);
 CREATE INDEX idx_payments_status ON payments(status);
 
@@ -491,15 +497,8 @@ END;
 -- END;
 
 -- Auto generate payment_code
-CREATE TRIGGER trg_payment_code BEFORE INSERT ON payments
-FOR EACH ROW
-BEGIN
-    DECLARE next_id INT;
-    SELECT IFNULL(MAX(id), 0) + 1 INTO next_id FROM payments;
-    IF NEW.payment_code IS NULL OR NEW.payment_code = '' THEN
-        SET NEW.payment_code = CONCAT('PAY', LPAD(next_id, 5, '0'));
-    END IF;
-END;
+-- FIX: bỏ trigger sinh payment_code — cột này không còn tồn tại (đã đổi thành
+-- invoice_code, được payment.repository.js tự sinh sau khi insert).
 
 -- FIX: 4 trigger dưới đây thao tác trên bảng attendances/schedules, cả hai đều đã bị bỏ
 -- (mục 9 và 13) nên comment lại toàn bộ để tránh lỗi "table doesn't exist".
@@ -690,17 +689,15 @@ INSERT INTO course_registrations (member_id, course_id, registration_date, end_d
 (5, 5, '2026-06-15', '2026-07-30',  0, 'active');
 
 -- Payments
--- FIX: Sửa row 6 (member 1 gia hạn gói tháng) và row 8 (member 3 mua khóa Barre)
--- để đảm bảo CHECK (package_id IS NOT NULL OR course_id IS NOT NULL)
-INSERT INTO payments (member_id, package_id, course_id, amount, payment_method, payment_date, status) VALUES
-(1,    1,    1, 4000000,  'transfer', '2026-06-01 10:30:00', 'paid'),
-(2, NULL,    2, 4500000,  'card',     '2026-06-05 14:00:00', 'paid'),
-(3,    2,    3, 6800000,  'momo',     '2026-06-10 09:15:00', 'paid'),
-(4, NULL,    1, 2500000,  'cash',     '2026-05-15 11:00:00', 'paid'),
-(5,    1,    5, 5000000,  'zalopay',  '2026-06-15 16:30:00', 'paid'),
-(1,    1, NULL, 1500000,  'transfer', '2026-05-01 10:00:00', 'paid'),
-(2,    3, NULL, 12000000, 'card',     '2026-04-10 09:00:00', 'paid'),
-(3, NULL,    3, 3000000,  'cash',     '2026-03-20 15:30:00', 'paid');
+-- FIX: viết lại seed cho khớp cột mới (user_id thay vì member_id, không còn course_id).
+-- package_id/membership_id để NULL vì membership_packages/user_subscriptions chưa
+-- có dữ liệu mẫu — ứng dụng sẽ tự tạo payments thật khi mua/gán gói qua /packages.
+INSERT INTO payments (invoice_code, user_id, type, amount, payment_method, payment_date, status, note, created_by) VALUES
+('HD202606-0001', 6, 'other', 500000,  'transfer', '2026-06-01 10:30:00', 'paid', 'Phí tập buổi đầu',   2),
+('HD202606-0002', 7, 'other', 300000,  'card',     '2026-06-05 14:00:00', 'paid', NULL,                 2),
+('HD202606-0003', 8, 'pt',    450000,  'momo',     '2026-06-10 09:15:00', 'paid', 'Buổi PT thêm',       1),
+('HD202605-0001', 9, 'other', 200000,  'cash',     '2026-05-15 11:00:00', 'paid', NULL,                 2),
+('HD202606-0004', 10, 'other', 350000, 'zalopay',  '2026-06-15 16:30:00', 'pending', 'Chờ xác nhận',     1);
 
 -- FIX: bảng member_packages đã bị bỏ, comment nốt seed data
 -- INSERT INTO member_packages (member_id, package_id, start_date, end_date, status, payment_id) VALUES
