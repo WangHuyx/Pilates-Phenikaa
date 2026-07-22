@@ -426,6 +426,33 @@ INSERT INTO equipment (name, type, serial_number, status, notes) VALUES
 ('Tower #1',        'tower',    'TW-001', 'retired',     'Đã ngưng sử dụng, chờ thanh lý');
 
 -- =============================================
+-- ROLE_PERMISSIONS TABLE
+-- Dùng bởi src/routes/permissions.routes.js (trang /permissions)
+-- =============================================
+CREATE TABLE role_permissions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    role VARCHAR(50) NOT NULL,
+    permission VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_role_permission (role, permission)
+);
+
+INSERT INTO role_permissions (role, permission) VALUES
+('admin', 'member.view'), ('admin', 'member.add'), ('admin', 'member.edit'), ('admin', 'member.delete'),
+('admin', 'staff.view'), ('admin', 'staff.manage'),
+('admin', 'package.view'), ('admin', 'package.manage'),
+('admin', 'class.view'), ('admin', 'class.manage'),
+('admin', 'finance.view'), ('admin', 'finance.manage'), ('admin', 'finance.invoice'),
+('admin', 'equipment.view'), ('admin', 'equipment.manage'), ('admin', 'report.view'),
+('staff', 'member.view'), ('staff', 'member.add'), ('staff', 'member.edit'),
+('staff', 'package.view'), ('staff', 'package.manage'),
+('staff', 'class.view'), ('staff', 'class.manage'),
+('staff', 'finance.view'), ('staff', 'finance.manage'), ('staff', 'finance.invoice'),
+('staff', 'equipment.view'), ('staff', 'report.view'),
+('trainer', 'member.view'), ('trainer', 'package.view'),
+('trainer', 'class.view'), ('trainer', 'class.manage');
+
+-- =============================================
 -- TRIGGERS
 -- =============================================
 
