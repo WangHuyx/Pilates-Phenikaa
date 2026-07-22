@@ -204,50 +204,6 @@ CREATE TABLE user_subscriptions (
     FOREIGN KEY (package_id) REFERENCES membership_packages(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
--- =============================================
--- 8. BỎ KHÔNG DÙNG
--- =============================================
--- CREATE TABLE rooms (
---     id INT PRIMARY KEY AUTO_INCREMENT,
---     room_code VARCHAR(20) NOT NULL UNIQUE,
---     name VARCHAR(100) NOT NULL,
---     capacity INT DEFAULT 10,
---     status ENUM('available', 'maintenance', 'closed') DEFAULT 'available',
---     description TEXT,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
--- );
-
--- CREATE INDEX idx_rooms_code ON rooms(room_code); -- FIX: bảng rooms đã bị bỏ, comment nốt index này
-
--- =============================================
--- 9. Bỏ không dùng
--- =============================================
--- CREATE TABLE schedules (
---     id INT PRIMARY KEY AUTO_INCREMENT,
---     schedule_code VARCHAR(20) NOT NULL UNIQUE,
---     date DATE NOT NULL,
---     start_time TIME NOT NULL,
---     end_time TIME NOT NULL,
---     room_id INT,
---     trainer_id INT,
---     course_id INT,
---     max_students INT DEFAULT 10,
---     current_students INT DEFAULT 0,
---     status ENUM('scheduled', 'completed', 'cancelled') DEFAULT 'scheduled',
---     notes TEXT,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
---     FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE SET NULL ON UPDATE CASCADE,
---     FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE SET NULL ON UPDATE CASCADE,
---     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL ON UPDATE CASCADE
--- );
-
--- FIX: bảng schedules đã bị bỏ, comment nốt các index này
--- CREATE INDEX idx_schedules_date ON schedules(date);
--- CREATE INDEX idx_schedules_room ON schedules(room_id);
--- CREATE INDEX idx_schedules_trainer ON schedules(trainer_id);
--- CREATE INDEX idx_schedules_course ON schedules(course_id);
 
 -- =============================================
 -- 10. COURSE REGISTRATIONS TABLE
@@ -311,26 +267,6 @@ CREATE INDEX idx_payments_date ON payments(payment_date);
 CREATE INDEX idx_payments_status ON payments(status);
 
 -- =============================================
--- 12. Bỏ không dùng
--- =============================================
--- CREATE TABLE member_packages (
---     id INT PRIMARY KEY AUTO_INCREMENT,
---     member_id INT NOT NULL,
---     package_id INT NOT NULL,
---     start_date DATE NOT NULL,
---     end_date DATE NOT NULL,
---     status ENUM('active', 'expired', 'cancelled') DEFAULT 'active',
---     payment_id INT,
---     notes TEXT,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
---     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE ON UPDATE CASCADE,
---     FOREIGN KEY (package_id) REFERENCES packages(id) ON DELETE RESTRICT ON UPDATE CASCADE,
---     FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE SET NULL ON UPDATE CASCADE
--- );
-
-
--- =============================================
 -- 12b.
 -- =============================================
 CREATE TABLE member_memberships (
@@ -348,29 +284,6 @@ CREATE TABLE member_memberships (
 
 CREATE INDEX idx_member_memberships_user ON member_memberships(user_id);
 CREATE INDEX idx_member_memberships_status ON member_memberships(status);
--- CREATE INDEX idx_member_packages_end ON member_packages(end_date); -- FIX: bảng member_packages đã bị bỏ
-
--- =============================================
--- 13. ATTENDANCES TABLE
--- FIX: bảng này phụ thuộc schedules (đã bị bỏ ở mục 9) nên không thể tạo được nữa
--- =============================================
--- CREATE TABLE attendances (
---     id INT PRIMARY KEY AUTO_INCREMENT,
---     member_id INT NOT NULL,
---     schedule_id INT NOT NULL,
---     check_in_time DATETIME DEFAULT CURRENT_TIMESTAMP,
---     status ENUM('present', 'absent', 'late', 'excused') DEFAULT 'present',
---     notes TEXT,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
---     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE ON UPDATE CASCADE,
---     FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE ON UPDATE CASCADE
--- );
-
--- CREATE INDEX idx_attendances_member ON attendances(member_id);
--- CREATE INDEX idx_attendances_schedule ON attendances(schedule_id);
--- CREATE UNIQUE INDEX idx_attendances_unique ON attendances(member_id, schedule_id);
-
 -- =============================================
 -- 14. NOTIFICATIONS TABLE
 -- =============================================
@@ -422,13 +335,44 @@ CREATE TABLE equipment (
 
 CREATE INDEX idx_equipment_status ON equipment(status);
 
-INSERT INTO equipment (name, type, serial_number, status, notes) VALUES
-('Reformer #1',     'reformer', 'RF-001', 'active',      'Phòng Reformer, tầng 2'),
-('Reformer #2',     'reformer', 'RF-002', 'active',      'Phòng Reformer, tầng 2'),
-('Cadillac #1',     'cadillac', 'CD-001', 'active',      'Phòng VIP, tầng 3'),
-('Wunda Chair #1',  'chair',    'CH-001', 'maintenance', 'Đang chờ thay lò xo'),
-('Barrel #1',       'barrel',   'BR-001', 'active',      'Phòng Barre, tầng 1'),
-('Tower #1',        'tower',    'TW-001', 'retired',     'Đã ngưng sử dụng, chờ thanh lý');
+
+-- NOTE:AI không sửa hàm này.Đây là bảng cố định chung
+CREATE TABLE IF NOT EXISTS classes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(200) NOT NULL,
+    instructor VARCHAR(100) NOT NULL,
+    day VARCHAR(50) NOT NULL,
+    time VARCHAR(50) NOT NULL,
+    level VARCHAR(50) NOT NULL,
+    capacity INT DEFAULT 10,
+    price DECIMAL(12, 0) NOT NULL DEFAULT 0 COMMENT 'Giá vé lượt (VNĐ) — thu khi hội viên chưa có gói VIP active'
+);
+
+-- NOTE:AI không sửa hàm này.Đây là bảng cố định chung
+CREATE TABLE class_enrollments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    class_id INT NOT NULL,
+    user_id INT NOT NULL,
+    
+    status VARCHAR(50) DEFAULT 'pending', 
+    
+    -- booking_type: 1 (Có vé tháng - TH1), 0 (Mua lẻ/Không vé - TH2)
+    booking_type TINYINT(1) NOT NULL DEFAULT 0,    
+    payment_status VARCHAR(50) DEFAULT 'completed', 
+    subscription_id INT DEFAULT NULL,     
+
+    approved_by INT DEFAULT NULL,         
+    approved_at DATETIME DEFAULT NULL,    
+    admin_note TEXT,                      
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (subscription_id) REFERENCES user_subscriptions(id) ON DELETE SET NULL,
+    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL
+);
 
 -- =============================================
 -- ROLE_PERMISSIONS TABLE
@@ -442,25 +386,11 @@ CREATE TABLE role_permissions (
     UNIQUE KEY uq_role_permission (role, permission)
 );
 
-INSERT INTO role_permissions (role, permission) VALUES
-('admin', 'member.view'), ('admin', 'member.add'), ('admin', 'member.edit'), ('admin', 'member.delete'),
-('admin', 'staff.view'), ('admin', 'staff.manage'),
-('admin', 'package.view'), ('admin', 'package.manage'),
-('admin', 'class.view'), ('admin', 'class.manage'),
-('admin', 'finance.view'), ('admin', 'finance.manage'), ('admin', 'finance.invoice'),
-('admin', 'equipment.view'), ('admin', 'equipment.manage'), ('admin', 'report.view'),
-('staff', 'member.view'), ('staff', 'member.add'), ('staff', 'member.edit'),
-('staff', 'package.view'), ('staff', 'package.manage'),
-('staff', 'class.view'), ('staff', 'class.manage'),
-('staff', 'finance.view'), ('staff', 'finance.manage'), ('staff', 'finance.invoice'),
-('staff', 'equipment.view'), ('staff', 'report.view'),
-('trainer', 'member.view'), ('trainer', 'package.view'),
-('trainer', 'class.view'), ('trainer', 'class.manage');
-
 -- =============================================
 -- TRIGGERS
 -- =============================================
 
+DELIMITER $$
 
 -- Auto generate member_code
 CREATE TRIGGER trg_member_code BEFORE INSERT ON members
@@ -505,86 +435,6 @@ BEGIN
         SET NEW.course_code = CONCAT('CRS', LPAD(next_id, 5, '0'));
     END IF;
 END;
-
--- FIX: bảng rooms đã bị bỏ (mục 8) nên bỏ luôn trigger sinh mã cho nó
--- CREATE TRIGGER trg_room_code BEFORE INSERT ON rooms
--- FOR EACH ROW
--- BEGIN
---     DECLARE next_id INT;
---     SELECT IFNULL(MAX(id), 0) + 1 INTO next_id FROM rooms;
---     IF NEW.room_code IS NULL OR NEW.room_code = '' THEN
---         SET NEW.room_code = CONCAT('ROM', LPAD(next_id, 5, '0'));
---     END IF;
--- END;
-
--- FIX: bảng schedules đã bị bỏ (mục 9) nên bỏ luôn trigger sinh mã cho nó
--- CREATE TRIGGER trg_schedule_code BEFORE INSERT ON schedules
--- FOR EACH ROW
--- BEGIN
---     DECLARE next_id INT;
---     SELECT IFNULL(MAX(id), 0) + 1 INTO next_id FROM schedules;
---     IF NEW.schedule_code IS NULL OR NEW.schedule_code = '' THEN
---         SET NEW.schedule_code = CONCAT('SCH', LPAD(next_id, 5, '0'));
---     END IF;
--- END;
-
--- Auto generate payment_code
--- FIX: bỏ trigger sinh payment_code — cột này không còn tồn tại (đã đổi thành
--- invoice_code, được payment.repository.js tự sinh sau khi insert).
-
--- FIX: 4 trigger dưới đây thao tác trên bảng attendances/schedules, cả hai đều đã bị bỏ
--- (mục 9 và 13) nên comment lại toàn bộ để tránh lỗi "table doesn't exist".
--- CREATE TRIGGER trg_attendance_insert AFTER INSERT ON attendances
--- FOR EACH ROW
--- BEGIN
---     UPDATE schedules SET current_students = (
---         SELECT COUNT(*) FROM attendances
---         WHERE schedule_id = NEW.schedule_id AND status = 'present'
---     ) WHERE id = NEW.schedule_id;
--- END;
-
--- CREATE TRIGGER trg_attendance_update AFTER UPDATE ON attendances
--- FOR EACH ROW
--- BEGIN
---     UPDATE schedules SET current_students = (
---         SELECT COUNT(*) FROM attendances
---         WHERE schedule_id = NEW.schedule_id AND status = 'present'
---     ) WHERE id = NEW.schedule_id;
--- END;
-
--- CREATE TRIGGER trg_update_completed_sessions AFTER INSERT ON attendances
--- FOR EACH ROW
--- BEGIN
---     IF NEW.status = 'present' OR NEW.status = 'late' THEN
---         UPDATE course_registrations cr
---         JOIN schedules s ON s.course_id = cr.course_id
---         SET cr.completed_sessions = cr.completed_sessions + 1
---         WHERE cr.member_id = NEW.member_id
---           AND s.id = NEW.schedule_id
---           AND cr.status = 'active';
---     END IF;
--- END;
-
--- CREATE TRIGGER trg_update_completed_sessions_update AFTER UPDATE ON attendances
--- FOR EACH ROW
--- BEGIN
---     IF (OLD.status NOT IN ('present', 'late')) AND (NEW.status IN ('present', 'late')) THEN
---         UPDATE course_registrations cr
---         JOIN schedules s ON s.course_id = cr.course_id
---         SET cr.completed_sessions = cr.completed_sessions + 1
---         WHERE cr.member_id = NEW.member_id
---           AND s.id = NEW.schedule_id
---           AND cr.status = 'active';
---     END IF;
---     IF (OLD.status IN ('present', 'late')) AND (NEW.status NOT IN ('present', 'late')) THEN
---         UPDATE course_registrations cr
---         JOIN schedules s ON s.course_id = cr.course_id
---         SET cr.completed_sessions = GREATEST(0, cr.completed_sessions - 1)
---         WHERE cr.member_id = NEW.member_id
---           AND s.id = NEW.schedule_id
---           AND cr.status = 'active';
---     END IF;
--- END;
 
 -- =============================================
 -- STORED PROCEDURES
@@ -662,129 +512,28 @@ BEGIN
     GROUP BY m.id;
 END;
 
+DELIMITER ;
 
--- =============================================
--- SEED DATA
--- =============================================
+INSERT INTO equipment (name, type, serial_number, status, notes) VALUES
+('Reformer #1',     'reformer', 'RF-001', 'active',      'Phòng Reformer, tầng 2'),
+('Reformer #2',     'reformer', 'RF-002', 'active',      'Phòng Reformer, tầng 2'),
+('Cadillac #1',     'cadillac', 'CD-001', 'active',      'Phòng VIP, tầng 3'),
+('Wunda Chair #1',  'chair',    'CH-001', 'maintenance', 'Đang chờ thay lò xo'),
+('Barrel #1',       'barrel',   'BR-001', 'active',      'Phòng Barre, tầng 1'),
+('Tower #1',        'tower',    'TW-001', 'retired',     'Đã ngưng sử dụng, chờ thanh lý');
 
--- Trainers (FIX: thêm user_id — user.id 3,4,5 tương ứng bich.tran, cuong.le, dung.pham)
-INSERT INTO trainers (full_name, specialization, phone, email, salary, user_id) VALUES
-('Trần Thị Bích', 'Pilates Mat, Reformer',   '0912345001', 'bich.tran@pilates.com', 15000000, 3),
-('Lê Văn Cường',  'Pilates Equipment, Yoga', '0912345002', 'cuong.le@pilates.com',  18000000, 4),
-('Phạm Thị Dung', 'Pilates Rehab, Barre',    '0912345003', 'dung.pham@pilates.com', 16000000, 5);
 
--- Members (FIX: thêm user_id — user.id 6-10 tương ứng 5 hội viên)
-INSERT INTO members (full_name, date_of_birth, gender, phone, email, address, user_id) VALUES
-('Nguyễn Thị Hương', '1995-03-15', 'female', '0987654001', 'huong.nguyen@email.com', '123 Nguyễn Huệ, Q1, TP.HCM',         6),
-('Trần Văn Minh',    '1990-07-20', 'male',   '0987654002', 'minh.tran@email.com',    '456 Lê Lợi, Q3, TP.HCM',              7),
-('Lê Thị Nga',       '1998-11-10', 'female', '0987654003', 'nga.le@email.com',        '789 Hai Bà Trưng, Q1, TP.HCM',        8),
-('Phạm Văn Phúc',    '1988-05-25', 'male',   '0987654004', 'phuc.pham@email.com',    '321 Võ Văn Tần, Q3, TP.HCM',          9),
-('Hoàng Thị Quỳnh',  '2000-01-30', 'female', '0987654005', 'quynh.hoang@email.com',  '654 Nguyễn Đình Chiểu, Q3, TP.HCM',  10);
-
--- FIX: bảng rooms đã bị bỏ, comment nốt seed data
--- INSERT INTO rooms (name, capacity, description) VALUES
--- ('Phòng Mat Pilates', 15, 'Phòng tập Pilates trên thảm, tầng 1'),
--- ('Phòng Reformer',     8, 'Phòng tập với máy Reformer, tầng 2'),
--- ('Phòng Barre',       12, 'Phòng tập Barre Pilates, tầng 1'),
--- ('Phòng VIP',          5, 'Phòng tập cá nhân VIP, tầng 3');
-
--- Courses
-INSERT INTO courses (name, description, duration, price, total_sessions, trainer_id) VALUES
-('Pilates Mat Cơ Bản', 'Khóa học Pilates trên thảm dành cho người mới bắt đầu', 60, 2500000, 12, 1),
-('Pilates Reformer',   'Khóa học sử dụng máy Reformer nâng cao',                 45, 4500000, 10, 2),
-('Pilates Barre',      'Kết hợp Pilates và Barre để tăng cường sức mạnh',        50, 3000000, 15, 3),
-('Pilates Rehab',      'Phục hồi chức năng với Pilates',                          60, 5000000,  8, 3),
-('Pilates Prenatal',   'Pilates dành cho phụ nữ mang thai',                       45, 3500000, 12, 1);
-
--- Packages
-INSERT INTO packages (name, type, price, duration_days, discount, description) VALUES
-('Gói Tháng Cơ Bản',  'monthly',   1500000,  30,  0, 'Tập không giới hạn trong 1 tháng'),
-('Gói Quý Tiết Kiệm', 'quarterly', 3800000,  90, 15, 'Tiết kiệm 15% so với gói tháng'),
-('Gói Năm VIP',       'yearly',   12000000, 365, 30, 'Ưu đãi 30%, bao gồm PT cá nhân 2 buổi/tháng');
-
--- FIX: bảng schedules đã bị bỏ, comment nốt seed data
--- INSERT INTO schedules (date, start_time, end_time, room_id, trainer_id, course_id, max_students) VALUES
--- ('2026-06-18', '08:00', '09:00', 1, 1, 1, 15),
--- ('2026-06-18', '09:30', '10:15', 2, 2, 2,  8),
--- ('2026-06-18', '10:30', '11:20', 3, 3, 3, 12),
--- ('2026-06-19', '08:00', '09:00', 1, 1, 1, 15),
--- ('2026-06-19', '14:00', '15:00', 4, 3, 4,  5),
--- ('2026-06-20', '08:00', '08:45', 1, 1, 5, 10),
--- ('2026-06-20', '09:00', '09:45', 2, 2, 2,  8);
-
--- Course Registrations
-INSERT INTO course_registrations (member_id, course_id, registration_date, end_date, completed_sessions, status) VALUES
-(1, 1, '2026-06-01', '2026-07-01',  3, 'active'),
-(2, 2, '2026-06-05', '2026-07-15',  2, 'active'),
-(3, 3, '2026-06-10', '2026-07-25',  1, 'active'),
-(4, 1, '2026-05-15', '2026-06-15', 12, 'completed'),
-(5, 5, '2026-06-15', '2026-07-30',  0, 'active');
-
--- Payments
--- FIX: viết lại seed cho khớp cột mới (user_id thay vì member_id, không còn course_id).
--- package_id/membership_id để NULL vì membership_packages/user_subscriptions chưa
--- có dữ liệu mẫu — ứng dụng sẽ tự tạo payments thật khi mua/gán gói qua /packages.
-INSERT INTO payments (invoice_code, user_id, type, amount, payment_method, payment_date, status, note, created_by) VALUES
-('HD202606-0001', 6, 'other', 500000,  'transfer', '2026-06-01 10:30:00', 'paid', 'Phí tập buổi đầu',   2),
-('HD202606-0002', 7, 'other', 300000,  'card',     '2026-06-05 14:00:00', 'paid', NULL,                 2),
-('HD202606-0003', 8, 'pt',    450000,  'momo',     '2026-06-10 09:15:00', 'paid', 'Buổi PT thêm',       1),
-('HD202605-0001', 9, 'other', 200000,  'cash',     '2026-05-15 11:00:00', 'paid', NULL,                 2),
-('HD202606-0004', 10, 'other', 350000, 'zalopay',  '2026-06-15 16:30:00', 'pending', 'Chờ xác nhận',     1);
-
--- FIX: bảng member_packages đã bị bỏ, comment nốt seed data
--- INSERT INTO member_packages (member_id, package_id, start_date, end_date, status, payment_id) VALUES
--- (1, 1, '2026-05-01', '2026-05-31', 'expired', 6),
--- (1, 1, '2026-06-01', '2026-07-01', 'active',  1),
--- (2, 3, '2026-04-10', '2027-04-10', 'active',  7),
--- (3, 2, '2026-06-10', '2026-09-07', 'active',  3),
--- (5, 1, '2026-06-15', '2026-07-15', 'active',  5);
-
--- FIX: bảng attendances đã bị bỏ, comment nốt seed data
--- INSERT INTO attendances (member_id, schedule_id, status) VALUES
--- (1, 1, 'present'),
--- (2, 2, 'present'),
--- (3, 3, 'present'),
--- (4, 1, 'absent'),
--- (5, 1, 'late');
-
--- Staffs
-INSERT INTO staffs (full_name, email, phone, role, salary, user_id) VALUES
-('Nguyễn Văn A', 'staff1@pilates.com', '0901234568', 'Lễ tân', 8000000, 2);
-
--- NOTE:AI không sửa hàm này.Đây là bảng cố định chung
-CREATE TABLE IF NOT EXISTS classes (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(200) NOT NULL,
-    instructor VARCHAR(100) NOT NULL,
-    day VARCHAR(50) NOT NULL,
-    time VARCHAR(50) NOT NULL,
-    level VARCHAR(50) NOT NULL,
-    capacity INT DEFAULT 10,
-    price DECIMAL(12, 0) NOT NULL DEFAULT 0 COMMENT 'Giá vé lượt (VNĐ) — thu khi hội viên chưa có gói VIP active'
-);
-
--- NOTE:AI không sửa hàm này.Đây là bảng cố định chung
-CREATE TABLE class_enrollments (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    class_id INT NOT NULL,
-    user_id INT NOT NULL,
-    
-    status VARCHAR(50) DEFAULT 'pending', 
-    
-    -- booking_type: 1 (Có vé tháng - TH1), 0 (Mua lẻ/Không vé - TH2)
-    booking_type TINYINT(1) NOT NULL DEFAULT 0,    
-    payment_status VARCHAR(50) DEFAULT 'completed', 
-    subscription_id INT DEFAULT NULL,     
-
-    approved_by INT DEFAULT NULL,         
-    approved_at DATETIME DEFAULT NULL,    
-    admin_note TEXT,                      
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (subscription_id) REFERENCES user_subscriptions(id) ON DELETE SET NULL,
-    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL
-);
+INSERT INTO role_permissions (role, permission) VALUES
+('admin', 'member.view'), ('admin', 'member.add'), ('admin', 'member.edit'), ('admin', 'member.delete'),
+('admin', 'staff.view'), ('admin', 'staff.manage'),
+('admin', 'package.view'), ('admin', 'package.manage'),
+('admin', 'class.view'), ('admin', 'class.manage'),
+('admin', 'finance.view'), ('admin', 'finance.manage'), ('admin', 'finance.invoice'),
+('admin', 'equipment.view'), ('admin', 'equipment.manage'), ('admin', 'report.view'),
+('staff', 'member.view'), ('staff', 'member.add'), ('staff', 'member.edit'),
+('staff', 'package.view'), ('staff', 'package.manage'),
+('staff', 'class.view'), ('staff', 'class.manage'),
+('staff', 'finance.view'), ('staff', 'finance.manage'), ('staff', 'finance.invoice'),
+('staff', 'equipment.view'), ('staff', 'report.view'),
+('trainer', 'member.view'), ('trainer', 'package.view'),
+('trainer', 'class.view'), ('trainer', 'class.manage');
