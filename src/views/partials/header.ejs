@@ -48,11 +48,16 @@
       Tổng quan
     </a>
 
-    <%# Admin: quản lý tài khoản %>
+    <%# Admin: quản lý tài khoản / Staff: quản lý hội viên %>
     <% if (user.role === 'admin') { %>
     <a href="/accounts" class="sidebar-link" data-path="/accounts">
       <i class="ti ti-users sidebar-link-icon"></i>
       Quản lí tài khoản
+    </a>
+    <% } else if (user.role === 'staff') { %>
+    <a href="/accounts" class="sidebar-link" data-path="/accounts">
+      <i class="ti ti-users sidebar-link-icon"></i>
+      Quản lý hội viên
     </a>
     <% } %>
 
@@ -79,8 +84,8 @@
     </div>
     <% } %>
 
-    <%# Admin + member: gói tập %>
-    <% if (user.role === 'admin' || user.role === 'member') { %>
+    <%# Admin + Staff + Member: gói tập %>
+    <% if (user.role === 'admin' || user.role === 'staff' || user.role === 'member') { %>
     <a href="/packages" class="sidebar-link" data-path="/packages">
       <i class="ti ti-package sidebar-link-icon"></i>
       Gói tập
@@ -93,11 +98,13 @@
       Lớp học
     </a>
 
-    <%# All: lớp đã đăng ký %>
+    <%# Chỉ hội viên: lớp đã đăng ký %>
+    <% if (user.role === 'member') { %>
     <a href="/my-bookings" class="sidebar-link" data-path="/my-bookings">
       <i class="ti ti-bookmark sidebar-link-icon"></i>
       Lớp của tôi
     </a>
+    <% } %>
 
     <%# Admin: duyệt yêu cầu đăng ký lớp học %>
     <%# Admin%>
@@ -108,8 +115,8 @@
     </a>
     <% } %>
     
-    <%# Admin: tài chính + thiết bị %>
-    <% if (user.role === 'admin') { %>
+    <%# Admin + Staff: tài chính + thiết bị %>
+    <% if (user.role === 'admin' || user.role === 'staff') { %>
     <a href="/finance" class="sidebar-link" data-path="/finance">
       <i class="ti ti-coin sidebar-link-icon"></i>
       Tài chính
@@ -120,8 +127,8 @@
     </a>
     <% } %>
 
-    <%# Admin: báo cáo %>
-    <% if (user.role === 'admin') { %>
+    <%# Admin + Staff: báo cáo %>
+    <% if (user.role === 'admin' || user.role === 'staff') { %>
     <a href="/reports" class="sidebar-link" data-path="/reports">
       <i class="ti ti-chart-bar sidebar-link-icon"></i>
       Báo cáo

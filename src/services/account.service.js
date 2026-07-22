@@ -4,8 +4,8 @@ const VALID_ROLES = ['admin', 'staff', 'trainer', 'member'];
 
 const AccountService = {
 
-  getAllUsers() {
-    return UserRepo.findAll();
+  getAllUsers({ role } = {}) {
+    return UserRepo.findAll({ role });
   },
 
   getUserById(id) {

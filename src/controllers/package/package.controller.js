@@ -13,7 +13,7 @@ async function index(req, res, next) {
   try {
     const userRole = req.session.user.role; // Giả sử bạn lưu role trong session
 
-    if (userRole === 'admin') {
+    if (userRole === 'admin' || userRole === 'staff') {
       // Luồng của Admin: Lấy tất cả gói, thành viên, và lịch sử đăng ký
       const [packages, memberships, users, activeCount] = await Promise.all([
         pkgRepo.findAllPackages(),

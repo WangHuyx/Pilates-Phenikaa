@@ -23,8 +23,12 @@ function formatUser(row) {
   };
 }
 
-async function findAll() {
-  const [rows] = await pool.query(BASE_QUERY + ' ORDER BY u.id');
+async function findAll({ role } = {}) {
+  let q = BASE_QUERY;
+  const params = [];
+  if (role) { q += ' WHERE r.name = ?'; params.push(role); }
+  q += ' ORDER BY u.id';
+  const [rows] = await pool.query(q, params);
   return rows.map(formatUser);
 }
 

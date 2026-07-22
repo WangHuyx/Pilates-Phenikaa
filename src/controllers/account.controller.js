@@ -5,15 +5,18 @@ const AccountController = {
 
   async index(req, res, next) {
     try {
-      const users   = await AccountService.getAllUsers();
+      const isAdmin = req.session.user.role === 'admin';
+      // Lễ tân (staff) chỉ được xem danh sách hội viên, không thấy tài khoản admin/staff/trainer khác
+      const users   = await AccountService.getAllUsers(isAdmin ? {} : { role: 'member' });
       const success = req.session.flash_success || null;
       const error   = req.session.flash_error   || null;
       delete req.session.flash_success;
       delete req.session.flash_error;
       res.render('accounts', {
-        title: 'Quản lý tài khoản',
+        title: isAdmin ? 'Quản lý tài khoản' : 'Quản lý hội viên',
         accounts: users,
         roles: AccountService.validRoles,
+        isAdmin,
         success,
         error,
         currentUser: req.session.user,
@@ -31,6 +34,14 @@ const AccountController = {
         req.session.flash_error = 'Không tìm thấy tài khoản.';
         return res.redirect('/accounts');
       }
+      // Staff chỉ được sửa hồ sơ của chính mình hoặc tài khoản hội viên —
+      // không được đụng vào tài khoản admin/staff/trainer khác.
+      const requester = req.session.user;
+      const isSelf = Number(requester.id) === Number(editUser.id);
+      if (requester.role !== 'admin' && !isSelf && editUser.role !== 'member') {
+        req.session.flash_error = 'Bạn không có quyền chỉnh sửa tài khoản này.';
+        return res.redirect('/accounts');
+      }
       res.render('accounts-edit', {
         title: 'Chỉnh sửa tài khoản',
         editUser,
@@ -45,7 +56,10 @@ const AccountController = {
   },
 
   async create(req, res) {
-    const { username, fullName, email, password, role } = req.body;
+    const { username, fullName, email, password } = req.body;
+    // Lễ tân (staff) chỉ được phép tạo tài khoản hội viên — bỏ qua role gửi lên từ form
+    // để tránh việc staff tự tạo tài khoản admin/staff/trainer cho chính mình.
+    const role = req.session.user.role === 'admin' ? req.body.role : 'member';
     try {
       await AccountService.createUser({ username, fullName, email, password, role });
       req.session.flash_success = `Đã tạo tài khoản "${username}" thành công.`;
@@ -56,8 +70,17 @@ const AccountController = {
   },
 
   async update(req, res) {
-    const { fullName, email, role, password } = req.body;
+    const { fullName, email, password } = req.body;
+    const requester = req.session.user;
+    // Tương tự: staff không được phép đổi vai trò tài khoản qua form sửa.
+    const role = requester.role === 'admin' ? req.body.role : undefined;
     try {
+      if (requester.role !== 'admin' && Number(requester.id) !== Number(req.params.id)) {
+        const target = await AccountService.getUserById(req.params.id);
+        if (!target || target.role !== 'member') {
+          throw new Error('Bạn không có quyền chỉnh sửa tài khoản này.');
+        }
+      }
       await AccountService.updateUser(req.params.id, { fullName, email, role, password });
       req.session.flash_success = 'Cập nhật tài khoản thành công.';
     } catch (err) {
@@ -92,6 +115,10 @@ const AccountController = {
       const { id } = req.params;
       const member = await AccountService.getUserById(id);
       if (!member) { req.session.flash_error = 'Không tìm thấy tài khoản.'; return res.redirect('/accounts'); }
+      if (req.session.user.role !== 'admin' && member.role !== 'member') {
+        req.session.flash_error = 'Bạn không có quyền xem lịch sử tài khoản này.';
+        return res.redirect('/accounts');
+      }
 
       const [bookings] = await pool.query(
         `SELECT sc.name, sc.instructor, sc.day, sc.time, sc.level
