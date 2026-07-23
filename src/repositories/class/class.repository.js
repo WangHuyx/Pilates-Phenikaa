@@ -133,12 +133,19 @@ async function rejectEnrollment(enrollmentId, adminId, note) {
   );
 }
 
+// FIX: sĩ số lớp giới hạn tối đa 8 — chặn lại ở backend phòng trường hợp
+// form bị sửa/gửi trực tiếp với giá trị lớn hơn.
+const MAX_CLASS_CAPACITY = 8;
+function clampCapacity(capacity) {
+  return Math.min(parseInt(capacity) || MAX_CLASS_CAPACITY, MAX_CLASS_CAPACITY);
+}
+
 // --- TRUY VẤN ADMIN CRUD CLASS ---
 async function createClass(data) {
   const { name, instructor, day, time, level, capacity, price } = data;
   await pool.query(
     'INSERT INTO classes (name, instructor, day, time, level, capacity, price) VALUES (?,?,?,?,?,?,?)',
-    [name, instructor || null, day, time, level, parseInt(capacity) || 10, parseInt(price) || 0]
+    [name, instructor || null, day, time, level, clampCapacity(capacity), parseInt(price) || 0]
   );
 }
 
@@ -146,7 +153,7 @@ async function updateClass(id, data) {
   const { name, instructor, day, time, level, capacity, price } = data;
   await pool.query(
     'UPDATE classes SET name=?, instructor=?, day=?, time=?, level=?, capacity=?, price=? WHERE id=?',
-    [name, instructor || null, day, time, level, parseInt(capacity) || 10, parseInt(price) || 0, id]
+    [name, instructor || null, day, time, level, clampCapacity(capacity), parseInt(price) || 0, id]
   );
 }
 
