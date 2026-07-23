@@ -5,6 +5,10 @@
 <script>
 function applySidebarState() {
   var path = window.location.pathname;
+  // Trang hồ sơ cá nhân (/accounts/<id chính mình>/edit) không được tính là
+  // thuộc về "Quản lý tài khoản" — nếu không mục đó sẽ bị tô đậm nhầm mỗi khi
+  // người dùng đang xem hồ sơ của chính mình.
+  var ownProfilePath = <%- (typeof user !== 'undefined' && user) ? JSON.stringify('/accounts/' + user.id + '/edit') : 'null' %>;
   var links = document.querySelectorAll('.sidebar-link[data-path]');
   links.forEach(function (link) {
     var lp = link.getAttribute('data-path');
@@ -12,7 +16,7 @@ function applySidebarState() {
       (lp === '/employees' && path.startsWith('/employees')) ||
       (lp === '/packages'  && path.startsWith('/packages'))  ||
       (lp === '/trainers'  && path.startsWith('/trainers'))  ||
-      (lp === '/accounts'  && path.startsWith('/accounts'));
+      (lp === '/accounts'  && path.startsWith('/accounts') && path !== ownProfilePath);
     link.classList.toggle('active', isActive);
   });
 
