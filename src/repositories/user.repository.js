@@ -78,9 +78,21 @@ async function update(id, fields) {
   return findById(id);
 }
 
+async function countByRoles() {
+  const [rows] = await pool.query(`
+    SELECT r.name AS role, COUNT(u.id) AS count
+    FROM roles r
+    LEFT JOIN users u ON r.id = u.role_id
+    GROUP BY r.name
+  `);
+  const stats = { member: 0, trainer: 0, staff: 0, admin: 0 };
+  rows.forEach(r => stats[r.role] = r.count);
+  return stats;
+}
+
 async function remove(id) {
   const [result] = await pool.query('DELETE FROM users WHERE id = ?', [Number(id)]);
   return result.affectedRows > 0;
 }
 
-module.exports = { findAll, findById, findByUsername, create, update, remove };
+module.exports = { findAll, findById, findByUsername, create, update, remove, countByRoles };

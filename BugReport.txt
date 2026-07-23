@@ -1,0 +1,27 @@
+BÁO CÁO LỖI (BUG REPORT) - PILATES PHENIKAA
+
+Trong quá trình kiểm thử dự án, tôi đã phát hiện các lỗi nghiêm trọng sau đây dẫn đến việc crash ứng dụng khi Admin thao tác:
+
+1. Lỗi thiếu hàm `countByRoles` trong `user.repository.js`: 
+   - File: `src/controllers/admin.controller.js` (dòng 47) gọi `userRepository.countByRoles()` để lấy thống kê số lượng người dùng theo role cho Dashboard.
+   - Nguyên nhân: File `user.repository.js` hoàn toàn chưa định nghĩa và export hàm này.
+
+2. Lỗi thiếu hàm `getBookingStats` trong `class.repository.js`:
+   - File: `src/controllers/admin.controller.js` (dòng 48) gọi `classRepository.getBookingStats()` để lấy thống kê số lớp học và số lượng đặt chỗ.
+   - Nguyên nhân: Hàm này không tồn tại trong `class.repository.js`.
+
+3. Lỗi thiếu hàm `getTotalRevenue` trong `payment.repository.js`:
+   - File: `src/controllers/admin.controller.js` (dòng 49) gọi `paymentRepository.getTotalRevenue()` để lấy tổng doanh thu.
+   - Nguyên nhân: Hàm này không tồn tại trong `payment.repository.js` (chỉ có hàm `statsOverall()`).
+
+4. Lỗi thiếu hàm `createCheckin` trong `class.repository.js`:
+   - File: `src/controllers/admin.controller.js` (dòng 96) gọi `classRepository.createCheckin()` khi thực hiện điểm danh hội viên (checkin).
+   - Nguyên nhân: Hàm này không tồn tại.
+
+5. Lỗi thiếu bảng `attendances` trong Cơ sở dữ liệu:
+   - File: `pilates_db.sql`
+   - Nguyên nhân: Stored Procedure `sp_attendance_report` truy vấn từ bảng `attendances`, tính năng check-in cũng cần lưu vào bảng này, tuy nhiên file SQL khởi tạo database không có lệnh `CREATE TABLE attendances`.
+
+GIẢI PHÁP VÁ LỖI:
+- Thêm định nghĩa bảng `attendances` vào `pilates_db.sql` và tạo bảng này trong cơ sở dữ liệu.
+- Viết bổ sung các hàm `countByRoles`, `getBookingStats`, `createCheckin` và `getTotalRevenue` vào các file Repository tương ứng và export chúng.

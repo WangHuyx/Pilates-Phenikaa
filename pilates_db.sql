@@ -319,6 +319,23 @@ CREATE INDEX idx_employee_schedule_assignments_date ON employee_schedule_assignm
 CREATE INDEX idx_employee_schedule_assignments_employee ON employee_schedule_assignments(employee_id);
 
 -- =============================================
+-- ATTENDANCES TABLE
+-- Dùng để điểm danh hội viên (check-in) và báo cáo
+-- =============================================
+CREATE TABLE attendances (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    member_id INT NOT NULL,
+    checked_by INT NOT NULL,
+    check_in_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('present', 'absent', 'late') DEFAULT 'present',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (checked_by) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX idx_attendances_member ON attendances(member_id);
+
+-- =============================================
 -- EQUIPMENT TABLE
 -- Dùng bởi src/repositories/equipment.repository.js (trang /equipment)
 -- =============================================
@@ -401,7 +418,7 @@ BEGIN
     IF NEW.member_code IS NULL OR NEW.member_code = '' THEN
         SET NEW.member_code = CONCAT('MEM', LPAD(next_id, 5, '0'));
     END IF;
-END;
+END$$
 
 -- Auto generate trainer_code
 CREATE TRIGGER trg_trainer_code BEFORE INSERT ON trainers
@@ -412,7 +429,7 @@ BEGIN
     IF NEW.trainer_code IS NULL OR NEW.trainer_code = '' THEN
         SET NEW.trainer_code = CONCAT('TRN', LPAD(next_id, 5, '0'));
     END IF;
-END;
+END$$
 
 -- Auto generate staff_code
 CREATE TRIGGER trg_staff_code BEFORE INSERT ON staffs
@@ -423,7 +440,7 @@ BEGIN
     IF NEW.staff_code IS NULL OR NEW.staff_code = '' THEN
         SET NEW.staff_code = CONCAT('STF', LPAD(next_id, 5, '0'));
     END IF;
-END;
+END$$
 
 -- Auto generate course_code
 CREATE TRIGGER trg_course_code BEFORE INSERT ON courses
@@ -434,7 +451,7 @@ BEGIN
     IF NEW.course_code IS NULL OR NEW.course_code = '' THEN
         SET NEW.course_code = CONCAT('CRS', LPAD(next_id, 5, '0'));
     END IF;
-END;
+END$$
 
 -- =============================================
 -- STORED PROCEDURES
@@ -454,7 +471,7 @@ BEGIN
       AND status = 'paid'
     GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
     ORDER BY month;
-END;
+END$$
 
 -- Monthly Member Statistics
 CREATE PROCEDURE sp_member_stats()
@@ -466,7 +483,7 @@ BEGIN
         SUM(CASE WHEN status = 'expired' THEN 1 ELSE 0 END) AS expired_members,
         SUM(CASE WHEN MONTH(join_date) = MONTH(CURRENT_DATE) AND YEAR(join_date) = YEAR(CURRENT_DATE) THEN 1 ELSE 0 END) AS new_this_month
     FROM members;
-END;
+END$$
 
 -- Top Selling Courses
 CREATE PROCEDURE sp_top_courses(IN p_limit INT)
@@ -483,7 +500,7 @@ BEGIN
     GROUP BY c.id
     ORDER BY total_registrations DESC
     LIMIT p_limit;
-END;
+END$$
 
 -- Dashboard Summary
 CREATE PROCEDURE sp_dashboard_summary()
@@ -494,7 +511,7 @@ BEGIN
         (SELECT COUNT(*) FROM courses WHERE status = 'active') AS total_courses,
         (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'paid') AS total_revenue,
         (SELECT COUNT(*) FROM members WHERE MONTH(join_date) = MONTH(CURRENT_DATE) AND YEAR(join_date) = YEAR(CURRENT_DATE)) AS new_members_this_month;
-END;
+END$$
 
 -- Attendance Report
 CREATE PROCEDURE sp_attendance_report(IN p_member_id INT)
@@ -510,7 +527,7 @@ BEGIN
     LEFT JOIN attendances a ON m.id = a.member_id
     WHERE (p_member_id IS NULL OR m.id = p_member_id)
     GROUP BY m.id;
-END;
+END$$
 
 DELIMITER ;
 
@@ -537,3 +554,7 @@ INSERT INTO role_permissions (role, permission) VALUES
 ('staff', 'equipment.view'), ('staff', 'report.view'),
 ('trainer', 'member.view'), ('trainer', 'package.view'),
 ('trainer', 'class.view'), ('trainer', 'class.manage');
+
+
+
+

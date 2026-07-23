@@ -47,4 +47,13 @@ async function markStatusByEnrollmentId(enrollmentId, status) {
   await pool.query('UPDATE payments SET status=? WHERE class_enrollment_id=?', [status, enrollmentId]);
 }
 
-module.exports = { findAll, statsOverall, create, remove, markStatusByEnrollmentId };
+async function getTotalRevenue() {
+  const [[row]] = await pool.query(`
+    SELECT COALESCE(SUM(amount), 0) AS total
+    FROM payments
+    WHERE status = 'paid'
+  `);
+  return row;
+}
+
+module.exports = { findAll, statsOverall, create, remove, markStatusByEnrollmentId, getTotalRevenue };

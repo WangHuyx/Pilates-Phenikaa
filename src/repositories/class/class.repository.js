@@ -157,10 +157,26 @@ async function deleteClass(id) {
   await pool.query('DELETE FROM classes WHERE id=?', [id]);
 }
 
+async function getBookingStats() {
+  const [[classes]] = await pool.query('SELECT COUNT(*) AS total_classes FROM classes');
+  const [[bookings]] = await pool.query('SELECT COUNT(*) AS total_bookings FROM class_enrollments');
+  return {
+    total_classes: classes.total_classes,
+    total_bookings: bookings.total_bookings
+  };
+}
+
+async function createCheckin(data) {
+  await pool.query(
+    'INSERT INTO attendances (member_id, checked_by, check_in_time, status) VALUES (?, ?, ?, ?)',
+    [data.user_id, data.checked_by, data.check_in_time || new Date(), 'present']
+  );
+}
+
 module.exports = {
   countMembers, countStaff, countBookingsByUser, countClasses,
   findAllClasses, findEnrollmentsByClassId, findEnrollmentForUser, findClassById,
   checkExistingEnrollment, createEnrollment, findBookingsByUserId, updateEnrollmentStatus,
   findPendingEnrollments, approveEnrollment, rejectEnrollment,
-  createClass, updateClass, deleteClass
+  createClass, updateClass, deleteClass, getBookingStats, createCheckin
 };
