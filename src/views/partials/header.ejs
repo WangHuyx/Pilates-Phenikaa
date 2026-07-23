@@ -92,29 +92,37 @@
     </a>
     <% } %>
 
-    <%# All: lịch lớp học %>
-    <a href="/classes" class="sidebar-link" data-path="/classes">
+    <%# Lớp học (nhóm menu con: lịch học, quản lý, duyệt đặt chỗ, lớp của tôi) %>
+    <button class="sidebar-link sidebar-group-toggle" onclick="toggleSidebarGroup('lophoc')">
       <i class="ti ti-calendar sidebar-link-icon"></i>
-      Lớp học
-    </a>
+      <span>Lớp học</span>
+      <i class="ti ti-chevron-down sidebar-link-chevron" id="chevron-lophoc"></i>
+    </button>
+    <div class="sidebar-group-items" id="group-lophoc">
+      <a href="/classes" class="sidebar-link sidebar-sublink" data-path="/classes">
+        <i class="ti ti-circle sidebar-sublink-dot"></i>
+        Lịch học
+      </a>
+      <% if (user.role === 'admin' || user.role === 'staff') { %>
+      <a href="/classes/manage" class="sidebar-link sidebar-sublink" data-path="/classes/manage">
+        <i class="ti ti-circle sidebar-sublink-dot"></i>
+        Quản lý lớp học
+      </a>
+      <% } %>
+      <% if (user.role === 'admin') { %>
+      <a href="/classes/approvals" class="sidebar-link sidebar-sublink" data-path="/classes/approvals">
+        <i class="ti ti-circle sidebar-sublink-dot"></i>
+        Duyệt đặt chỗ
+      </a>
+      <% } %>
+      <% if (user.role === 'member') { %>
+      <a href="/my-bookings" class="sidebar-link sidebar-sublink" data-path="/my-bookings">
+        <i class="ti ti-circle sidebar-sublink-dot"></i>
+        Lớp của tôi
+      </a>
+      <% } %>
+    </div>
 
-    <%# Chỉ hội viên: lớp đã đăng ký %>
-    <% if (user.role === 'member') { %>
-    <a href="/my-bookings" class="sidebar-link" data-path="/my-bookings">
-      <i class="ti ti-bookmark sidebar-link-icon"></i>
-      Lớp của tôi
-    </a>
-    <% } %>
-
-    <%# Admin: duyệt yêu cầu đăng ký lớp học %>
-    <%# Admin%>
-    <% if (user.role === 'admin') { %>
-    <a href="/classes/approvals" class="sidebar-link" data-path="/classes/approvals">
-      <i class="ti ti-check-circle sidebar-link-icon"></i>
-      Duyệt đặt chỗ
-    </a>
-    <% } %>
-    
     <%# Admin + Staff: tài chính + thiết bị %>
     <% if (user.role === 'admin' || user.role === 'staff') { %>
     <a href="/finance" class="sidebar-link" data-path="/finance">

@@ -16,13 +16,24 @@ function applySidebarState() {
     link.classList.toggle('active', isActive);
   });
 
-  /* Nhân sự group: mở khi đang ở trang con của nó, đóng lại ở mọi trang khác */
-  var shouldExpandNhanSu = path.startsWith('/employees') || path.startsWith('/trainers') ||
-    path === '/permissions';
-  var grp = document.getElementById('group-nhansu');
-  var chv = document.getElementById('chevron-nhansu');
-  if (grp) grp.classList.toggle('expanded', shouldExpandNhanSu);
-  if (chv) chv.style.transform = shouldExpandNhanSu ? 'rotate(180deg)' : '';
+  /* Mọi nhóm menu con (Nhân sự, Lớp học, ...): tự mở khi đang ở 1 trong các
+     trang con của nhóm, hoặc nếu người dùng đã từng mở tay trước đó (lưu
+     trong localStorage) thì vẫn giữ mở khi chuyển sang trang khác — chỉ
+     đóng lại khi người dùng tự bấm đóng. Áp dụng chung cho mọi nhóm, không
+     cần viết riêng từng nhóm một. */
+  document.querySelectorAll('.sidebar-group-items').forEach(function (grp) {
+    var name = grp.id.replace(/^group-/, '');
+    var chv = document.getElementById('chevron-' + name);
+    var isOnChildPage = false;
+    grp.querySelectorAll('.sidebar-link[data-path]').forEach(function (link) {
+      var lp = link.getAttribute('data-path');
+      if (lp && (path === lp || path.startsWith(lp + '/'))) isOnChildPage = true;
+    });
+    var stored = localStorage.getItem('sidebar_group_' + name);
+    var shouldExpand = isOnChildPage || stored === '1';
+    grp.classList.toggle('expanded', shouldExpand);
+    if (chv) chv.style.transform = shouldExpand ? 'rotate(180deg)' : '';
+  });
 }
 
 applySidebarState();
@@ -37,6 +48,7 @@ function toggleSidebarGroup(name) {
   if (!grp) return;
   var isOpen = grp.classList.toggle('expanded');
   if (chv) chv.style.transform = isOpen ? 'rotate(180deg)' : '';
+  localStorage.setItem('sidebar_group_' + name, isOpen ? '1' : '0');
 }
 </script>
 </body>
