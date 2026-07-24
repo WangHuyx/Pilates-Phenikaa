@@ -112,6 +112,15 @@ CREATE TABLE trainers (
 CREATE INDEX idx_trainers_code ON trainers(trainer_code);
 CREATE INDEX idx_trainers_name ON trainers(full_name);
 
+-- FIX: khối seed này từng bị mất khỏi file — user bich.tran/cuong.le/dung.pham
+-- (id 3,4,5) đã có role_id='trainer' trong bảng users, nhưng không có hồ sơ
+-- tương ứng trong bảng trainers, khiến trang /trainers hiện trống dù trang
+-- Quản lý tài khoản vẫn hiện đúng 3 người là Trainer.
+INSERT INTO trainers (trainer_code, full_name, specialization, phone, email, salary, user_id) VALUES
+('HLV001', 'Trần Thị Bích', 'Pilates Mat, Reformer',   '0912345001', 'bich.tran@pilates.com', 15000000, 3),
+('HLV002', 'Lê Văn Cường',  'Pilates Equipment, Yoga', '0912345002', 'cuong.le@pilates.com',  18000000, 4),
+('HLV003', 'Phạm Thị Dung', 'Pilates Rehab, Barre',    '0912345003', 'dung.pham@pilates.com', 16000000, 5);
+
 -- =============================================
 -- 5. STAFFS TABLE
 -- =============================================
@@ -134,6 +143,12 @@ CREATE TABLE staffs (
 );
 
 CREATE INDEX idx_staffs_code ON staffs(staff_code);
+
+-- FIX: khối seed này từng bị mất khỏi file — user staff1 (id 2) đã có
+-- role_id='staff' trong bảng users nhưng không có hồ sơ tương ứng trong
+-- bảng staffs, khiến trang "Danh sách nhân sự" hiện trống.
+INSERT INTO staffs (staff_code, full_name, email, phone, role, department, start_date, salary, user_id) VALUES
+('NV001', 'Nguyễn Văn A', 'staff1@pilates.com', '0901234568', 'Lễ tân', 'Vận hành', '2025-01-15', 8000000, 2);
 
 -- =============================================
 -- 6. COURSES TABLE
