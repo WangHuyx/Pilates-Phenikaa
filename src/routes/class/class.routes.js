@@ -13,12 +13,12 @@ const Auth = require('../../middleware/auth.middleware');
 router.get('/dashboard', Auth.requiredlogin, classController.showDashboard);
 router.get('/classes', Auth.requiredlogin, classController.showClasses);
 
-// --- Quản lý lớp học (Admin/Staff) ---
-router.get('/classes/manage', Auth.role('admin', 'staff'), classController.manageClasses);
-router.get('/classes/:id/edit', Auth.role('admin', 'staff'), classController.showEditClass);
-router.post('/classes/create', Auth.role('admin', 'staff'), classController.createClass);
-router.post('/classes/:id/update', Auth.role('admin', 'staff'), classController.updateClass);
-router.post('/classes/:id/delete', Auth.role('admin', 'staff'), classController.deleteClass);
+// --- Quản lý lớp học: quyền do trang /permissions cấu hình thật (class.view/class.manage) ---
+router.get('/classes/manage', Auth.permission('class.view'), classController.manageClasses);
+router.get('/classes/:id/edit', Auth.permission('class.view'), classController.showEditClass);
+router.post('/classes/create', Auth.permission('class.manage'), classController.createClass);
+router.post('/classes/:id/update', Auth.permission('class.manage'), classController.updateClass);
+router.post('/classes/:id/delete', Auth.permission('class.manage'), classController.deleteClass);
 
 // --- Quản lý kiểm duyệt Đặt chỗ (Admin/Staff) ---
 router.get('/classes/approvals', Auth.role('admin', 'staff'), classController.showApprovals);

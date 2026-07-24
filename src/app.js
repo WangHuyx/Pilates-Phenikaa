@@ -11,6 +11,7 @@ const path = require('path');
 const express = require('express');
 const session = require('express-session');
 require('dotenv').config();
+const pool = require('./config/database');
 
 const indexRoutes = require('./routes/index.routes');
 const authRoutes = require('./routes/auth.routes');
@@ -50,6 +51,28 @@ app.use(
     cookie: { maxAge: 1000 * 60 * 60 * 2 }, // 2 hours
   })
 );
+
+// --- Quyền thật theo role_permissions (phục vụ ẩn/hiện sidebar đúng quyền) ------
+// Tính 1 lần mỗi request, để header.ejs dùng hasPermission('key') thay vì đoán
+// theo vai trò — khớp đúng với những gì Auth.permission() ở tầng route sẽ chặn,
+// tránh tình trạng sidebar còn hiện link nhưng bấm vào lại bị 403.
+app.use(async (req, res, next) => {
+  const role = req.session && req.session.user ? req.session.user.role : null;
+  if (role === 'admin') {
+    res.locals.hasPermission = () => true;
+  } else if (role) {
+    try {
+      const [rows] = await pool.query('SELECT permission FROM role_permissions WHERE role = ?', [role]);
+      const perms = new Set(rows.map(r => r.permission));
+      res.locals.hasPermission = (key) => perms.has(key);
+    } catch (err) {
+      res.locals.hasPermission = () => false;
+    }
+  } else {
+    res.locals.hasPermission = () => false;
+  }
+  next();
+});
 
 // --- Routes ------------------------------------------------------------
 app.use('/', indexRoutes);

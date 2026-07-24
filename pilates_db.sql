@@ -407,7 +407,6 @@ CREATE TABLE role_permissions (
 -- TRIGGERS
 -- =============================================
 
-DELIMITER $$
 
 -- Auto generate member_code
 CREATE TRIGGER trg_member_code BEFORE INSERT ON members
@@ -418,7 +417,7 @@ BEGIN
     IF NEW.member_code IS NULL OR NEW.member_code = '' THEN
         SET NEW.member_code = CONCAT('MEM', LPAD(next_id, 5, '0'));
     END IF;
-END$$
+END;
 
 -- Auto generate trainer_code
 CREATE TRIGGER trg_trainer_code BEFORE INSERT ON trainers
@@ -429,7 +428,7 @@ BEGIN
     IF NEW.trainer_code IS NULL OR NEW.trainer_code = '' THEN
         SET NEW.trainer_code = CONCAT('TRN', LPAD(next_id, 5, '0'));
     END IF;
-END$$
+END;
 
 -- Auto generate staff_code
 CREATE TRIGGER trg_staff_code BEFORE INSERT ON staffs
@@ -440,7 +439,7 @@ BEGIN
     IF NEW.staff_code IS NULL OR NEW.staff_code = '' THEN
         SET NEW.staff_code = CONCAT('STF', LPAD(next_id, 5, '0'));
     END IF;
-END$$
+END;
 
 -- Auto generate course_code
 CREATE TRIGGER trg_course_code BEFORE INSERT ON courses
@@ -451,7 +450,7 @@ BEGIN
     IF NEW.course_code IS NULL OR NEW.course_code = '' THEN
         SET NEW.course_code = CONCAT('CRS', LPAD(next_id, 5, '0'));
     END IF;
-END$$
+END;
 
 -- =============================================
 -- STORED PROCEDURES
@@ -471,7 +470,7 @@ BEGIN
       AND status = 'paid'
     GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
     ORDER BY month;
-END$$
+END;
 
 -- Monthly Member Statistics
 CREATE PROCEDURE sp_member_stats()
@@ -483,7 +482,7 @@ BEGIN
         SUM(CASE WHEN status = 'expired' THEN 1 ELSE 0 END) AS expired_members,
         SUM(CASE WHEN MONTH(join_date) = MONTH(CURRENT_DATE) AND YEAR(join_date) = YEAR(CURRENT_DATE) THEN 1 ELSE 0 END) AS new_this_month
     FROM members;
-END$$
+END;
 
 -- Top Selling Courses
 CREATE PROCEDURE sp_top_courses(IN p_limit INT)
@@ -500,7 +499,7 @@ BEGIN
     GROUP BY c.id
     ORDER BY total_registrations DESC
     LIMIT p_limit;
-END$$
+END;
 
 -- Dashboard Summary
 CREATE PROCEDURE sp_dashboard_summary()
@@ -511,7 +510,7 @@ BEGIN
         (SELECT COUNT(*) FROM courses WHERE status = 'active') AS total_courses,
         (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status = 'paid') AS total_revenue,
         (SELECT COUNT(*) FROM members WHERE MONTH(join_date) = MONTH(CURRENT_DATE) AND YEAR(join_date) = YEAR(CURRENT_DATE)) AS new_members_this_month;
-END$$
+END;
 
 -- Attendance Report
 CREATE PROCEDURE sp_attendance_report(IN p_member_id INT)
@@ -527,9 +526,8 @@ BEGIN
     LEFT JOIN attendances a ON m.id = a.member_id
     WHERE (p_member_id IS NULL OR m.id = p_member_id)
     GROUP BY m.id;
-END$$
+END;
 
-DELIMITER ;
 
 INSERT INTO equipment (name, type, serial_number, status, notes) VALUES
 ('Reformer #1',     'reformer', 'RF-001', 'active',      'Phòng Reformer, tầng 2'),

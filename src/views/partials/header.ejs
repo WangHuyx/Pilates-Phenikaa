@@ -48,21 +48,16 @@
       Tổng quan
     </a>
 
-    <%# Admin: quản lý tài khoản / Staff: quản lý hội viên %>
-    <% if (user.role === 'admin') { %>
+    <%# Quyền xem/quản lý hội viên (member.view) — do trang /permissions cấu hình thật %>
+    <% if (hasPermission('member.view')) { %>
     <a href="/accounts" class="sidebar-link" data-path="/accounts">
       <i class="ti ti-users sidebar-link-icon"></i>
-      Quản lí tài khoản
-    </a>
-    <% } else if (user.role === 'staff') { %>
-    <a href="/accounts" class="sidebar-link" data-path="/accounts">
-      <i class="ti ti-users sidebar-link-icon"></i>
-      Quản lý hội viên
+      <%= user.role === 'admin' ? 'Quản lí tài khoản' : 'Quản lý hội viên' %>
     </a>
     <% } %>
 
-    <%# Admin: quản lý nhân sự (bao gồm bảng lương + phân quyền) %>
-    <% if (user.role === 'admin') { %>
+    <%# Nhân sự (staff.view) — mục "Phân quyền" luôn chỉ dành riêng cho Admin %>
+    <% if (hasPermission('staff.view')) { %>
     <button class="sidebar-link sidebar-group-toggle" onclick="toggleSidebarGroup('nhansu')">
       <i class="ti ti-briefcase sidebar-link-icon"></i>
       <span>Nhân sự</span>
@@ -77,15 +72,17 @@
         <i class="ti ti-circle sidebar-sublink-dot"></i>
         Huấn luyện viên
       </a>
+      <% if (user.role === 'admin') { %>
       <a href="/permissions" class="sidebar-link sidebar-sublink" data-path="/permissions">
         <i class="ti ti-circle sidebar-sublink-dot"></i>
         Phân quyền
       </a>
+      <% } %>
     </div>
     <% } %>
 
-    <%# Admin + Staff + Member: gói tập %>
-    <% if (user.role === 'admin' || user.role === 'staff' || user.role === 'member') { %>
+    <%# Gói tập: member luôn thấy (để mua gói); staff chỉ thấy nếu được cấp package.view %>
+    <% if (hasPermission('package.view') || user.role === 'member') { %>
     <a href="/packages" class="sidebar-link" data-path="/packages">
       <i class="ti ti-package sidebar-link-icon"></i>
       Gói tập
@@ -103,7 +100,7 @@
         <i class="ti ti-circle sidebar-sublink-dot"></i>
         Lịch học
       </a>
-      <% if (user.role === 'admin' || user.role === 'staff') { %>
+      <% if (hasPermission('class.view')) { %>
       <a href="/classes/manage" class="sidebar-link sidebar-sublink" data-path="/classes/manage">
         <i class="ti ti-circle sidebar-sublink-dot"></i>
         Quản lý lớp học
@@ -123,20 +120,24 @@
       <% } %>
     </div>
 
-    <%# Admin + Staff: tài chính + thiết bị %>
-    <% if (user.role === 'admin' || user.role === 'staff') { %>
+    <%# Tài chính (finance.view) %>
+    <% if (hasPermission('finance.view')) { %>
     <a href="/finance" class="sidebar-link" data-path="/finance">
       <i class="ti ti-coin sidebar-link-icon"></i>
       Tài chính
     </a>
+    <% } %>
+
+    <%# Thiết bị (equipment.view) %>
+    <% if (hasPermission('equipment.view')) { %>
     <a href="/equipment" class="sidebar-link" data-path="/equipment">
       <i class="ti ti-tool sidebar-link-icon"></i>
       Thiết bị
     </a>
     <% } %>
 
-    <%# Admin + Staff: báo cáo %>
-    <% if (user.role === 'admin' || user.role === 'staff') { %>
+    <%# Báo cáo (report.view) %>
+    <% if (hasPermission('report.view')) { %>
     <a href="/reports" class="sidebar-link" data-path="/reports">
       <i class="ti ti-chart-bar sidebar-link-icon"></i>
       Báo cáo

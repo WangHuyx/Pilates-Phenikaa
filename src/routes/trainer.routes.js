@@ -3,10 +3,10 @@ const router = express.Router();
 const ctrl = require('../controllers/trainer.controller');
 const Auth = require('../middleware/auth.middleware');
 
-router.get('/', Auth.requiredlogin, ctrl.index);
-router.get('/:id/edit', Auth.role('admin'), ctrl.showEdit);
-router.post('/create', Auth.role('admin'), ctrl.create);
-router.post('/:id/update', Auth.role('admin'), ctrl.update);
-router.post('/:id/delete', Auth.role('admin'), ctrl.remove);
+router.get('/', Auth.requiredlogin, ctrl.index); // Danh sách HLV: mọi người đã đăng nhập đều xem được (không thuộc quyền nhân sự)
+router.get('/:id/edit', Auth.permission('staff.view'), ctrl.showEdit);
+router.post('/create', Auth.permission('staff.manage'), ctrl.create);
+router.post('/:id/update', Auth.permission('staff.manage'), ctrl.update);
+router.post('/:id/delete', Auth.permission('staff.manage'), ctrl.remove);
 
 module.exports = router;

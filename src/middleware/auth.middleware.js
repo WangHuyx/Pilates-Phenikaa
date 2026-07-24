@@ -5,6 +5,8 @@
  * ------------------------------------------------------------------
  */
 
+const pool = require('../config/database');
+
 class Auth {
   /** 
    * Bắt buộc đăng nhập — trả về 401 nếu chưa có session 
@@ -47,8 +49,50 @@ class Auth {
     };
   }
 
-  /** 
-   * Kiểm tra người dùng hiện tại có sở hữu tài nguyên không 
+  /**
+   * Kiểm tra quyền THẬT theo bảng role_permissions (do trang /permissions ghi) —
+   * khác với Auth.role() (vai trò viết cứng), quyền ở đây do admin cấu hình qua
+   * giao diện, tick/lưu là có tác dụng ngay, không cần sửa code.
+   * - admin luôn được đi qua (quyền admin không thể bị bớt qua trang Phân quyền).
+   * - allowRoles: các vai trò khác luôn được phép bất kể có permission hay không
+   *   (dùng cho các trang mà cả 'member' cũng cần vào, như xem gói tập/lịch học).
+   * Sử dụng: router.get('/finance', Auth.permission('finance.view'), controller)
+   */
+  static permission(key, allowRoles = []) {
+    return async (req, res, next) => {
+      if (!req.session || !req.session.user) {
+        return res.status(401).render('error', {
+          title: 'Lỗi xác thực',
+          message: 'Vui lòng đăng nhập.',
+          currentUser: null
+        });
+      }
+
+      const role = req.session.user.role;
+      if (role === 'admin' || allowRoles.includes(role)) {
+        return next();
+      }
+
+      try {
+        const [rows] = await pool.query(
+          'SELECT 1 FROM role_permissions WHERE role = ? AND permission = ? LIMIT 1',
+          [role, key]
+        );
+        if (rows.length) return next();
+      } catch (err) {
+        return next(err);
+      }
+
+      return res.status(403).render('error', {
+        title: 'Không có quyền',
+        message: 'Bạn không có quyền thực hiện thao tác này.',
+        currentUser: req.session.user
+      });
+    };
+  }
+
+  /**
+   * Kiểm tra người dùng hiện tại có sở hữu tài nguyên không
    * Gợi ý: ownerIdKey là tên tham số (vd: 'id' trong req.params.id)
    * Sử dụng: router.put('/post/:authorId', Auth.owns('authorId'), controller)
    */

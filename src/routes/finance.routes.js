@@ -3,8 +3,8 @@ const router = express.Router();
 const ctrl = require('../controllers/finance.controller');
 const Auth = require('../middleware/auth.middleware');
 
-router.get('/', Auth.role('admin', 'staff'), ctrl.index);
-router.post('/', Auth.role('admin', 'staff'), ctrl.createPayment);
-router.post('/:id/delete', Auth.role('admin', 'staff'), ctrl.deletePayment);
+router.get('/', Auth.permission('finance.view'), ctrl.index);
+router.post('/', Auth.permission('finance.manage'), ctrl.createPayment);
+router.post('/:id/delete', Auth.permission('finance.manage'), ctrl.deletePayment);
 
 module.exports = router;
