@@ -136,8 +136,12 @@ async function updateClass(req, res, next) {
 
 async function deleteClass(req, res, next) {
   try {
-    await classRepo.softDeleteClass(req.params.id);
-    req.session.flash_success = 'Đã ngừng hoạt động lớp học.';
+    // FIX: repository chỉ có deleteClass (xóa cứng + xóa cascade các đăng ký liên
+    // quan) — khớp đúng với lời cảnh báo "Xóa lớp học này và toàn bộ đăng ký?"
+    // ở nút Xóa trên giao diện. Trước đây gọi nhầm hàm softDeleteClass không
+    // tồn tại, khiến bấm Xóa luôn báo lỗi 500.
+    await classRepo.deleteClass(req.params.id);
+    req.session.flash_success = 'Đã xóa lớp học.';
     res.redirect('/classes/manage');
   } catch (err) { next(err); }
 }
