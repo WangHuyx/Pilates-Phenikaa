@@ -41,10 +41,15 @@ async function findById(id) {
   return formatEmployee(rows[0]);
 }
 
-async function create({ fullName, phone, email, position, department, startDate }) {
+async function findByUserId(userId) {
+  const [rows] = await pool.query('SELECT * FROM staffs WHERE user_id = ?', [Number(userId)]);
+  return rows[0] || null;
+}
+
+async function create({ fullName, phone, email, position, department, startDate, userId }) {
   const [result] = await pool.query(
-    'INSERT INTO staffs (staff_code, full_name, email, phone, role, department, start_date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    ['TEMP', fullName, email || null, phone, position, department || null, startDate || null]
+    'INSERT INTO staffs (staff_code, full_name, email, phone, role, department, start_date, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    ['TEMP', fullName, email || null, phone || null, position || null, department || null, startDate || null, userId || null]
   );
   const id = result.insertId;
   const code = 'NV' + String(id).padStart(3, '0');
@@ -73,4 +78,4 @@ async function remove(id) {
   return result.affectedRows > 0;
 }
 
-module.exports = { findAll, findById, create, update, remove };
+module.exports = { findAll, findById, findByUserId, create, update, remove };

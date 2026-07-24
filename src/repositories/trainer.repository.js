@@ -16,6 +16,11 @@ async function findById(id) {
   return row || null;
 }
 
+async function findByUserId(userId) {
+  const [[row]] = await pool.query('SELECT * FROM trainers WHERE user_id=?', [userId]);
+  return row || null;
+}
+
 async function create({ trainer_code, full_name, specialization, phone, email, hire_date, user_id }) {
   const [r] = await pool.query(
     'INSERT INTO trainers (trainer_code, full_name, specialization, phone, email, hire_date, user_id) VALUES (?,?,?,?,?,?,?)',
@@ -48,4 +53,4 @@ async function generateCode() {
   return 'HLV' + String(row.n).padStart(3, '0');
 }
 
-module.exports = { findAll, findById, create, update, remove, getSchedule, generateCode };
+module.exports = { findAll, findById, findByUserId, create, update, remove, getSchedule, generateCode };
